@@ -1,0 +1,48 @@
+[
+  {
+    "network": "maticmum",
+    "chainID": 80001,
+    "deployer": "0x46F18dc8C616CB0829BC0579E092e2429faF7fea",
+    "chessFishToken": "0x481A05D1Da50f8f5Eb2624d7283a38A1FFa8aacc",
+    "dividendSplitter": "0x172372c71a3F83f4D6da2AFed03e7df9d8163691",
+    "chessNFT": "0xDccFFB007afa1c5316BFa3b62705179624F8BB50",
+    "moveVerification": "0x23326209062A2a0692e82050001318164df8EBC5",
+    "chessWager": "0x55e47f9b92eBABE552cB84C98a1fFf99c5A1CE5A",
+    "crowdSale": "0x1D5dd72440189e3a8A52041cf246BC7b1FAe516C",
+    "tournament": "0xd0642ada19802c91AC72510c9dcd88A70AFe75f2",
+    "treasuryVesting": "0x4E1F3843FDEDc2f2D4c09BD44a475C3CAE588688"
+  },
+  {
+    "network": "unknown",
+    "chainID": 31337,
+    "deployer": "0x46F18dc8C616CB0829BC0579E092e2429faF7fea",
+    "chessFishToken": "0x481A05D1Da50f8f5Eb2624d7283a38A1FFa8aacc",
+    "dividendSplitter": "0x172372c71a3F83f4D6da2AFed03e7df9d8163691",
+    "chessNFT": "0xDccFFB007afa1c5316BFa3b62705179624F8BB50",
+    "moveVerification": "0x23326209062A2a0692e82050001318164df8EBC5",
+    "chessWager": "0x55e47f9b92eBABE552cB84C98a1fFf99c5A1CE5A",
+    "crowdSale": "0x1D5dd72440189e3a8A52041cf246BC7b1FAe516C",
+    "tournament": "0xd0642ada19802c91AC72510c9dcd88A70AFe75f2",
+    "treasuryVesting": "0x4E1F3843FDEDc2f2D4c09BD44a475C3CAE588688"
+  },
+  {
+    "network": "unknown",
+    "chainID": 44787,
+    "deployer": "0x04E7aD617B38D9FCd9A65C8A1b30255350faC8C6",
+    "chessFishToken": "0x77cA5B0Dc2b0d933961584b49713C5Cb814735B8",
+    "dividendSplitter": "0xbAd4ec2C67953AC84d6BE8a8856664AdFfAf0131",
+    "chessNFT": "0x1474A68579a50bad3AeB26b51894Fa9AcaF50d3B",
+    "moveVerification": "0x6C432d7f07dFE615584309E12CbCbe1BF9086627",
+    "chessWager": "0x2F6963772a108eb6984bdF7B648455187eA07Ef5",
+    "crowdSale": "0x5C02C335f038F57fcD5DdC28de7c1F4f144658F2",
+    "tournament": "0x9aD815bc1d5269D4378bCF2b2101b14D4874cE09"
+  },
+  {
+    "network": "goerli",
+    "chainID": 5,
+    "owner": "0x46F18dc8C616CB0829BC0579E092e2429faF7fea",
+    "chessFishToken": "0x1D5dd72440189e3a8A52041cf246BC7b1FAe516C",
+    "crowdSale": "0x4E1F3843FDEDc2f2D4c09BD44a475C3CAE588688",
+    "treasuryVesting": "0x172372c71a3F83f4D6da2AFed03e7df9d8163691"
+  }
+]
