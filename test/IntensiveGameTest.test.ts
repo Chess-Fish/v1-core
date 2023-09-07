@@ -196,7 +196,7 @@ describe("evm_chess Game Unit Tests", function () {
     describe("Functionality Tests", function () {
         let games;
         try {
-            const data = fs.readFileSync("output_moves.json", "utf8");
+            const data = fs.readFileSync("test/test_data/output_moves.json", "utf8");
             games = JSON.parse(data);
         } catch (err) {
             console.error("Error reading file:", err);
