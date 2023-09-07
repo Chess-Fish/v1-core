@@ -9,8 +9,8 @@ describe("TreasuryVester tests", function () {
     async function deploy() {
         const [deployer, recipient, otherAccount] = await ethers.getSigners();
 
-        const CFSH = await ethers.getContractFactory("ChessFishToken");
-        const cfsh = await CFSH.deploy();
+        const CFSH = await ethers.getContractFactory("ChessFish");
+        const cfsh = await CFSH.deploy(deployer.address);
 
         const timeStamp = Math.floor(Date.now() / 1000);
         const vestingBegin = timeStamp + SECONDS_IN_A_DAY;

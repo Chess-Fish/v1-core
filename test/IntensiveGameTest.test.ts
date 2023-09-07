@@ -150,8 +150,8 @@ describe("evm_chess Game Unit Tests", function () {
         await token.deployed();
         console.log("Test Token contract deployed");
 
-        const ChessToken = await ethers.getContractFactory("ChessFishToken");
-        const chessToken = await ChessToken.deploy();
+        const ChessToken = await ethers.getContractFactory("ChessFish");
+        const chessToken = await ChessToken.deploy(deployer.address);
         await chessToken.deployed();
         console.log("ChessFish token contract deployed");
 

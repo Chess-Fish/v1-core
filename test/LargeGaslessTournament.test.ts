@@ -157,8 +157,8 @@ describe("evm_chess Wager Unit Tests", function () {
         const ERC20_token = await ethers.getContractFactory("Token");
         const token = await ERC20_token.deploy();
 
-        const ChessFishToken = await ethers.getContractFactory("ChessFishToken");
-        const chessFishToken = await ChessFishToken.deploy();
+        const ChessFishToken = await ethers.getContractFactory("ChessFish");
+        const chessFishToken = await ChessFishToken.deploy(deployer.address);
         await chessFishToken.deployed();
 
         const PaymentSplitter = await ethers.getContractFactory("PaymentSplitter");

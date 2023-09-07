@@ -7,8 +7,8 @@ describe("Crowdsale tests", function () {
     async function deploy() {
         const [deployer, otherAccount] = await ethers.getSigners();
 
-        const CFSH = await ethers.getContractFactory("ChessFishToken");
-        const chessToken = await CFSH.deploy();
+        const CFSH = await ethers.getContractFactory("ChessFish");
+        const chessToken = await CFSH.deploy(deployer.address);
 
         const USDC = await ethers.getContractFactory("USDC");
         const usdc = await USDC.deploy();

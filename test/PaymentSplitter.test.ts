@@ -8,8 +8,8 @@ describe("Payment Splitter Token Tests", function () {
         const [deployer, account0, account1] = await ethers.getSigners();
 
         // chess fish token
-        const ChessFishToken = await ethers.getContractFactory("ChessFishToken");
-        const chessFishToken = await ChessFishToken.deploy();
+        const ChessFishToken = await ethers.getContractFactory("ChessFish");
+        const chessFishToken = await ChessFishToken.deploy(deployer.address);
         await chessFishToken.deployed();
 
         // payment splitter contract

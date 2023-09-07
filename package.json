@@ -24,6 +24,7 @@
     "dotenv": "^16.0.3",
     "ethers": "5.4",
     "solidity-docgen": "0.6.0-beta.35",
-    "typechain": "^8.1.1"
+    "typechain": "^8.1.1",
+    "uuid": "^9.0.0"
   }
 }
