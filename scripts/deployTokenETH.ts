@@ -22,7 +22,7 @@ async function deploy(): Promise<void> {
     // 1) SET USDC VALUE
     // 2) SET RECIEVER ADDRESS
     // 3) CONFIRM VALUE AMOUNT
-    const USDC = "0x46F18dc8C616CB0829BC0579E092e2429faF7fea";
+    const USDC = "0x2943844bA64f81Ba7bB9627fC9Dcd1612875a760";
     const VALUE = ethers.utils.parseUnits("2", 18);
     const OWNER = owner.address;
 

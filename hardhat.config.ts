@@ -47,7 +47,7 @@ function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
             jsonRpcUrl = "https://bsc-dataseed1.binance.org";
             break;
         case "polygon-mumbai":
-            jsonRpcUrl = "https://polygon-testnet.public.blastapi.io";
+            jsonRpcUrl = "https://polygon-mumbai-bor.publicnode.com";
             break;
         case "goerli":
             jsonRpcUrl = "https://ethereum-goerli.publicnode.com";
@@ -99,7 +99,7 @@ const config: HardhatUserConfig = {
         tests: "./test",
     },
     etherscan: {
-        apiKey: process.env.ETHERSCAN_API_KEY,
+        apiKey: process.env.POLYGONSCAN_API_KEY,
     },
     solidity: {
         version: "0.8.19",

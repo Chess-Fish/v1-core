@@ -153,9 +153,10 @@ async function deploy(): Promise<void> {
     const [deployer, owner] = await ethers.getSigners();
 
     // const USDC = ""
-    const USDC = "0xB3B459dC93D93B538E3f9ac655553D90EB0F1739";
+    const USDC = "0x55Fc030c62f5D0E2A7E021A5f2Ead31AB5a42C1d";
     const VALUE = ethers.utils.parseUnits("2", 18);
     const OWNER = owner.address;
+    const FUNDER = "0x04E7aD617B38D9FCd9A65C8A1b30255350faC8C6";
 
     const ChessToken = await ethers.getContractFactory("ChessFish");
     const chessToken = await ChessToken.deploy(OWNER);
@@ -190,7 +191,6 @@ async function deploy(): Promise<void> {
     await chessToken.connect(owner).transfer(treasury.address, vestingAmount);
     console.log("40% transfered to treasury");
 
-
     const SPLITTER = await ethers.getContractFactory("PaymentSplitter");
     const splitter = await SPLITTER.deploy(chessToken.address);
     await splitter.deployed();
@@ -218,9 +218,11 @@ async function deploy(): Promise<void> {
 
     const ChessTournament = await ethers.getContractFactory("ChessFishTournament");
     const tournament = await ChessTournament.deploy(chess.address, splitter.address);
+    await tournament.deployed();
     console.log("Chess Tournament contract deployed");
 
-    await chess.addTournamentHandler(tournament.address);
+    const tx = await chess.addTournamentHandler(tournament.address);
+    await tx.wait();
 
     const contractAddresses: ContractAddresses = {
         network: ethers.provider._network.name,
@@ -266,10 +268,20 @@ async function deploy(): Promise<void> {
     console.log("CrowdSale contract", contractAddresses.crowdSale);
     console.log("Tournament contract", contractAddresses.tournament);
 
-    await chess.initCoordinates(coordinates_array, bitCoordinates_array);
-    console.log("board coodinates initialized in chess wager contract");
-    await chessNFT.setChessFishAddress(chess.address);
-    console.log("Chess Wager address set in ChessNFT contract");
+    try {
+        const tx1 = await chess.initCoordinates(coordinates_array, bitCoordinates_array);
+        await tx1.wait();
+        console.log("board coodinates initialized in chess wager contract");
+    } catch (error) {
+        console.log(error);
+    }
+    try {
+        const tx2 = await chessNFT.setChessFishAddress(chess.address);
+        await tx2.wait();
+        console.log("Chess Wager address set in ChessNFT contract");
+    } catch (error) {
+        console.log(error);
+    }
 
     console.log("___________");
 
