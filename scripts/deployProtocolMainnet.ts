@@ -291,7 +291,7 @@ async function deploy(): Promise<void> {
 
     console.log("___________");
 
-    console.log(`npx hardhat verify --network polygon-mumbai ${contractAddresses.chessFishToken} "${owner}"`);
+    console.log(`npx hardhat verify --network polygon-mumbai ${contractAddresses.chessFishToken} "${owner.address}"`);
 }
 
 async function main(): Promise<void> {

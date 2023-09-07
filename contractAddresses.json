@@ -15,14 +15,9 @@
   {
     "network": "unknown",
     "chainID": 31337,
-    "deployer": "0x46F18dc8C616CB0829BC0579E092e2429faF7fea",
+    "owner": "0x46F18dc8C616CB0829BC0579E092e2429faF7fea",
     "chessFishToken": "0x481A05D1Da50f8f5Eb2624d7283a38A1FFa8aacc",
-    "dividendSplitter": "0x172372c71a3F83f4D6da2AFed03e7df9d8163691",
-    "chessNFT": "0xDccFFB007afa1c5316BFa3b62705179624F8BB50",
-    "moveVerification": "0x23326209062A2a0692e82050001318164df8EBC5",
-    "chessWager": "0x55e47f9b92eBABE552cB84C98a1fFf99c5A1CE5A",
     "crowdSale": "0x1D5dd72440189e3a8A52041cf246BC7b1FAe516C",
-    "tournament": "0xd0642ada19802c91AC72510c9dcd88A70AFe75f2",
     "treasuryVesting": "0x4E1F3843FDEDc2f2D4c09BD44a475C3CAE588688"
   },
   {

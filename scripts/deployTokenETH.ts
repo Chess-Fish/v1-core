@@ -102,18 +102,18 @@ async function deploy(): Promise<void> {
     console.log("___________");
 
     console.log(
-        `npx hardhat verify --network polygon-mumbai ${contractAddresses.crowdSale} "${contractAddresses.chessFishToken}" "${USDC}" "${VALUE}"`
+        `npx hardhat verify --network goerli ${contractAddresses.crowdSale} "${contractAddresses.chessFishToken}" "${USDC}" "${VALUE}"`
     );
 
     console.log("___________");
 
     console.log(
-        `npx hardhat verify --network polygon-mumbai ${contractAddresses.treasuryVesting} "${contractAddresses.chessFishToken}" "${deployer.address}" "${vestingAmount}" "${vestingBegin}" "${vestingCliff}" "${vestingEnd}"`
+        `npx hardhat verify --network goerli ${contractAddresses.treasuryVesting} "${contractAddresses.chessFishToken}" "${deployer.address}" "${vestingAmount}" "${vestingBegin}" "${vestingCliff}" "${vestingEnd}"`
     );
 
     console.log("___________");
 
-    console.log(`npx hardhat verify --network polygon-mumbai ${contractAddresses.chessFishToken} ${owner}`);
+    console.log(`npx hardhat verify --network goerli ${contractAddresses.chessFishToken} ${owner.address}`);
 }
 
 async function main(): Promise<void> {
