@@ -22,7 +22,12 @@ describe("Payment Splitter Token Tests", function () {
         const erc20token = await Token.deploy();
         await erc20token.deployed();
 
-        return { chessFishToken, paymentSplitter, erc20token, deployer, account0, account1 };
+        // test erc20 token
+        const Token6 = await ethers.getContractFactory("USDC");
+        const erc20token6 = await Token.deploy();
+        await erc20token6.deployed();
+
+        return { chessFishToken, paymentSplitter, erc20token, erc20token6, deployer, account0, account1 };
     }
 
     describe("Functionality Tests", function () {
@@ -78,6 +83,28 @@ describe("Payment Splitter Token Tests", function () {
             expect(Number(balance1 - balance) == Number(releasableNative));
 
             const amountReleased = await paymentSplitter.totalReleasedERC20(erc20token.address);
+            expect(Number(amountReleased) == Number(balance1 - balance));
+        });
+
+
+        it("Should split ERC20 token 6 decimals", async function () {
+            const { chessFishToken, paymentSplitter, erc20token6, deployer, account0, account1 } = await loadFixture(
+                deploy
+            );
+
+            await erc20token6.connect(deployer).transfer(paymentSplitter.address, ethers.utils.parseUnits("1000", 6));
+
+            await chessFishToken.connect(deployer).transfer(account0.address, ethers.utils.parseEther("100000"));
+            await chessFishToken.connect(deployer).transfer(account1.address, ethers.utils.parseEther("100000"));
+
+            const releasableNative = await paymentSplitter.releasableERC20(erc20token6.address, deployer.address);
+
+            const balance = await ethers.provider.getBalance(deployer.address);
+            await paymentSplitter.releaseERC20(erc20token6.address, deployer.address);
+            const balance1 = await ethers.provider.getBalance(deployer.address);
+            expect(Number(balance1 - balance) == Number(releasableNative));
+
+            const amountReleased = await paymentSplitter.totalReleasedERC20(erc20token6.address);
             expect(Number(amountReleased) == Number(balance1 - balance));
         });
     });
