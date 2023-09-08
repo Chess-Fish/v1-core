@@ -153,7 +153,7 @@ async function deploy(): Promise<void> {
     const [deployer, owner] = await ethers.getSigners();
 
     // const USDC = ""
-    const USDC = "0x55Fc030c62f5D0E2A7E021A5f2Ead31AB5a42C1d";
+    const USDC = "0x011d9D7dde6dc3330B7546FFFea3BD11884d0949";
     const VALUE = ethers.utils.parseUnits("2", 18);
     const OWNER = owner.address;
     const FUNDER = "0x04E7aD617B38D9FCd9A65C8A1b30255350faC8C6";

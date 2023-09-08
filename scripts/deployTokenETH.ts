@@ -48,7 +48,6 @@ async function deploy(): Promise<void> {
 
     const TREASURY = await ethers.getContractFactory("TreasuryVester");
     const treasury = await TREASURY.deploy(
-        
         chessToken.address,
         deployer.address,
         vestingAmount,
