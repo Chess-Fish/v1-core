@@ -3,8 +3,7 @@
 </p>
 
 # ChessFish v1-Core
-![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/evmchess)
-
+[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/cloudposse.svg?style=social&label=Follow%20%40evmchess)](https://twitter.com/evmchess)
 
 In-depth documentation on ChessFish located at [docs.chess.fish](http://docs.chess.fish)
 
