@@ -17,10 +17,9 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract ChessFish is ERC20, ERC20Burnable, Ownable {
+contract ChessFish is ERC20, Ownable {
     uint constant _initial_supply = 1e6 * 1e18;
 
     string name_ = "ChessFish";
@@ -29,9 +28,5 @@ contract ChessFish is ERC20, ERC20Burnable, Ownable {
     constructor(address _owner) ERC20(name_, symbol_) {
         _mint(_owner, _initial_supply); 
         transferOwnership(_owner);
-    }
-
-    function mint(address to, uint256 amount) external onlyOwner {
-        _mint(to, amount);
     }
 }

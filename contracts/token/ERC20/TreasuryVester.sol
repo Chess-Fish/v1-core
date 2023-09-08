@@ -18,9 +18,12 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract TreasuryVester {
     using SafeMath for uint;
+
+    address public splitter;
 
     address public cfsh;
     address public recipient;
@@ -71,10 +74,33 @@ contract TreasuryVester {
         }
         ICFSH(cfsh).transfer(recipient, amount);
     }
+
+    function releaseDividendsERC20(address token) external {
+        uint amount = IPaymentSplitter(splitter).releasableERC20(token, address(this));
+        IPaymentSplitter(splitter).releaseERC20(token, address(this));
+        IERC20(token).transfer(recipient, amount);
+    }
+
+    function releaseDividendsNative() external {
+        uint amount = IPaymentSplitter(splitter).releasableNative(address(this));
+        IPaymentSplitter(splitter).releaseNative(address(this));
+        payable(recipient).transfer(amount);
+    }
+
+    function setSplitterContract(address _splitter) external {
+        require(msg.sender == recipient, "TreasuryVester::setRecipient: unauthorized");
+        splitter = _splitter;
+    }
 }
 
 interface ICFSH {
     function balanceOf(address account) external view returns (uint);
-
     function transfer(address dst, uint rawAmount) external returns (bool);
+}
+
+interface IPaymentSplitter {
+    function releasableERC20(address token, address account) external returns (uint256);
+    function releasableNative(address account) external returns (uint256);
+    function releaseERC20(address token, address account) external;
+    function releaseNative(address account) external;
 }
