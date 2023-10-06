@@ -67,7 +67,7 @@ contract ChessFishTournament {
     /// @dev 40% 25% 20% 15%
     uint[4] public payoutProfile4_9 = [330, 290, 180, 130];
 
-    /// @dev 40% 25% 1% 10% 5% 2.5% 2.5%
+    /// @dev 40% 25% 13.5% 10% 5% 2.5% 2.5%
     uint[7] public payoutProfile10_25 = [365, 230, 135, 100, 50, 25, 25];
 
     address public ChessWagerAddress;
