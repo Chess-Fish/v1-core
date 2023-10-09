@@ -95,12 +95,16 @@ contract TreasuryVester {
 
 interface ICFSH {
     function balanceOf(address account) external view returns (uint);
+
     function transfer(address dst, uint rawAmount) external returns (bool);
 }
 
 interface IPaymentSplitter {
     function releasableERC20(address token, address account) external returns (uint256);
+
     function releasableNative(address account) external returns (uint256);
+
     function releaseERC20(address token, address account) external;
+
     function releaseNative(address account) external;
 }

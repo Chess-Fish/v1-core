@@ -86,7 +86,6 @@ describe("Payment Splitter Token Tests", function () {
             expect(Number(amountReleased) == Number(balance1 - balance));
         });
 
-
         it("Should split ERC20 token 6 decimals", async function () {
             const { chessFishToken, paymentSplitter, erc20token6, deployer, account0, account1 } = await loadFixture(
                 deploy

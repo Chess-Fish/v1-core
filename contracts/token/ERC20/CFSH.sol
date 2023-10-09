@@ -26,7 +26,7 @@ contract ChessFish is ERC20, Ownable {
     string symbol_ = "CFSH";
 
     constructor(address _owner) ERC20(name_, symbol_) {
-        _mint(_owner, _initial_supply); 
+        _mint(_owner, _initial_supply);
         transferOwnership(_owner);
     }
 }

@@ -1,10 +1,19 @@
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
+
+import { network } from "hardhat"; // <-- Ensure you have this import
 
 describe("TreasuryVester tests", function () {
     const SECONDS_IN_A_DAY = 86400;
     const VESTING_AMOUNT = ethers.utils.parseEther("400000");
+
+    before(async () => {
+        // Reset the Hardhat EVM before all tests
+        await network.provider.request({
+            method: "hardhat_reset",
+        });
+    });
 
     async function deploy() {
         const [deployer, recipient, otherAccount] = await ethers.getSigners();

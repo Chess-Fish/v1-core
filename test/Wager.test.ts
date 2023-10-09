@@ -418,6 +418,9 @@ describe("evm_chess Wager Unit Tests", function () {
 
             const NFTcount = await chessNFT.balanceOf(deployer.address);
             expect(NFTcount).to.equal(1);
+
+            const numberOfWagers = await chess.getAllWagersCount();
+            expect(numberOfWagers).to.equal(1);
         });
 
         it("Should test player pool functionality", async function () {
@@ -468,6 +471,18 @@ describe("evm_chess Wager Unit Tests", function () {
                 await chess.connect(player).playMove(gameAddr, hex_move);
                 console.log(hex_move);
             }
+
+            const gameMovesContract = await chess.getGameMoves(gameAddr, 0);
+            const gameMoves: string[] = [];
+
+            for (let i = 0; i < moves.length; i++) {
+                const move = await chess.hexToMove(Number(gameMovesContract[0][i]));
+                gameMoves.push(move);
+            }
+            expect(gameMoves).to.deep.equal(moves);
+
+            const numberOfWagers = await chess.getAllWagersCount();
+            expect(numberOfWagers).to.equal(1);
         });
 
         it("Should test revert on wrong user calling accept wager", async function () {
@@ -497,6 +512,9 @@ describe("evm_chess Wager Unit Tests", function () {
             let promise = chess.connect(account3).acceptWager(gameAddr);
 
             await expect(promise).to.be.revertedWith("msg.sender != player1");
+
+            const numberOfWagers = await chess.getAllWagersCount();
+            expect(numberOfWagers).to.equal(1);
         });
     });
 });
