@@ -421,6 +421,9 @@ describe("evm_chess Wager Unit Tests", function () {
 
             const numberOfWagers = await chess.getAllWagersCount();
             expect(numberOfWagers).to.equal(1);
+
+            const contractWagerAddresses = await chess.getAllWagerAddresses();
+            expect(contractWagerAddresses.length).to.equal(1);
         });
 
         it("Should test player pool functionality", async function () {
