@@ -251,7 +251,6 @@ describe("evm_chess Game Unit Tests", function () {
             let convertedMove = await chess.convertFromMove(move);
             expect(convertedMove[0].toString()).to.equal(fromPos);
             expect(convertedMove[1].toString()).to.equal(toPos);
-
         });
 
         it("Should play a move", async function () {

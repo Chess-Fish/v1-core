@@ -44,11 +44,6 @@ contract MoveHelper {
         _;
     }
 
-    /// @dev update fee function for 1v1 matches
-    function updateFee(uint _fee) external OnlyDeployer {
-        protocolFee = _fee;
-    }
-
     /// @dev called from ts since hardcoding the mapping makes the contract too large
     function initCoordinates(string[64] calldata coordinate, uint[64] calldata value) external OnlyDeployer {
         for (int i = 0; i < 64; i++) {
