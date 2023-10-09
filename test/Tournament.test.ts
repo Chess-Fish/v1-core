@@ -637,7 +637,9 @@ describe("evm_chess Tournament Unit Tests", function () {
 
             await tournament.connect(player1).exitTournament(tournamentNonce - 1);
 
-            await expect(tournament.connect(otherAccount).exitTournament(tournamentNonce - 1)).to.be.revertedWith("msg.sender not in tournament");
+            await expect(tournament.connect(otherAccount).exitTournament(tournamentNonce - 1)).to.be.revertedWith(
+                "msg.sender not in tournament"
+            );
 
             const players1 = await tournament.getTournamentPlayers(tournamentNonce - 1);
             expect(players1.length).to.equal(1);

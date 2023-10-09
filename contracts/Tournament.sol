@@ -348,7 +348,7 @@ contract ChessFishTournament {
                     i++;
                 }
             }
-        } 
+        }
 
         address[] memory playersSorted = getPlayersSortedByWins(tournamentID);
         address payoutToken = tournaments[tournamentID].token;
