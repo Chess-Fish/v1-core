@@ -225,6 +225,10 @@ contract ChessWager is MoveHelper {
         uint gameID = gameIDs[wagerAddress].length;
         uint16[] memory moves = games[wagerAddress][gameID].moves;
 
+        if (moves.length == 0) {
+            moves = games[wagerAddress][gameID - 1].moves;
+        }
+
         (uint8 outcome, uint256 gameState, uint32 player0State, uint32 player1State) = moveVerification
             .checkGameFromStart(moves);
 
