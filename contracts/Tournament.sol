@@ -348,9 +348,7 @@ contract ChessFishTournament {
                     i++;
                 }
             }
-        } else {
-            revert("Invalid number of players");
-        }
+        } 
 
         address[] memory playersSorted = getPlayersSortedByWins(tournamentID);
         address payoutToken = tournaments[tournamentID].token;

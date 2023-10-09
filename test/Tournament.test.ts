@@ -607,7 +607,7 @@ describe("evm_chess Tournament Unit Tests", function () {
         });
 
         it("Should exit tournament", async function () {
-            const { tournament, player0, player1, token } = await loadFixture(deploy);
+            const { tournament, player0, player1, otherAccount, token } = await loadFixture(deploy);
 
             let numberOfPlayers = 3;
             let wagerToken = token.address;
@@ -636,6 +636,8 @@ describe("evm_chess Tournament Unit Tests", function () {
             expect(players.length).to.equal(2);
 
             await tournament.connect(player1).exitTournament(tournamentNonce - 1);
+
+            await expect(tournament.connect(otherAccount).exitTournament(tournamentNonce - 1)).to.be.revertedWith("msg.sender not in tournament");
 
             const players1 = await tournament.getTournamentPlayers(tournamentNonce - 1);
             expect(players1.length).to.equal(1);
