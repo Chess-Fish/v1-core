@@ -235,6 +235,15 @@ contract ChessWager is MoveHelper {
         return (outcome, gameState, player0State, player1State);
     }
 
+    function getChainId() internal view returns (uint256) {
+        uint256 chainId;
+        assembly {
+            chainId := chainid()
+        }
+        return chainId;
+    }
+
+
     /// @notice Generates unique hash for a game wager
     /// @dev using keccak256 to generate a hash which is converted to an address
     /// @return address wagerAddress
@@ -243,6 +252,7 @@ contract ChessWager is MoveHelper {
         require(wager.numberOfGames % 2 == 1, "number of games must be odd");
 
         uint blockNumber = block.number;
+        uint chainId = getChainId();
         bytes32 blockHash = blockhash(blockNumber);
 
         bytes32 salt = keccak256(
@@ -254,6 +264,7 @@ contract ChessWager is MoveHelper {
                 wager.timeLimit,
                 wager.numberOfGames,
                 blockNumber,
+                chainId,
                 blockHash
             )
         );
