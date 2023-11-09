@@ -19,6 +19,8 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./interfaces/interfaces.sol";
 import "./MoveHelper.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @title ChessFish ChessWager Contract
  * @author ChessFish
@@ -360,6 +362,14 @@ contract ChessWager is MoveHelper {
         return (wager, move, moveNumber, expiration);
     }
 
+    function decodeWagerAddress(bytes memory message) internal pure returns (address) {
+        (address wager, , , ) = abi.decode(
+            message,
+            (address, uint16, uint, uint)
+        );
+        return wager;
+    }
+
     function getMessageHash(
         address wager,
         uint16 move,
@@ -373,49 +383,113 @@ contract ChessWager is MoveHelper {
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _messageHash));
     }
 
+    function getOnChainMoveLength(address wagerAddress, uint messageLength) internal view returns (uint index, uint length) {
+        // check if on-chain moves already exist
+        uint16[] memory onChainMoves = games[wagerAddress][gameIDs[wagerAddress].length].moves;
+
+        console.log("ONCHAIN");
+        console.log(onChainMoves.length);
+        console.log(wagerAddress);
+
+        if (onChainMoves.length > 0) {
+            // append
+            length = onChainMoves.length + messageLength;
+        } else {
+            // continue
+            length = messageLength;
+        }
+
+        return (onChainMoves.length, length);
+    }
+
+// Define a struct to group data together
+struct MoveData {
+    address signer;
+    address player0;
+    address player1;
+    uint16 move;
+    uint moveNumber;
+    uint expiration;
+    bytes32 messageHash;
+}
+
+function verifyMoves(
+    address player0,
+    address player1,
+    bytes[] memory messages,
+    bytes[] memory signatures
+) internal view returns (uint16[] memory moves) {
+    moves = new uint16[](messages.length);
+    uint[] memory moveNumbers = new uint[](messages.length);
+
+    MoveData memory moveData; 
+    moveData.player0 = player0;
+    moveData.player1 = player1;
+
+    for (uint i = 0; i < messages.length; ) {
+        moveData.signer = i % 2 == 0 ? moveData.player1 : moveData.player0;
+
+        (, moveData.move, moveData.moveNumber, moveData.expiration) = decodeMoveMessage(messages[i]);
+        require(moveData.expiration >= block.timestamp, "move expired");
+
+        moveData.messageHash = getMessageHash(decodeWagerAddress(messages[i]), moveData.move, moveData.moveNumber, moveData.expiration);
+        validate(moveData.messageHash, signatures[i], moveData.signer);
+
+        if (i != 0) {
+            require(moveNumbers[i - 1] < moveData.moveNumber, "invalid move order");
+        }
+        moveNumbers[i] = moveData.moveNumber;
+        moves[i] = moveData.move;
+
+        unchecked {
+            i++;
+        }
+    } 
+
+    return moves;
+}
+
+
     /// @notice Verifies all signed messages and sigs in a for loop
     /// @dev reverts if invalid sig
     function verifyGameView(
-        bytes[] memory message,
-        bytes[] memory signature
-    ) public view returns (address wager, uint8 outcome, uint16[] memory moves) {
-        (address wagerAddress, , , ) = decodeMoveMessage(message[0]);
+        bytes[] memory messages,
+        bytes[] memory signatures
+    ) public view returns (address wagerAddress, uint8 outcome, uint16[] memory moves) {
 
-        address signer = getPlayerMove(wagerAddress);
+        wagerAddress = decodeWagerAddress(messages[0]);
+
+        //address signer = getPlayerMove(wagerAddress);
         address player0 = gameWagers[wagerAddress].player0;
         address player1 = gameWagers[wagerAddress].player1;
 
-        moves = new uint16[](message.length);
-        uint[] memory moveNumbers = new uint[](message.length);
+        moves = verifyMoves(player0, player1, messages, signatures);
 
-        for (uint i = 0; i < message.length; ) {
-            (, uint16 move, uint moveNumber, uint expiration) = decodeMoveMessage(message[i]);
+        uint16[] memory onChainMoves = games[wagerAddress][gameIDs[wagerAddress].length].moves;
+if (onChainMoves.length > 0) {
+    uint16[] memory combinedMoves = new uint16[](onChainMoves.length + moves.length);
+    for (uint i = 0; i < onChainMoves.length; i++) {
+        combinedMoves[i] = onChainMoves[i];
+    }
+    for (uint i = 0; i < moves.length; i++) {
+        combinedMoves[i + onChainMoves.length] = moves[i];
+    }
+    moves = combinedMoves;
+}
 
-            require(expiration >= block.timestamp, "move expired");
-
-            if (i % 2 == 0) {
-                signer = player1;
-            } else {
-                signer = player0;
-            }
-
-            bytes32 messageHash = getMessageHash(wagerAddress, move, moveNumber, expiration);
-            validate(messageHash, signature, signer, i);
-
-            if (i != 0) {
-                require(moveNumbers[i - 1] < moveNumber, "invalid move order");
-            }
-            moveNumbers[i] = moveNumber;
-            moves[i] = move;
-            unchecked {
-                i++;
-            }
+        // console.log(moves)
+        for (uint i = 0; i < moves.length; i++) {
+            console.log("MOVE");
+            console.log(moves[i]);
         }
 
         (outcome, , , ) = moveVerification.checkGameFromStart(moves);
 
         return (wagerAddress, outcome, moves);
     }
+
+
+
 
     /// @notice Verifies game moves and updates the state of the wager
     function verifyGameUpdateState(bytes[] memory message, bytes[] memory signature) external returns (bool) {
@@ -433,9 +507,9 @@ contract ChessWager is MoveHelper {
     }
 
     /// @notice Validates that the signed hash was signed by the player
-    function validate(bytes32 messageHash, bytes[] memory signature, address signer, uint i) internal pure {
+    function validate(bytes32 messageHash, bytes memory signature, address signer) internal pure {
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-        require(ECDSA.recover(ethSignedMessageHash, signature[i]) == signer, "invalid sig");
+        require(ECDSA.recover(ethSignedMessageHash, signature) == signer, "invalid sig");
     }
 
     /*
