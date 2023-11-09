@@ -395,7 +395,7 @@ contract ChessWager is MoveHelper {
         return (onChainMoves.length, length);
     }
 
-    // Define a struct to group data together
+    // Fighting stack too deep
     struct MoveData {
         address signer;
         address player0;
@@ -406,7 +406,10 @@ contract ChessWager is MoveHelper {
         bytes32 messageHash;
     }
 
+    /// @notice Verifies signed messages and signatures in for loop
+    /// @dev returns array of the gasless moves
     function verifyMoves(
+        address signer,
         address player0,
         address player1,
         bytes[] memory messages,
@@ -420,7 +423,7 @@ contract ChessWager is MoveHelper {
         moveData.player1 = player1;
 
         for (uint i = 0; i < messages.length; ) {
-            moveData.signer = i % 2 == 0 ? moveData.player1 : moveData.player0;
+            signer = i % 2 == 0 ? moveData.player1 : moveData.player0;
 
             (, moveData.move, moveData.moveNumber, moveData.expiration) = decodeMoveMessage(messages[i]);
             require(moveData.expiration >= block.timestamp, "move expired");
@@ -431,7 +434,7 @@ contract ChessWager is MoveHelper {
                 moveData.moveNumber,
                 moveData.expiration
             );
-            validate(moveData.messageHash, signatures[i], moveData.signer);
+            validate(moveData.messageHash, signatures[i], signer);
 
             if (i != 0) {
                 require(moveNumbers[i - 1] < moveData.moveNumber, "invalid move order");
@@ -447,20 +450,23 @@ contract ChessWager is MoveHelper {
         return moves;
     }
 
-    /// @notice Verifies all signed messages and sigs in a for loop
-    /// @dev reverts if invalid sig
+    /// @notice Verifies all signed messages and signatures
+    /// @dev appends onchain moves to gasless moves
+    /// @dev reverts if invalid signature
     function verifyGameView(
         bytes[] memory messages,
         bytes[] memory signatures
     ) public view returns (address wagerAddress, uint8 outcome, uint16[] memory moves) {
+        // optimistically use the wagerAddress from the first index
         wagerAddress = decodeWagerAddress(messages[0]);
 
-        //address signer = getPlayerMove(wagerAddress);
+        address signer = getPlayerMove(wagerAddress);
         address player0 = gameWagers[wagerAddress].player0;
         address player1 = gameWagers[wagerAddress].player1;
 
-        moves = verifyMoves(player0, player1, messages, signatures);
+        moves = verifyMoves(signer, player0, player1, messages, signatures);
 
+        // appending moves to onChainMoves if they exist
         uint16[] memory onChainMoves = games[wagerAddress][gameIDs[wagerAddress].length].moves;
         if (onChainMoves.length > 0) {
             uint16[] memory combinedMoves = new uint16[](onChainMoves.length + moves.length);
