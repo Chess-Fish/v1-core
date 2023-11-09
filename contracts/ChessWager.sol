@@ -19,8 +19,6 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./interfaces/interfaces.sol";
 import "./MoveHelper.sol";
 
-import "hardhat/console.sol";
-
 /**
  * @title ChessFish ChessWager Contract
  * @author ChessFish
@@ -386,10 +384,6 @@ contract ChessWager is MoveHelper {
         // check if on-chain moves already exist
         uint16[] memory onChainMoves = games[wagerAddress][gameIDs[wagerAddress].length].moves;
 
-        console.log("ONCHAIN");
-        console.log(onChainMoves.length);
-        console.log(wagerAddress);
-
         if (onChainMoves.length > 0) {
             // append
             length = onChainMoves.length + messageLength;
@@ -477,12 +471,6 @@ contract ChessWager is MoveHelper {
                 combinedMoves[i + onChainMoves.length] = moves[i];
             }
             moves = combinedMoves;
-        }
-
-        // console.log(moves)
-        for (uint i = 0; i < moves.length; i++) {
-            console.log("MOVE");
-            console.log(moves[i]);
         }
 
         (outcome, , , ) = moveVerification.checkGameFromStart(moves);
