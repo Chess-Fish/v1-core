@@ -241,7 +241,6 @@ describe("evm_chess Wager Unit Tests", function () {
                 let hex_move = await chess.moveToHex(moves[i]);
                 // console.log(hex_move);
                 let tx = await chess.connect(player).playMove(gameAddr, hex_move);
-
             }
 
             const status = await chess.wagerStatus(gameAddr);

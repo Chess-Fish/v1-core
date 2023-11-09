@@ -245,7 +245,6 @@ contract ChessWager is MoveHelper {
         return chainId;
     }
 
-
     /// @notice Generates unique hash for a game wager
     /// @dev using keccak256 to generate a hash which is converted to an address
     /// @return address wagerAddress
@@ -363,10 +362,7 @@ contract ChessWager is MoveHelper {
     }
 
     function decodeWagerAddress(bytes memory message) internal pure returns (address) {
-        (address wager, , , ) = abi.decode(
-            message,
-            (address, uint16, uint, uint)
-        );
+        (address wager, , , ) = abi.decode(message, (address, uint16, uint, uint));
         return wager;
     }
 
@@ -383,7 +379,10 @@ contract ChessWager is MoveHelper {
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _messageHash));
     }
 
-    function getOnChainMoveLength(address wagerAddress, uint messageLength) internal view returns (uint index, uint length) {
+    function getOnChainMoveLength(
+        address wagerAddress,
+        uint messageLength
+    ) internal view returns (uint index, uint length) {
         // check if on-chain moves already exist
         uint16[] memory onChainMoves = games[wagerAddress][gameIDs[wagerAddress].length].moves;
 
@@ -402,53 +401,57 @@ contract ChessWager is MoveHelper {
         return (onChainMoves.length, length);
     }
 
-// Define a struct to group data together
-struct MoveData {
-    address signer;
-    address player0;
-    address player1;
-    uint16 move;
-    uint moveNumber;
-    uint expiration;
-    bytes32 messageHash;
-}
+    // Define a struct to group data together
+    struct MoveData {
+        address signer;
+        address player0;
+        address player1;
+        uint16 move;
+        uint moveNumber;
+        uint expiration;
+        bytes32 messageHash;
+    }
 
-function verifyMoves(
-    address player0,
-    address player1,
-    bytes[] memory messages,
-    bytes[] memory signatures
-) internal view returns (uint16[] memory moves) {
-    moves = new uint16[](messages.length);
-    uint[] memory moveNumbers = new uint[](messages.length);
+    function verifyMoves(
+        address player0,
+        address player1,
+        bytes[] memory messages,
+        bytes[] memory signatures
+    ) internal view returns (uint16[] memory moves) {
+        moves = new uint16[](messages.length);
+        uint[] memory moveNumbers = new uint[](messages.length);
 
-    MoveData memory moveData; 
-    moveData.player0 = player0;
-    moveData.player1 = player1;
+        MoveData memory moveData;
+        moveData.player0 = player0;
+        moveData.player1 = player1;
 
-    for (uint i = 0; i < messages.length; ) {
-        moveData.signer = i % 2 == 0 ? moveData.player1 : moveData.player0;
+        for (uint i = 0; i < messages.length; ) {
+            moveData.signer = i % 2 == 0 ? moveData.player1 : moveData.player0;
 
-        (, moveData.move, moveData.moveNumber, moveData.expiration) = decodeMoveMessage(messages[i]);
-        require(moveData.expiration >= block.timestamp, "move expired");
+            (, moveData.move, moveData.moveNumber, moveData.expiration) = decodeMoveMessage(messages[i]);
+            require(moveData.expiration >= block.timestamp, "move expired");
 
-        moveData.messageHash = getMessageHash(decodeWagerAddress(messages[i]), moveData.move, moveData.moveNumber, moveData.expiration);
-        validate(moveData.messageHash, signatures[i], moveData.signer);
+            moveData.messageHash = getMessageHash(
+                decodeWagerAddress(messages[i]),
+                moveData.move,
+                moveData.moveNumber,
+                moveData.expiration
+            );
+            validate(moveData.messageHash, signatures[i], moveData.signer);
 
-        if (i != 0) {
-            require(moveNumbers[i - 1] < moveData.moveNumber, "invalid move order");
+            if (i != 0) {
+                require(moveNumbers[i - 1] < moveData.moveNumber, "invalid move order");
+            }
+            moveNumbers[i] = moveData.moveNumber;
+            moves[i] = moveData.move;
+
+            unchecked {
+                i++;
+            }
         }
-        moveNumbers[i] = moveData.moveNumber;
-        moves[i] = moveData.move;
 
-        unchecked {
-            i++;
-        }
-    } 
-
-    return moves;
-}
-
+        return moves;
+    }
 
     /// @notice Verifies all signed messages and sigs in a for loop
     /// @dev reverts if invalid sig
@@ -456,7 +459,6 @@ function verifyMoves(
         bytes[] memory messages,
         bytes[] memory signatures
     ) public view returns (address wagerAddress, uint8 outcome, uint16[] memory moves) {
-
         wagerAddress = decodeWagerAddress(messages[0]);
 
         //address signer = getPlayerMove(wagerAddress);
@@ -466,16 +468,16 @@ function verifyMoves(
         moves = verifyMoves(player0, player1, messages, signatures);
 
         uint16[] memory onChainMoves = games[wagerAddress][gameIDs[wagerAddress].length].moves;
-if (onChainMoves.length > 0) {
-    uint16[] memory combinedMoves = new uint16[](onChainMoves.length + moves.length);
-    for (uint i = 0; i < onChainMoves.length; i++) {
-        combinedMoves[i] = onChainMoves[i];
-    }
-    for (uint i = 0; i < moves.length; i++) {
-        combinedMoves[i + onChainMoves.length] = moves[i];
-    }
-    moves = combinedMoves;
-}
+        if (onChainMoves.length > 0) {
+            uint16[] memory combinedMoves = new uint16[](onChainMoves.length + moves.length);
+            for (uint i = 0; i < onChainMoves.length; i++) {
+                combinedMoves[i] = onChainMoves[i];
+            }
+            for (uint i = 0; i < moves.length; i++) {
+                combinedMoves[i + onChainMoves.length] = moves[i];
+            }
+            moves = combinedMoves;
+        }
 
         // console.log(moves)
         for (uint i = 0; i < moves.length; i++) {
@@ -487,9 +489,6 @@ if (onChainMoves.length > 0) {
 
         return (wagerAddress, outcome, moves);
     }
-
-
-
 
     /// @notice Verifies game moves and updates the state of the wager
     function verifyGameUpdateState(bytes[] memory message, bytes[] memory signature) external returns (bool) {
