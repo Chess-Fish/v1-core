@@ -412,7 +412,7 @@ contract ChessWager is MoveHelper {
 
         return (onChainMoves.length, length);
     }
- 
+
     /// @notice Verifies signed messages and signatures in for loop
     /// @dev returns array of the gasless moves
     function verifyMoves(

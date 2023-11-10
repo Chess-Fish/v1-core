@@ -154,7 +154,7 @@ async function deploy(): Promise<void> {
 
     // const USDC = ""
     const USDC = "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8"; // USDC.e on Arbitrum
-    const CFSH = "0x25b2be535c9009Ac91A3150A5Ee38F348545CEe5"; // CFSH.e on Arbitrum 
+    const CFSH = "0x25b2be535c9009Ac91A3150A5Ee38F348545CEe5"; // CFSH.e on Arbitrum
     const VALUE = ethers.utils.parseUnits("2", 18); // 2 USDC => 1 CFSH
 
     const CROWDSALE = await ethers.getContractFactory("CrowdSale");
@@ -195,12 +195,7 @@ async function deploy(): Promise<void> {
     console.log("Move verification contract deployed");
 
     const ChessWager = await ethers.getContractFactory("ChessWager");
-    const chess = await ChessWager.deploy(
-        moveVerification.address,
-        CFSH,
-        splitter.address,
-        chessNFT.address
-    );
+    const chess = await ChessWager.deploy(moveVerification.address, CFSH, splitter.address, chessNFT.address);
     await chess.deployed();
     console.log("Chess Wager contract deployed");
 
