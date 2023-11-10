@@ -26,7 +26,7 @@ async function deploy(): Promise<void> {
     // 1) SET USDC VALUE
     // 2) SET RECIEVER ADDRESS
     // 3) CONFIRM VALUE AMOUNT
-    const USDC = "0xdf1724f11b65d6a6155B057F33fBDfB2F3B95E17";
+    const USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
     const VALUE = ethers.utils.parseUnits("2", 18);
     const OWNER = owner.address;
 
@@ -35,10 +35,18 @@ async function deploy(): Promise<void> {
     await chessToken.deployTransaction.wait(); // Wait for confirmation
     console.log("ChessFish token contract deployed");
 
+    console.log("waiting 20 seconds");
+    await delay(20000);
+    console.log("starting");
+
     const CROWDSALE = await ethers.getContractFactory("CrowdSale");
     const crowdsale = await CROWDSALE.deploy(chessToken.address, USDC, VALUE, options);
     await crowdsale.deployTransaction.wait(); // Wait for confirmation
     console.log("crowdsale contract deployed");
+
+    console.log("waiting 20 seconds");
+    await delay(20000);
+    console.log("starting");
 
     // const crowdSaleAmount = ethers.utils.parseEther("300000");
     // const tx = await chessToken.connect(owner).transfer(crowdsale.address, crowdSaleAmount, options);

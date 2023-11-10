@@ -19,7 +19,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./interfaces/interfaces.sol";
 import "./MoveHelper.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 /**
  * @title ChessFish ChessWager Contract
@@ -56,6 +56,16 @@ contract ChessWager is MoveHelper {
 
     struct Game {
         uint16[] moves;
+    }
+
+    struct GaslessMoveData {
+        address signer;
+        address player0;
+        address player1;
+        uint16 move;
+        uint moveNumber;
+        uint expiration;
+        bytes32 messageHash;
     }
 
     /// @dev address wager => GameWager
@@ -382,11 +392,6 @@ contract ChessWager is MoveHelper {
     /// @notice Validates that the signed hash was signed by the player
     function validate(bytes32 messageHash, bytes memory signature, address signer) internal pure {
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-
-        console.log("signature");
-        console.log(ECDSA.recover(ethSignedMessageHash, signature));
-        console.log(signer);
-
         require(ECDSA.recover(ethSignedMessageHash, signature) == signer, "invalid sig");
     }
 
@@ -407,18 +412,7 @@ contract ChessWager is MoveHelper {
 
         return (onChainMoves.length, length);
     }
-
-    // Fighting stack too deep
-    struct GaslessMoveData {
-        address signer;
-        address player0;
-        address player1;
-        uint16 move;
-        uint moveNumber;
-        uint expiration;
-        bytes32 messageHash;
-    }
-
+ 
     /// @notice Verifies signed messages and signatures in for loop
     /// @dev returns array of the gasless moves
     function verifyMoves(
@@ -479,9 +473,6 @@ contract ChessWager is MoveHelper {
         address playerToMove = getPlayerMove(wagerAddress);
         address player0 = gameWagers[wagerAddress].player0;
         address player1 = gameWagers[wagerAddress].player1;
-
-        console.log("here");
-        console.log(playerToMove);
 
         moves = verifyMoves(playerToMove, player0, player1, messages, signatures);
 
