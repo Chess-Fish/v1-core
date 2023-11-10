@@ -102,7 +102,7 @@ const config: HardhatUserConfig = {
         tests: "./test",
     },
     etherscan: {
-        apiKey: process.env.POLYGONSCAN_API_KEY,
+        apiKey: process.env.ETHERSCAN_API_KEY,
     },
     solidity: {
         version: "0.8.22",
@@ -126,7 +126,7 @@ const config: HardhatUserConfig = {
         outputFile: "gas-report.txt", // optional
         noColors: true, //optional
         coinmarketcap: process.env.COINMARKETCAP_API_KEY, //to fetch gas data
-        token: "ETH", // for polygon blockchain(optional).
+        token: "ETH", //
     },
 };
 

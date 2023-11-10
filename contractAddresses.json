@@ -15,15 +15,10 @@
   {
     "network": "unknown",
     "chainID": 31337,
-    "deployer": "0xB11B4FF9C2e66e78A0c53b6aE5EAAA87548f2dE7",
-    "chessFishToken": "0x8F06c56A3F11b022ef9461C0b62F81a5Aa93283f",
-    "dividendSplitter": "0xA804A4411aB00F7DF2029a36EC8fDA72F89B3b9A",
-    "chessNFT": "0xE591E05D6caf4c52c94d084e6FD15c85F3B38C2d",
-    "moveVerification": "0xe3adcBF9BbD6fCC4249d786AF8f11a1bBB8ae526",
-    "chessWager": "0x84162e735D14810F7307D6E637aBdcD4CC0f1A1e",
-    "crowdSale": "0xbD3F3011b22dadB764BeF9E95279e0C8b5B58357",
-    "tournament": "0x529481596d39aF79B99c17B3Df5cbb893f70A565",
-    "treasuryVesting": "0xeD01FEEdE03a11f09E205DD2df3e6F96Ac5F88De"
+    "owner": "0x3e06393b6A0786eDdD2c7aF69A792c299a6aE8D9",
+    "chessFishToken": "0x407d538955cAe0bEbAA41B42a6F1d069b8B42660",
+    "crowdSale": "0x831CF9cc77B680EDCe9e5d7B3C35B2F5e57fbcdc",
+    "treasuryVesting": "0x533259A435Eed5dA902FcDf598aa0C2a7Ce4F456"
   },
   {
     "network": "unknown",
@@ -44,5 +39,13 @@
     "chessFishToken": "0x8F06c56A3F11b022ef9461C0b62F81a5Aa93283f",
     "crowdSale": "0xbD3F3011b22dadB764BeF9E95279e0C8b5B58357",
     "treasuryVesting": "0xeD01FEEdE03a11f09E205DD2df3e6F96Ac5F88De"
+  },
+  {
+    "network": "unknown",
+    "chainID": 11155111,
+    "owner": "0xea676B93B9f3141e0616228C01fd5F76d77f88d3",
+    "chessFishToken": "0xfDFdB0846c428711023b85D1A52D0eD7d068B6fD",
+    "crowdSale": "0x432360A85b4D3f7A0F43BEa183a6e4f22D87BD6D",
+    "treasuryVesting": "0xf28E4CeCE1E3D9f584eEABf573FCE7440698D8BD"
   }
 ]

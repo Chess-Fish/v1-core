@@ -19,6 +19,8 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./interfaces/interfaces.sol";
 import "./MoveHelper.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @title ChessFish ChessWager Contract
  * @author ChessFish
@@ -377,6 +379,17 @@ contract ChessWager is MoveHelper {
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _messageHash));
     }
 
+    /// @notice Validates that the signed hash was signed by the player
+    function validate(bytes32 messageHash, bytes memory signature, address signer) internal pure {
+        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
+
+        console.log("signature");
+        console.log(ECDSA.recover(ethSignedMessageHash, signature));
+        console.log(signer);
+
+        require(ECDSA.recover(ethSignedMessageHash, signature) == signer, "invalid sig");
+    }
+
     function getOnChainMoveLength(
         address wagerAddress,
         uint messageLength
@@ -409,7 +422,7 @@ contract ChessWager is MoveHelper {
     /// @notice Verifies signed messages and signatures in for loop
     /// @dev returns array of the gasless moves
     function verifyMoves(
-        address signer,
+        address playerToMove,
         address player0,
         address player1,
         bytes[] memory messages,
@@ -423,10 +436,11 @@ contract ChessWager is MoveHelper {
         moveData.player1 = player1;
 
         for (uint i = 0; i < messages.length; ) {
-            signer = i % 2 == 0 ? moveData.player1 : moveData.player0;
+            // Determine signer based on the move index
+            moveData.signer = (i % 2 == 0) == (playerToMove == moveData.player0) ? moveData.player0 : moveData.player1;
 
             (, moveData.move, moveData.moveNumber, moveData.expiration) = decodeMoveMessage(messages[i]);
-            require(moveData.expiration >= block.timestamp, "move expired");
+            require(moveData.expiration >= block.timestamp, "Move has expired");
 
             moveData.messageHash = getMessageHash(
                 decodeWagerAddress(messages[i]),
@@ -434,10 +448,10 @@ contract ChessWager is MoveHelper {
                 moveData.moveNumber,
                 moveData.expiration
             );
-            validate(moveData.messageHash, signatures[i], signer);
+            validate(moveData.messageHash, signatures[i], moveData.signer);
 
             if (i != 0) {
-                require(moveNumbers[i - 1] < moveData.moveNumber, "invalid move order");
+                require(moveNumbers[i - 1] < moveData.moveNumber, "Moves must be in sequential order");
             }
             moveNumbers[i] = moveData.moveNumber;
             moves[i] = moveData.move;
@@ -457,14 +471,19 @@ contract ChessWager is MoveHelper {
         bytes[] memory messages,
         bytes[] memory signatures
     ) public view returns (address wagerAddress, uint8 outcome, uint16[] memory moves) {
+        require(messages.length == signatures.length, "msg.len == sig.len");
+
         // optimistically use the wagerAddress from the first index
         wagerAddress = decodeWagerAddress(messages[0]);
 
-        address signer = getPlayerMove(wagerAddress);
+        address playerToMove = getPlayerMove(wagerAddress);
         address player0 = gameWagers[wagerAddress].player0;
         address player1 = gameWagers[wagerAddress].player1;
 
-        moves = verifyMoves(signer, player0, player1, messages, signatures);
+        console.log("here");
+        console.log(playerToMove);
+
+        moves = verifyMoves(playerToMove, player0, player1, messages, signatures);
 
         // appending moves to onChainMoves if they exist
         uint16[] memory onChainMoves = games[wagerAddress][gameIDs[wagerAddress].length].moves;
@@ -497,12 +516,6 @@ contract ChessWager is MoveHelper {
         } else {
             return false;
         }
-    }
-
-    /// @notice Validates that the signed hash was signed by the player
-    function validate(bytes32 messageHash, bytes memory signature, address signer) internal pure {
-        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-        require(ECDSA.recover(ethSignedMessageHash, signature) == signer, "invalid sig");
     }
 
     /*

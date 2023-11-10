@@ -11,6 +11,10 @@ interface ContractAddresses {
     treasuryVesting: string;
 }
 
+function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function deploy(): Promise<void> {
     const [deployer, owner] = await ethers.getSigners();
 
@@ -22,7 +26,7 @@ async function deploy(): Promise<void> {
     // 1) SET USDC VALUE
     // 2) SET RECIEVER ADDRESS
     // 3) CONFIRM VALUE AMOUNT
-    const USDC = "0x0eAD3040254F3aC340F3490DEDc8a6159365E39E";
+    const USDC = "0xdf1724f11b65d6a6155B057F33fBDfB2F3B95E17";
     const VALUE = ethers.utils.parseUnits("2", 18);
     const OWNER = owner.address;
 
@@ -34,10 +38,12 @@ async function deploy(): Promise<void> {
     const CROWDSALE = await ethers.getContractFactory("CrowdSale");
     const crowdsale = await CROWDSALE.deploy(chessToken.address, USDC, VALUE, options);
     await crowdsale.deployTransaction.wait(); // Wait for confirmation
-    const crowdSaleAmount = ethers.utils.parseEther("300000");
-    const tx = await chessToken.connect(owner).transfer(crowdsale.address, crowdSaleAmount, options);
-    await tx.wait();
-    console.log("CrowdSale contract deployed");
+    console.log("crowdsale contract deployed");
+
+    // const crowdSaleAmount = ethers.utils.parseEther("300000");
+    // const tx = await chessToken.connect(owner).transfer(crowdsale.address, crowdSaleAmount, options);
+    // await tx.wait();
+    // console.log("CrowdSale contract funded");
 
     const vestingAmount = ethers.utils.parseEther("400000");
     const timeNow = Date.now();
@@ -60,9 +66,9 @@ async function deploy(): Promise<void> {
     console.log("Treasury contract deployed");
     // nonce 3
 
-    const tx1 = await chessToken.connect(owner).transfer(treasury.address, vestingAmount, options);
-    await tx1.wait();
-    console.log("40% transfered to treasury");
+    // const tx1 = await chessToken.connect(owner).transfer(treasury.address, vestingAmount, options);
+    // await tx1.wait();
+    // console.log("40% transfered to treasury");
 
     const contractAddresses: ContractAddresses = {
         network: ethers.provider._network.name,

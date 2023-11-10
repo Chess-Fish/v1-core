@@ -282,9 +282,8 @@ describe("evm_chess Wager Unit Tests", function () {
             const wagerAddresses = await tournament.getTournamentWagerAddresses(tournamentNonce - 1);
             expect(wagerAddresses.length).to.equal(55); // 11 players
 
-            // console.log(wagerAddresses);
-
-            const moves = ["f2f3", "e7e5", "g2g4", "d8h4"];
+            const moves = ["f2f3", "e7e5", "g2g4", "d8h4"]; // fool's mate // this test only works if this is used since the logic is based on black winning
+            // const moves = ["e2e4", "f7f6", "d2d4", "g7g5", "d1h5"]; // reversed fool's mate
 
             for (let i = 0; i < wagerAddresses.length; i++) {
                 for (let j = 0; j < numberOfGames; j++) {
@@ -292,21 +291,23 @@ describe("evm_chess Wager Unit Tests", function () {
                     let messageHashesArray: any[] = [];
                     let signatureArray: any[] = [];
 
-                    let player;
-
                     let data = await chess.gameWagers(wagerAddresses[i]);
 
                     let player0 = await ethers.getSigner(data.player0);
                     let player1 = await ethers.getSigner(data.player1);
 
+                    let playerAddress = await chess.getPlayerMove(wagerAddresses[i]);
+                    let startingPlayer = playerAddress === player0.address ? player0 : player1; // Determine starting player based on address
+
                     const timeNow = Date.now();
                     const timeStamp = Math.floor(timeNow / 1000) + 86400 * 2; // plus two days
 
                     for (let k = 0; k < moves.length; k++) {
-                        if (k % 2 != 1) {
-                            player = player1;
+                        let player;
+                        if (k % 2 == 0) {
+                            player = startingPlayer; // First move of the game by starting player
                         } else {
-                            player = player0;
+                            player = startingPlayer.address === player1.address ? player0 : player1; // Alternate for subsequent moves using address for comparison
                         }
                         console.log(`Playing game ${i} of ${wagerAddresses.length}`);
 

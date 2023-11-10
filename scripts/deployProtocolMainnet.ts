@@ -153,10 +153,10 @@ async function deploy(): Promise<void> {
     const [deployer, owner] = await ethers.getSigners();
 
     // const USDC = ""
-    const USDC = "0x011d9D7dde6dc3330B7546FFFea3BD11884d0949";
+    const USDC = "0xdf1724f11b65d6a6155B057F33fBDfB2F3B95E17";
     const VALUE = ethers.utils.parseUnits("2", 18);
     const OWNER = owner.address;
-    const FUNDER = "0x04E7aD617B38D9FCd9A65C8A1b30255350faC8C6";
+    // const FUNDER = "0x04E7aD617B38D9FCd9A65C8A1b30255350faC8C6";
 
     const ChessToken = await ethers.getContractFactory("ChessFish");
     const chessToken = await ChessToken.deploy(OWNER);
