@@ -15,7 +15,7 @@
 /// @notice https://github.com/Uniswap/governance/blob/master/contracts/TreasuryVester.sol
 /// @notice https://github.com/Chess-Fish
 
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.22;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";

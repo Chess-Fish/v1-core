@@ -10,7 +10,7 @@
                              
 */
 
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.22;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -396,7 +396,7 @@ contract ChessWager is MoveHelper {
     }
 
     // Fighting stack too deep
-    struct MoveData {
+    struct GaslessMoveData {
         address signer;
         address player0;
         address player1;
@@ -418,7 +418,7 @@ contract ChessWager is MoveHelper {
         moves = new uint16[](messages.length);
         uint[] memory moveNumbers = new uint[](messages.length);
 
-        MoveData memory moveData;
+        GaslessMoveData memory moveData;
         moveData.player0 = player0;
         moveData.player1 = player1;
 

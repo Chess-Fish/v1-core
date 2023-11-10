@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.22;
 
 interface IChessFishNFT {
     function awardWinner(address player, address wagerHash) external returns (uint256);

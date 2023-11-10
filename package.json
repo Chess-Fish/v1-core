@@ -3,7 +3,7 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^2.0.1",
     "@types/mocha": "^10.0.1",
-    "hardhat": "^2.12.7",
+    "hardhat": "^2.19.0",
     "hardhat-gas-reporter": "^1.0.9",
     "prettier": "^2.8.8",
     "prettier-plugin-solidity": "^1.1.3",

@@ -52,6 +52,9 @@ function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
         case "goerli":
             jsonRpcUrl = "https://ethereum-goerli.publicnode.com";
             break;
+        case "sepolia":
+            jsonRpcUrl = "https://rpc.notadegen.com/eth/sepolia";
+            break;
         case "chiado":
             jsonRpcUrl = "https://rpc.chiado.gnosis.gateway.fm";
             break;
@@ -102,7 +105,7 @@ const config: HardhatUserConfig = {
         apiKey: process.env.POLYGONSCAN_API_KEY,
     },
     solidity: {
-        version: "0.8.19",
+        version: "0.8.22",
         settings: {
             metadata: {
                 // Not including the metadata hash
@@ -123,7 +126,7 @@ const config: HardhatUserConfig = {
         outputFile: "gas-report.txt", // optional
         noColors: true, //optional
         coinmarketcap: process.env.COINMARKETCAP_API_KEY, //to fetch gas data
-        token: "ARB", // for polygon blockchain(optional).
+        token: "ETH", // for polygon blockchain(optional).
     },
 };
 

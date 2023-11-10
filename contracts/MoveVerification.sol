@@ -10,7 +10,7 @@
                              
 */
 
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.22;
 
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
