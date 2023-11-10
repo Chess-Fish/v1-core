@@ -25,6 +25,7 @@ const chainIds = {
     "optimism-mainnet": 10,
     "polygon-mumbai": 80001,
     sepolia: 11155111,
+    arb_sepolia: 421614,
     goerli: 5,
     chiado: 10200,
     "celo-testnet": 44787,
@@ -54,6 +55,9 @@ function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
             break;
         case "sepolia":
             jsonRpcUrl = "https://rpc.notadegen.com/eth/sepolia";
+            break;
+        case "arb_sepolia":
+            jsonRpcUrl = "https://sepolia-rollup.arbitrum.io/rpc";
             break;
         case "chiado":
             jsonRpcUrl = "https://rpc.chiado.gnosis.gateway.fm";
@@ -92,6 +96,7 @@ const config: HardhatUserConfig = {
         "polygon-mumbai": getChainConfig("polygon-mumbai"),
         goerli: getChainConfig("goerli"),
         sepolia: getChainConfig("sepolia"),
+        arb_sepolia: getChainConfig("arb_sepolia"),
         chiado: getChainConfig("chiado"),
         "celo-testnet": getChainConfig("celo-testnet"),
     },
@@ -102,7 +107,7 @@ const config: HardhatUserConfig = {
         tests: "./test",
     },
     etherscan: {
-        apiKey: process.env.ETHERSCAN_API_KEY,
+        apiKey: process.env.ARBITRUM_API_KEY,
     },
     solidity: {
         version: "0.8.22",

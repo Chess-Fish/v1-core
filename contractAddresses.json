@@ -15,10 +15,15 @@
   {
     "network": "unknown",
     "chainID": 31337,
-    "owner": "0x982b654F3e99c7FD9F36E99570d5d56512dbDd96",
-    "chessFishToken": "0xD2756DE8ECC010EDB98A1C30B1781d0A3C11C70B",
-    "crowdSale": "0x82AE5838B7A147fFE4752817a158e45e389f119d",
-    "treasuryVesting": "0x2d13393E1A5bF18E06BBb418B550b38607038804"
+    "deployer": "0x982b654F3e99c7FD9F36E99570d5d56512dbDd96",
+    "chessFishToken": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
+    "dividendSplitter": "0x2d13393E1A5bF18E06BBb418B550b38607038804",
+    "chessNFT": "0x75d264BfCb8e58137Dd882D8354092125a8Ae36f",
+    "moveVerification": "0x3D43e5a53AB12c7FDa3ABbFA675c4ba571283bD3",
+    "chessWager": "0xFfd01B734da55E973375d56930aF75AC21c5FA0B",
+    "crowdSale": "0xD2756DE8ECC010EDB98A1C30B1781d0A3C11C70B",
+    "tournament": "0xb8b605fEcd4718F1B18aC96cb8a17E988a935dD5",
+    "treasuryVesting": "0x82AE5838B7A147fFE4752817a158e45e389f119d"
   },
   {
     "network": "unknown",
@@ -41,11 +46,24 @@
     "treasuryVesting": "0xeD01FEEdE03a11f09E205DD2df3e6F96Ac5F88De"
   },
   {
-    "network": "unknown",
+    "network": "sepolia",
     "chainID": 11155111,
     "owner": "0x982b654F3e99c7FD9F36E99570d5d56512dbDd96",
     "chessFishToken": "0xD2756DE8ECC010EDB98A1C30B1781d0A3C11C70B",
     "crowdSale": "0x82AE5838B7A147fFE4752817a158e45e389f119d",
     "treasuryVesting": "0x2d13393E1A5bF18E06BBb418B550b38607038804"
+  },
+  {
+    "network": "arb_sepolia",
+    "chainID": 421614,
+    "deployer": "0x982b654F3e99c7FD9F36E99570d5d56512dbDd96",
+    "chessFishToken": "0x25b2be535c9009Ac91A3150A5Ee38F348545CEe5",
+    "dividendSplitter": "0x2d13393E1A5bF18E06BBb418B550b38607038804",
+    "chessNFT": "0x75d264BfCb8e58137Dd882D8354092125a8Ae36f",
+    "moveVerification": "0x3D43e5a53AB12c7FDa3ABbFA675c4ba571283bD3",
+    "chessWager": "0xFfd01B734da55E973375d56930aF75AC21c5FA0B",
+    "crowdSale": "0xD2756DE8ECC010EDB98A1C30B1781d0A3C11C70B",
+    "tournament": "0xb8b605fEcd4718F1B18aC96cb8a17E988a935dD5",
+    "treasuryVesting": "0x82AE5838B7A147fFE4752817a158e45e389f119d"
   }
 ]

@@ -7,7 +7,6 @@ interface ContractAddresses {
     chainID: number;
     owner: string;
     chessFishToken: string;
-    crowdSale: string;
     treasuryVesting: string;
 }
 
@@ -39,21 +38,7 @@ async function deploy(): Promise<void> {
     await delay(20000);
     console.log("starting");
 
-    const CROWDSALE = await ethers.getContractFactory("CrowdSale");
-    const crowdsale = await CROWDSALE.deploy(chessToken.address, USDC, VALUE, options);
-    await crowdsale.deployTransaction.wait(); // Wait for confirmation
-    console.log("crowdsale contract deployed");
-
-    console.log("waiting 20 seconds");
-    await delay(20000);
-    console.log("starting");
-
-    // const crowdSaleAmount = ethers.utils.parseEther("300000");
-    // const tx = await chessToken.connect(owner).transfer(crowdsale.address, crowdSaleAmount, options);
-    // await tx.wait();
-    // console.log("CrowdSale contract funded");
-
-    const vestingAmount = ethers.utils.parseEther("400000");
+    const vestingAmount = ethers.utils.parseEther("100000");
     const timeNow = Date.now();
     const timeStamp = Math.floor(timeNow / 1000);
     const vestingBegin = timeStamp + 86400; // plus 1 day
@@ -83,7 +68,6 @@ async function deploy(): Promise<void> {
         chainID: ethers.provider._network.chainId,
         owner: deployer.address,
         chessFishToken: chessToken.address,
-        crowdSale: crowdsale.address,
         treasuryVesting: treasury.address,
     };
 
@@ -110,24 +94,17 @@ async function deploy(): Promise<void> {
     console.log("Network: ", contractAddresses.network);
     console.log("Deployer: ", contractAddresses.owner);
     console.log("Chess Fish Token", contractAddresses.chessFishToken);
-    console.log("CrowdSale contract", contractAddresses.crowdSale);
     console.log("TreasuryVesting contract", contractAddresses.treasuryVesting);
 
     console.log("___________");
 
     console.log(
-        `npx hardhat verify --network goerli ${contractAddresses.crowdSale} "${contractAddresses.chessFishToken}" "${USDC}" "${VALUE}"`
+        `npx hardhat verify --network mainnet ${contractAddresses.treasuryVesting} "${contractAddresses.chessFishToken}" "${deployer.address}" "${vestingAmount}" "${vestingBegin}" "${vestingCliff}" "${vestingEnd}"`
     );
 
     console.log("___________");
 
-    console.log(
-        `npx hardhat verify --network goerli ${contractAddresses.treasuryVesting} "${contractAddresses.chessFishToken}" "${deployer.address}" "${vestingAmount}" "${vestingBegin}" "${vestingCliff}" "${vestingEnd}"`
-    );
-
-    console.log("___________");
-
-    console.log(`npx hardhat verify --network goerli ${contractAddresses.chessFishToken} ${owner.address}`);
+    console.log(`npx hardhat verify --network mainnet ${contractAddresses.chessFishToken} ${owner.address}`);
 }
 
 async function main(): Promise<void> {

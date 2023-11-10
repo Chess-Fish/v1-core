@@ -153,22 +153,14 @@ async function deploy(): Promise<void> {
     const [deployer, owner] = await ethers.getSigners();
 
     // const USDC = ""
-    const USDC = "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8";
-    const VALUE = ethers.utils.parseUnits("2", 18);
-    const OWNER = owner.address;
-
-    const ChessToken = await ethers.getContractFactory("ChessFish");
-    const chessToken = await ChessToken.deploy(OWNER);
-    await chessToken.deployed();
-    console.log("ChessFish token contract deployed");
+    const USDC = "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8"; // USDC.e on Arbitrum
+    const CFSH = "0x25b2be535c9009Ac91A3150A5Ee38F348545CEe5"; // CFSH.e on Arbitrum 
+    const VALUE = ethers.utils.parseUnits("2", 18); // 2 USDC => 1 CFSH
 
     const CROWDSALE = await ethers.getContractFactory("CrowdSale");
-    const crowdsale = await CROWDSALE.deploy(chessToken.address, USDC, VALUE);
-    const crowdSaleAmount = ethers.utils.parseEther("300000");
-    await chessToken.connect(owner).transfer(crowdsale.address, crowdSaleAmount);
-    console.log("CrowdSale contract deployed");
+    const crowdsale = await CROWDSALE.deploy(CFSH, USDC, VALUE);
 
-    const vestingAmount = ethers.utils.parseEther("400000");
+    const vestingAmount = ethers.utils.parseEther("300000");
     const timeNow = Date.now();
     const timeStamp = Math.floor(timeNow / 1000);
     const vestingBegin = timeStamp + 86400; // plus 1 day
@@ -177,7 +169,7 @@ async function deploy(): Promise<void> {
 
     const TREASURY = await ethers.getContractFactory("TreasuryVester");
     const treasury = await TREASURY.deploy(
-        chessToken.address,
+        CFSH,
         deployer.address,
         vestingAmount,
         vestingBegin,
@@ -187,11 +179,8 @@ async function deploy(): Promise<void> {
     console.log("Treasury contract deployed");
     // END nonce 3
 
-    await chessToken.connect(owner).transfer(treasury.address, vestingAmount);
-    console.log("40% transfered to treasury");
-
     const SPLITTER = await ethers.getContractFactory("PaymentSplitter");
-    const splitter = await SPLITTER.deploy(chessToken.address);
+    const splitter = await SPLITTER.deploy(CFSH);
     await splitter.deployed();
     console.log("Dividend splitter contract deployed");
 
@@ -208,7 +197,7 @@ async function deploy(): Promise<void> {
     const ChessWager = await ethers.getContractFactory("ChessWager");
     const chess = await ChessWager.deploy(
         moveVerification.address,
-        chessToken.address,
+        CFSH,
         splitter.address,
         chessNFT.address
     );
@@ -227,7 +216,7 @@ async function deploy(): Promise<void> {
         network: ethers.provider._network.name,
         chainID: ethers.provider._network.chainId,
         deployer: deployer.address,
-        chessFishToken: chessToken.address,
+        chessFishToken: CFSH,
         dividendSplitter: splitter.address,
         chessNFT: chessNFT.address,
         moveVerification: moveVerification.address,
@@ -285,24 +274,24 @@ async function deploy(): Promise<void> {
     console.log("___________");
 
     console.log(
-        `npx hardhat verify --network polygon-mumbai ${contractAddresses.chessWager} "${contractAddresses.moveVerification}" "${contractAddresses.chessFishToken}" "${contractAddresses.dividendSplitter}" "${contractAddresses.chessNFT}"`
+        `npx hardhat verify --network arbitrum ${contractAddresses.chessWager} "${contractAddresses.moveVerification}" "${contractAddresses.chessFishToken}" "${contractAddresses.dividendSplitter}" "${contractAddresses.chessNFT}"`
     );
 
     console.log("___________");
 
     console.log(
-        `npx hardhat verify --network polygon-mumbai ${contractAddresses.crowdSale} "${contractAddresses.chessFishToken}" "${USDC}" "${VALUE}"`
+        `npx hardhat verify --network arbitrum ${contractAddresses.crowdSale} "${contractAddresses.chessFishToken}" "${USDC}" "${VALUE}"`
     );
 
     console.log("___________");
 
     console.log(
-        `npx hardhat verify --network polygon-mumbai ${contractAddresses.treasuryVesting} "${contractAddresses.chessFishToken}" "${deployer.address}" "${vestingAmount}" "${vestingBegin}" "${vestingCliff}" "${vestingEnd}"`
+        `npx hardhat verify --network arbitrum ${contractAddresses.treasuryVesting} "${contractAddresses.chessFishToken}" "${deployer.address}" "${vestingAmount}" "${vestingBegin}" "${vestingCliff}" "${vestingEnd}"`
     );
 
     console.log("___________");
 
-    console.log(`npx hardhat verify --network polygon-mumbai ${contractAddresses.chessFishToken} "${owner.address}"`);
+    console.log(`npx hardhat verify --network arbitrum ${contractAddresses.chessFishToken} "${owner.address}"`);
 }
 
 async function main(): Promise<void> {
