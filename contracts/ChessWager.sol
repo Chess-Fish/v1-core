@@ -363,7 +363,8 @@ contract ChessWager is MoveHelper {
         return abi.encode(wager, move, moveNumber, expiration);
     }
 
-    function decodeMoveMessage(bytes memory message) internal pure returns (address, uint16, uint, uint) {
+    /// @dev this function is public for debugging  
+    function decodeMoveMessage(bytes memory message) public pure returns (address, uint16, uint, uint) {
         (address wager, uint16 move, uint moveNumber, uint expiration) = abi.decode(
             message,
             (address, uint16, uint, uint)
