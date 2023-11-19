@@ -354,7 +354,9 @@ contract ChessFishTournament {
         address[] memory playersSorted = getPlayersSortedByWins(tournamentID);
         address payoutToken = tournaments[tournamentID].token;
 
-        uint poolSize = tournaments[tournamentID].players.length * tournaments[tournamentID].tokenAmount + tournaments[tournamentID].prizePool;
+        uint poolSize = tournaments[tournamentID].players.length *
+            tournaments[tournamentID].tokenAmount +
+            tournaments[tournamentID].prizePool;
         uint poolRemaining = poolSize;
 
         /// @dev is this needed?
