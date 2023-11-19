@@ -43,6 +43,7 @@ contract ChessFishTournament {
         uint numberOfGames;
         address token;
         uint tokenAmount;
+        uint prizePool;
         bool isInProgress;
         uint startTime;
         uint timeLimit;
@@ -353,7 +354,7 @@ contract ChessFishTournament {
         address[] memory playersSorted = getPlayersSortedByWins(tournamentID);
         address payoutToken = tournaments[tournamentID].token;
 
-        uint poolSize = tournaments[tournamentID].players.length * tournaments[tournamentID].tokenAmount;
+        uint poolSize = tournaments[tournamentID].players.length * tournaments[tournamentID].tokenAmount + tournaments[tournamentID].prizePool;
         uint poolRemaining = poolSize;
 
         /// @dev is this needed?
@@ -372,6 +373,14 @@ contract ChessFishTournament {
             }
         }
         IERC20(payoutToken).transfer(PaymentSplitter, poolRemaining);
+    }
+
+    /// @notice used to deposit prizes to tournament
+    function depositToTournament(uint tournamentID, uint amount) external {
+        require(!tournaments[tournamentID].isComplete, "tournament completed");
+
+        IERC20(tournaments[tournamentID].token).safeTransferFrom(msg.sender, address(this), amount);
+        tournaments[tournamentID].prizePool += amount;
     }
 
     /// @dev used to calculate wins, saving score to storage.
