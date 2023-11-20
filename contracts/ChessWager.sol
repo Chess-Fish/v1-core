@@ -499,12 +499,15 @@ contract ChessWager is MoveHelper {
     function verifyGameUpdateState(bytes[] memory message, bytes[] memory signature) external returns (bool) {
         (address wagerAddress, uint outcome, uint16[] memory moves) = verifyGameView(message, signature);
 
-        if (outcome != 0) {
-            uint gameID = gameIDs[wagerAddress].length;
-            games[wagerAddress][gameID].moves = moves;
+        uint gameID = gameIDs[wagerAddress].length;
+        games[wagerAddress][gameID].moves = moves;
 
+        if (outcome != 0) {
             updateWagerState(wagerAddress);
             return true;
+        }
+        if (outcome == 0) {
+            return updateWagerStateInsufficientMaterial(wagerAddress);
         } else {
             return false;
         }
@@ -768,6 +771,28 @@ contract ChessWager is MoveHelper {
             return true;
         }
         return false;
+    }
+
+    function updateWagerStateInsufficientMaterial(address wagerAddress) public returns (bool) {
+        require(getNumberOfGamesPlayed(wagerAddress) <= gameWagers[wagerAddress].numberOfGames, "Wager ended");
+
+        uint gameID = gameIDs[wagerAddress].length;
+        uint16[] memory moves = games[wagerAddress][gameID].moves;
+
+        (, uint256 gameState, , ) = moveVerification.checkGameFromStart(moves);
+
+        bool isInsufficientMaterial = moveVerification.isStalemateViaInsufficientMaterial(gameState);
+
+        if (isInsufficientMaterial) {
+            wagerStatus[wagerAddress].winsPlayer0 += 1;
+            wagerStatus[wagerAddress].winsPlayer1 += 1;
+            wagerStatus[wagerAddress].isPlayer0White = !wagerStatus[wagerAddress].isPlayer0White;
+            gameIDs[wagerAddress].push(gameIDs[wagerAddress].length);
+            gameWagers[wagerAddress].numberOfGames += 1;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     function updateTime(address wagerAddress, address player) private {

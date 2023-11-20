@@ -213,10 +213,10 @@ describe("evm_chess gasless stalemate unit test", function () {
             expect(gameAddr0).to.equal(gameAddr1);
 
             // const moves = ["f2f3", "e7e5", "g2g4", "d8h4"]; // fool's mate
-            // const moves = ["e2e4", "f7f6", "d2d4", "g7g5", "d1h5"]; // reversed fool's mate
+            const moves_checkmate = ["e2e4", "f7f6", "d2d4", "g7g5", "d1h5"]; // reversed fool's mate
 
             // stalemate 2 kings remaining
-            const moves = [
+            const moves_stalemate = [
                 "d2d3",
                 "d7d6",
                 "e2e4",
@@ -289,9 +289,8 @@ describe("evm_chess gasless stalemate unit test", function () {
                 "c5b4",
                 "g5f5",
                 "e5e4",
-                "f5e4"
+                "f5e4",
             ];
-
 
             // approve chess contract
             await token.connect(otherAccount).approve(chess.address, wager);
@@ -314,6 +313,14 @@ describe("evm_chess gasless stalemate unit test", function () {
                 let playerAddress = await chess.getPlayerMove(gameAddr);
                 let startingPlayer = playerAddress === otherAccount.address ? otherAccount : deployer; // Determine starting player based on address
 
+                let moves;
+
+                if (game === 2) {
+                    moves = moves_stalemate;
+                } else {
+                    moves = moves_checkmate;
+                }
+
                 for (let i = 0; i < moves.length; i++) {
                     let player;
                     if (i % 2 == 0) {
@@ -333,8 +340,19 @@ describe("evm_chess gasless stalemate unit test", function () {
                     const signature = await player.signMessage(ethers.utils.arrayify(messageHash));
                     signatureArray.push(signature);
                 }
+                let data = await chess.verifyGameView(messageArray, signatureArray);
+                console.log("OUTCOME", data.outcome);
+
                 await chess.verifyGameUpdateState(messageArray, signatureArray);
                 console.log("PASS");
+
+                if (data.outcome === 0) {
+                    let moves = await chess.getGameMoves(gameAddr, 1);
+                    console.log(moves);
+
+                    // let result = await chess.updateWagerStateInsufficientMaterial(gameAddr);
+                    // expect(result).to.equal(true);
+                }
             }
 
             const wins = await chess.wagerStatus(gameAddr);
@@ -349,11 +367,11 @@ describe("evm_chess gasless stalemate unit test", function () {
 
             console.log(games);
 
-            expect(winsPlayer0).to.equal(0);
-            expect(winsPlayer1).to.equal(0);
+            expect(winsPlayer0).to.equal(2);
+            expect(winsPlayer1).to.equal(2);
 
-            const wagerAddresses = await chess.getAllUserGames(player1);
-            console.log(wagerAddresses);
+            const wagerData = await chess.gameWagers(gameAddr);
+            expect(wagerData.numberOfGames).to.equal(4);
 
             const gameLength = await chess.getGameLength(gameAddr);
             console.log(gameLength);

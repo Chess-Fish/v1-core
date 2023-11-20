@@ -260,6 +260,10 @@ describe("evm_chess Wager Unit Tests", function () {
                     const signature = await player.signMessage(ethers.utils.arrayify(messageHash));
                     signatureArray.push(signature);
                 }
+
+                let data = await chess.verifyGameView(messageArray, signatureArray);
+                console.log("OUTCOME", data.outcome);
+
                 await chess.verifyGameUpdateState(messageArray, signatureArray);
                 console.log("PASS");
             }

@@ -1384,6 +1384,41 @@ contract MoveVerification {
     }
 
     /**
+        @dev Checks if gameState has insufficient material
+        @param gameState current game state
+        @return isInsufficient returns true if insufficient material
+    */
+    function isStalemateViaInsufficientMaterial(uint256 gameState) public pure returns (bool) {
+        uint8 whiteKingCount = 0;
+        uint8 blackKingCount = 0;
+        uint8 otherPiecesCount = 0;
+
+        for (uint pos = 0; pos < 64; ) {
+            uint8 piece = pieceAtPosition(gameState, uint8(pos));
+            uint8 pieceType = piece & type_mask_const;
+            bool isWhite = (piece & color_const) == 0;
+
+            if (pieceType == king_const) {
+                if (isWhite) {
+                    whiteKingCount++;
+                } else {
+                    blackKingCount++;
+                }
+            } else if (pieceType != empty_const) {
+                otherPiecesCount++;
+                if (otherPiecesCount > 1 || (pieceType != knight_const && pieceType != bishop_const)) {
+                    return false;
+                }
+            }
+            unchecked {
+                pos++;
+            }
+        }
+
+        return whiteKingCount == 1 && blackKingCount == 1 && otherPiecesCount <= 1;
+    }
+
+    /**
         @dev Commits a move into the game state. Validity of the move is not checked.
         @param gameState current game state
         @param fromPos is the position to move a piece from.
