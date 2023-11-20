@@ -1,18 +1,5 @@
 [
   {
-    "network": "maticmum",
-    "chainID": 80001,
-    "deployer": "0xB11B4FF9C2e66e78A0c53b6aE5EAAA87548f2dE7",
-    "chessFishToken": "0xD0da99996447582579e5DA31d4581347fB63bDCa",
-    "dividendSplitter": "0x7a0d4Bb0C984eB68189d916D677cf0E0B8F5c240",
-    "chessNFT": "0x2E7E3fD811716b5FCd28fdA7c3182F684e5Ba1cE",
-    "moveVerification": "0x7255D8006C4A76C4d0092Afaf8a6B1C1CA155eE2",
-    "chessWager": "0x32F07fe78821C1B80CAd450230CE2e00C21e0A45",
-    "crowdSale": "0x63f79c83bd26724c170c867776ca573Ff54D1ac4",
-    "tournament": "0xb4124504f9284f14bDbf6efEDd42Ba5E608FC6cf",
-    "treasuryVesting": "0x5A4e5226ba3230aDad03DF5f71000E07D8B399f6"
-  },
-  {
     "network": "unknown",
     "chainID": 31337,
     "deployer": "0x982b654F3e99c7FD9F36E99570d5d56512dbDd96",

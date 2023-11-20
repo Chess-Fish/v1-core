@@ -784,4 +784,11 @@ contract ChessWager is MoveHelper {
             gameWagers[wagerAddress].timeLastMove = currentTime; // Update the start time for the next turn
         }
     }
+
+    /// @notice used to deposit prizes to wager
+    function depositToWager(address wagerAddress, uint amount) external {
+        require(!gameWagers[wagerAddress].isComplete, "wager completed");
+        IERC20(gameWagers[wagerAddress].wagerToken).safeTransferFrom(msg.sender, address(this), amount);
+        gameWagers[wagerAddress].wager += amount;
+    }
 }
