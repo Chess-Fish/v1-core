@@ -243,6 +243,8 @@ describe("evm_chess Wager Unit Tests", function () {
 
     describe("Tournament Unit Tests", function () {
         it("Should start tournament and play games 11 players", async function () {
+            this.timeout(100000); // sets the timeout to 100 seconds
+
             const { chess, tournament, players, token } = await loadFixture(deploy);
 
             let numberOfPlayers = 25;

@@ -365,12 +365,15 @@ describe("evm_chess gasless stalemate unit test", function () {
 
             const games = await chess.getGameLength(gameAddr);
 
-            console.log(games);
+            // 3 games played
+            expect(games.toNumber()).to.equal(3);
 
             expect(winsPlayer0).to.equal(2);
             expect(winsPlayer1).to.equal(2);
 
             const wagerData = await chess.gameWagers(gameAddr);
+
+            // increases the number of games by 1
             expect(wagerData.numberOfGames).to.equal(4);
 
             const gameLength = await chess.getGameLength(gameAddr);

@@ -556,6 +556,95 @@ describe("evm_chess Wager Unit Tests", function () {
             }
         });
 
+
+        it("Should test wager prize", async function () {
+            const { chess, deployer, otherAccount, token } = await loadFixture(deploy);
+
+            let player1 = otherAccount.address;
+            let wagerToken = token.address;
+            let wager = ethers.utils.parseEther("1.0");
+            let maxTimePerMove = 86400;
+            let numberOfGames = 1;
+
+            let wagerPrize = ethers.utils.parseEther("10.0");
+
+            await token.approve(chess.address, wager + wagerPrize);
+
+            let tx = await chess
+                .connect(deployer)
+                .createGameWager(player1, wagerToken, wager, maxTimePerMove, numberOfGames);
+            await tx.wait();
+
+            let gameAddr = await chess.userGames(deployer.address, 0);
+
+            // deposit extra prize
+            await chess.depositToWager(gameAddr, wagerPrize);
+
+            let gameAddr0 = await chess.userGames(deployer.address, 0);
+            let gameAddr1 = await chess.userGames(otherAccount.address, 0);
+            expect(gameAddr0).to.equal(gameAddr1);
+
+            const moves = ["f2f3", "e7e5", "g2g4", "d8h4"];
+
+            // approve chess contract
+            await token.connect(otherAccount).approve(chess.address, wager);
+            console.log("allowance", await token.allowance(otherAccount.address, chess.address));
+
+            // accept wager terms
+            let tx1 = await chess.connect(otherAccount).acceptWager(gameAddr);
+            await tx1.wait();
+
+            const isPlayer0White = await chess.isPlayerWhite(gameAddr, otherAccount.address);
+            const isPlayer1White = await chess.isPlayerWhite(gameAddr, deployer.address);
+
+            expect(isPlayer0White).to.equal(true);
+            expect(isPlayer1White).to.equal(false);
+
+            //// #### FIRST GAME #### ////
+            for (let i = 0; i < moves.length; i++) {
+                let player0 = null;
+                let player1 = null;
+                if (i % 2 != 1) {
+                    player0 = otherAccount;
+                    player1 = deployer;
+                } else {
+                    player0 = deployer;
+                    player1 = otherAccount;
+                }
+
+                let hex_move = await chess.moveToHex(moves[i]);
+                await chess.connect(player0).playMove(gameAddr, hex_move);
+
+                let gameStatus: Number[] = [];
+                if (i < moves.length - 1) {
+                    // not endgame
+                    gameStatus = await chess.getGameStatus(gameAddr);
+                    expect(gameStatus[0]).to.equal(0);
+                } else {
+                    // is endgame
+                    gameStatus = await chess.getGameStatus(gameAddr);
+                    expect(gameStatus[0]).to.equal(3);
+                }
+            }
+
+            let data = await chess.getWagerStatus(gameAddr);
+            console.log(data);
+
+            let bal0p0 = await token.balanceOf(deployer.address);
+            let bal0p1 = await token.balanceOf(otherAccount.address);
+
+            await chess.payoutWager(gameAddr);
+
+            let bal1p0 = await token.balanceOf(deployer.address);
+            let bal1p1 = await token.balanceOf(otherAccount.address);
+
+            console.log(bal1p0.sub(bal0p0));
+            console.log(bal1p1.sub(bal0p1));
+
+            expect(bal1p0.sub(bal0p0)).to.equal(ethers.utils.parseEther("11.4"));
+            expect(bal1p1.sub(bal0p1)).to.equal(0);
+        });
+
         it("Should test revert on wrong user calling accept wager", async function () {
             const { chess, deployer, otherAccount, token } = await loadFixture(deploy);
 

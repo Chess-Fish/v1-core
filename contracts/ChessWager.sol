@@ -19,7 +19,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./interfaces/interfaces.sol";
 import "./MoveHelper.sol";
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 /**
  * @title ChessFish ChessWager Contract
@@ -70,6 +70,9 @@ contract ChessWager is MoveHelper {
 
     /// @dev address wager => GameWager
     mapping(address => GameWager) public gameWagers;
+
+    /// @dev address wager => WagerPrize
+    mapping(address => uint) public wagerPrizes;
 
     /// @dev address wager => gameID => Game
     mapping(address => mapping(uint => Game)) games;
@@ -636,7 +639,7 @@ contract ChessWager is MoveHelper {
             "not listed"
         );
         require(gameWagers[wagerAddress].isComplete == true, "wager not finished yet");
-        require(gameWagers[wagerAddress].wager > 0, "wager amount is 0");
+        // require(gameWagers[wagerAddress].wager > 0, "wager amount is 0");
         require(gameWagers[wagerAddress].isTournament == false, "Tournament payment is handled by tournament contract");
 
         address winner;
@@ -654,21 +657,28 @@ contract ChessWager is MoveHelper {
             winner = gameWagers[wagerAddress].player1;
         }
 
+        console.log(winner);
+
         address token = gameWagers[wagerAddress].wagerToken;
         uint wagerAmount = gameWagers[wagerAddress].wager * 2;
+        uint prize = wagerPrizes[wagerAddress];
 
-        // Set wager amount to 0
+        // Set amounts to 0
         gameWagers[wagerAddress].wager = 0;
+        wagerPrizes[wagerAddress] = 0;
 
         // 5% shareholder fee
-        uint shareHolderFee = (wagerAmount * protocolFee) / 10000;
-        uint wagerPayout = wagerAmount - shareHolderFee;
+        uint shareHolderFee = ((wagerAmount + prize) * protocolFee) / 10000;
+        uint wagerPayout = (wagerAmount + prize) - shareHolderFee;
 
         IERC20(token).safeTransfer(DividendSplitter, shareHolderFee);
         IERC20(token).safeTransfer(winner, wagerPayout);
 
         // Mint NFT for Winner
         IChessFishNFT(ChessFishNFT).awardWinner(winner, wagerAddress);
+
+        console.log(shareHolderFee);
+        console.log(wagerPayout);
 
         emit payoutWagerEvent(wagerAddress, winner, token, wagerPayout, protocolFee);
 
@@ -717,6 +727,30 @@ contract ChessWager is MoveHelper {
             return true;
         }
         return false;
+    }
+
+    /// @notice Update wager state if insufficient material 
+    /// @dev Set to public so that anyone can update 
+    function updateWagerStateInsufficientMaterial(address wagerAddress) public returns (bool) {
+        require(getNumberOfGamesPlayed(wagerAddress) <= gameWagers[wagerAddress].numberOfGames, "Wager ended");
+
+        uint gameID = gameIDs[wagerAddress].length;
+        uint16[] memory moves = games[wagerAddress][gameID].moves;
+
+        (, uint256 gameState, , ) = moveVerification.checkGameFromStart(moves);
+
+        bool isInsufficientMaterial = moveVerification.isStalemateViaInsufficientMaterial(gameState);
+
+        if (isInsufficientMaterial) {
+            wagerStatus[wagerAddress].winsPlayer0 += 1;
+            wagerStatus[wagerAddress].winsPlayer1 += 1;
+            wagerStatus[wagerAddress].isPlayer0White = !wagerStatus[wagerAddress].isPlayer0White;
+            gameIDs[wagerAddress].push(gameIDs[wagerAddress].length);
+            gameWagers[wagerAddress].numberOfGames += 1;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /// @notice checks the moves of the wager and updates state if neccessary
@@ -773,28 +807,7 @@ contract ChessWager is MoveHelper {
         return false;
     }
 
-    function updateWagerStateInsufficientMaterial(address wagerAddress) public returns (bool) {
-        require(getNumberOfGamesPlayed(wagerAddress) <= gameWagers[wagerAddress].numberOfGames, "Wager ended");
-
-        uint gameID = gameIDs[wagerAddress].length;
-        uint16[] memory moves = games[wagerAddress][gameID].moves;
-
-        (, uint256 gameState, , ) = moveVerification.checkGameFromStart(moves);
-
-        bool isInsufficientMaterial = moveVerification.isStalemateViaInsufficientMaterial(gameState);
-
-        if (isInsufficientMaterial) {
-            wagerStatus[wagerAddress].winsPlayer0 += 1;
-            wagerStatus[wagerAddress].winsPlayer1 += 1;
-            wagerStatus[wagerAddress].isPlayer0White = !wagerStatus[wagerAddress].isPlayer0White;
-            gameIDs[wagerAddress].push(gameIDs[wagerAddress].length);
-            gameWagers[wagerAddress].numberOfGames += 1;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
+    /// @notice update wager time
     function updateTime(address wagerAddress, address player) private {
         bool isPlayer0 = gameWagers[wagerAddress].player0 == player;
         uint startTime = gameWagers[wagerAddress].timeLastMove;
@@ -814,6 +827,6 @@ contract ChessWager is MoveHelper {
     function depositToWager(address wagerAddress, uint amount) external {
         require(!gameWagers[wagerAddress].isComplete, "wager completed");
         IERC20(gameWagers[wagerAddress].wagerToken).safeTransferFrom(msg.sender, address(this), amount);
-        gameWagers[wagerAddress].wager += amount;
+        wagerPrizes[wagerAddress] += amount;
     }
 }

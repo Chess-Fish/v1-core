@@ -274,11 +274,6 @@ describe("evm_chess Game Unit Tests", function () {
                 opponentState,
                 currentTurnBlack
             );
-            /* 
-      let gameState = result[0];
-      let newPlayerState = result[1];
-      let newOponentState = result[2];
-      */
         });
 
         it("Should convert move to hex move", async function () {
@@ -330,13 +325,15 @@ describe("evm_chess Game Unit Tests", function () {
             // moves to checkmate: https://lichess.org/study/WSdWU9JC/HKJztW6i
 
             /*
-      const moves = 
-      ['d2d4', 'g8f6', 'c2c4', 'g7g6', 'g2g3', 'c7c6', 'f1g2', 'd7d5', 'c4d5', 'c6d5', 'b1c3', 'f8g7',
-      'e2e3', 'e8g8', 'g1e2', 'b8c6', 'e1g1', 'b7b6', 'b2b3', 'c8a6', 'c1a3', 'f8e8', 'd1d2', 'e7e5',
-      'd4e5', 'c6e5', 'f1d1', 'e5d3', 'd2c2', 'd3f2', 'g1f2', 'f6g4', 'f2g1', 'g4e3', 'c2d2', 'e3g2',
-      'g1g2', 'd5d4', 'e2d4', 'a6b7', 'g2f1', 'd8d7', 'd2f2', 'd7h3', 'f1g1', 'e8e1', 'd1e1', 'g7d4',
-      'f2d4', 'h3g2'];
-      */
+
+            const moves = 
+            ['d2d4', 'g8f6', 'c2c4', 'g7g6', 'g2g3', 'c7c6', 'f1g2', 'd7d5', 'c4d5', 'c6d5', 'b1c3', 'f8g7',
+            'e2e3', 'e8g8', 'g1e2', 'b8c6', 'e1g1', 'b7b6', 'b2b3', 'c8a6', 'c1a3', 'f8e8', 'd1d2', 'e7e5',
+            'd4e5', 'c6e5', 'f1d1', 'e5d3', 'd2c2', 'd3f2', 'g1f2', 'f6g4', 'f2g1', 'g4e3', 'c2d2', 'e3g2',
+            'g1g2', 'd5d4', 'e2d4', 'a6b7', 'g2f1', 'd8d7', 'd2f2', 'd7h3', 'f1g1', 'e8e1', 'd1e1', 'g7d4',
+            'f2d4', 'h3g2'];
+            
+            */
 
             // const moves = [ 'f2f3', 'e7e5', 'g2g4', 'd8h4' ];
             const moves = ["d2d4", "f7f5", "b2b3", "f5f4", "e2e4", "f4e3"];
@@ -391,12 +388,9 @@ describe("evm_chess Game Unit Tests", function () {
 
                 blackMove = !blackMove;
             }
-
-            // let outcome = await moveVerification.checkGameFromStart(hex_moves);
+            let outcome = await moveVerification.checkGameFromStart(hex_moves);
             // black wins
-            // expect(outcome[0]).to.equal(0);
-
-            // console.log(outcome);
+            expect(outcome[0]).to.equal(0);
         });
 
         it("Should get outcome from checkEndgame using hex moves", async function () {
@@ -579,72 +573,6 @@ describe("evm_chess Game Unit Tests", function () {
             let outcome = await moveVerification.checkGameFromStart(hex_moves);
 
             expect(outcome[0]).to.equal(0);
-
-            // let piece = await chess.pieceAtPosition(gameState, 58);
         });
-
-        /* 
-    it("Should play game iteratively", async function () {
-      const { chess } = await loadFixture(deploy);
-  
-      const moves = ['e2e4', 'g7g5', 'b2b3', 'f7f5', 'd1h5'];
-
-      let hex_moves = ["0x314", "0xda6", "0x2db", "0xd6d", "0x0e7"];
-    
-      expect(moves.length == hex_moves.length);
-
-      let initalState = '0xcbaedabc99999999000000000000000000000000000000001111111143265234';
-      let playerState = '0x000704ff';
-      let opponentState = '0x383f3cff';
-      let currentTurnBlack = false;
-  
-      let gameStates = [];
-      let whitePlayerStates = [];
-      let blackPlayerStates = [];
-
-      gameStates.push(initalState);
-      whitePlayerStates.push(playerState);
-      blackPlayerStates.push(opponentState);
-
-      let blackMove = false;
-
-      const tx = await chess.verifyExecuteMove(gameStates[0], hex_moves[0], whitePlayerStates[0], blackPlayerStates[0], blackMove);
-      gameStates.push(tx[0]);
-      whitePlayerStates.push(tx[1]);
-      blackPlayerStates.push(tx[2]);
-          
-      // tx1
-      // black to move 
-      blackMove = !blackMove;
-      const tx1 = await chess.verifyExecuteMove(gameStates[1], hex_moves[1], blackPlayerStates[1], whitePlayerStates[1], blackMove);
-      gameStates.push(tx1[0]);
-      whitePlayerStates.push(tx1[2]);
-      blackPlayerStates.push(tx1[1]);
-
-      // tx2
-      // white to move 
-      blackMove = !blackMove;
-      const tx2 = await chess.verifyExecuteMove(gameStates[2], hex_moves[2], whitePlayerStates[2], blackPlayerStates[2], blackMove);
-      gameStates.push(tx2[0]);
-      whitePlayerStates.push(tx2[1]);
-      blackPlayerStates.push(tx2[2]);
-
-      // tx3
-      // black to move 
-      blackMove = !blackMove;
-      const tx3 = await chess.verifyExecuteMove(gameStates[3], hex_moves[3], blackPlayerStates[3], whitePlayerStates[3], blackMove);
-      gameStates.push(tx3[0]);
-      whitePlayerStates.push(tx3[2]);
-      blackPlayerStates.push(tx3[1]);
-
-      // tx4
-      // white to move 
-      blackMove = !blackMove;
-      const tx4 = await chess.verifyExecuteMove(gameStates[4], hex_moves[4], whitePlayerStates[4], blackPlayerStates[4], blackMove);
-      gameStates.push(tx4[0]);
-      whitePlayerStates.push(tx4[1]);
-      blackPlayerStates.push(tx4[2]);
-  });
-  */
     });
 });

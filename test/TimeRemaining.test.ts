@@ -189,90 +189,56 @@ describe("evm_chess Wager Unit Tests", function () {
         };
     }
 
-    describe("Gasless Game Verification Unit Tests", function () {
-        it("Should play game", async function () {
-            const { chess, chessFishToken, paymentSplitter, deployer, otherAccount, token, chessNFT } =
-                await loadFixture(deploy);
+    describe("Wager Time Remaining Unit Tests", function () {
+        it("Should create game", async function () {
+            const { chess, deployer, otherAccount, token } = await loadFixture(deploy);
+
+            console.log("Deployer", deployer.address);
+            console.log("Other Account", otherAccount.address);
 
             let player1 = otherAccount.address;
             let wagerToken = token.address;
             let wager = ethers.utils.parseEther("1.0");
-            let maxTimePerMove = 86400;
+            let timeLimit = 86400;
             let numberOfGames = 3;
 
             await token.approve(chess.address, wager);
 
             let tx = await chess
                 .connect(deployer)
-                .createGameWager(player1, wagerToken, wager, maxTimePerMove, numberOfGames);
+                .createGameWager(player1, wagerToken, wager, timeLimit, numberOfGames);
             await tx.wait();
 
             let gameAddr = await chess.userGames(deployer.address, 0);
+            let playerMove0 = await chess.getPlayerMove(gameAddr);
+            console.log(playerMove0);
+
             let gameAddr0 = await chess.userGames(deployer.address, 0);
             let gameAddr1 = await chess.userGames(otherAccount.address, 0);
             expect(gameAddr0).to.equal(gameAddr1);
 
-            // const moves = ["f2f3", "e7e5", "g2g4", "d8h4"]; // fool's mate
-            const moves = ["e2e4", "f7f6", "d2d4", "g7g5", "d1h5"]; // reversed fool's mate
-
             // approve chess contract
             await token.connect(otherAccount).approve(chess.address, wager);
 
-            // accept wager terms
+            // accept wager
             let tx1 = await chess.connect(otherAccount).acceptWager(gameAddr);
             await tx1.wait();
 
-            const timeNow = Date.now();
-            const timeStamp = Math.floor(timeNow / 1000) + 86400 * 2; // plus two days
+            let playerMove1 = await chess.getPlayerMove(gameAddr);
+            console.log("player turn:", playerMove1);
 
-            //// #### FIRST GAME #### ////
-            for (let game = 0; game < numberOfGames; game++) {
-                // reseting gasless data after each game
-                let messageArray: any[] = [];
-                let messageHashesArray: any[] = [];
-                let signatureArray: any[] = [];
+            let timeRemaining = await chess.checkTimeRemaining(gameAddr);
+            expect(timeRemaining[0]).to.equal(timeLimit);
 
-                let playerAddress = await chess.getPlayerMove(gameAddr);
-                let startingPlayer = playerAddress === otherAccount.address ? otherAccount : deployer;
+            // first move
+            let hex_move1 = await chess.moveToHex("e2e4");
+            console.log("hex move", hex_move1);
 
-                for (let i = 0; i < moves.length; i++) {
-                    let player;
-                    if (i % 2 == 0) {
-                        player = startingPlayer;
-                    } else {
-                        player = startingPlayer.address === otherAccount.address ? deployer : otherAccount;
-                    }
+            // player that accepts wager conditions plays first move
+            let tx2 = await chess.connect(otherAccount).playMove(gameAddr, hex_move1);
 
-                    const hex_move = await chess.moveToHex(moves[i]);
-
-                    const message = await chess.generateMoveMessage(gameAddr, hex_move, i, timeStamp);
-                    messageArray.push(message);
-
-                    const messageHash = await chess.getMessageHash(gameAddr, hex_move, i, timeStamp);
-                    messageHashesArray.push(messageHash);
-
-                    const signature = await player.signMessage(ethers.utils.arrayify(messageHash));
-                    signatureArray.push(signature);
-                }
-                await chess.verifyGameUpdateState(messageArray, signatureArray);
-            }
-
-            const wins = await chess.wagerStatus(gameAddr);
-
-            const winsPlayer0 = Number(wins.winsPlayer0);
-            const winsPlayer1 = Number(wins.winsPlayer1);
-
-            console.log("Wins player0", winsPlayer0);
-            console.log("Wins player1", winsPlayer1);
-
-            expect(winsPlayer0).to.equal(1);
-            expect(winsPlayer1).to.equal(2);
-
-            const wagerAddresses = await chess.getAllUserGames(player1);
-            console.log(wagerAddresses);
-
-            const gameLength = await chess.getGameLength(gameAddr);
-            console.log(gameLength);
+            let playerMove2 = await chess.getPlayerMove(gameAddr);
+            console.log("player turn:", playerMove2);
         });
     });
 });
