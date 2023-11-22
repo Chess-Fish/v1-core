@@ -122,21 +122,7 @@ contract ChessFishTournament {
         return (players, wins);
     }
 
-    function checkIfPlayerAlreadyJoined(uint tournamentID, address player) internal view returns (bool) {
-        bool hasJoined = false;
-
-        address[] memory players = tournaments[tournamentID].players;
-        for (uint i = 0; i < players.length; ) {
-            if (players[i] == player) {
-                hasJoined = true;
-            }
-            unchecked {
-                i++;
-            }
-        }
-        return hasJoined;
-    }
-
+    /// @notice checks if address is in tournament
     function isPlayerInTournament(uint tournamentID, address player) internal view returns (bool) {
         for (uint i = 0; i < tournaments[tournamentID].players.length; ) {
             if (tournaments[tournamentID].players[i] == player) {
@@ -149,7 +135,7 @@ contract ChessFishTournament {
         return false;
     }
 
-    ///@dev returns addresses winners sorted by highest wins
+    /// @dev returns addresses winners sorted by highest wins
     function getPlayersSortedByWins(uint tournamentID) public view returns (address[] memory) {
         require(
             tournaments[tournamentID].timeLimit < block.timestamp - tournaments[tournamentID].startTime,
@@ -244,7 +230,7 @@ contract ChessFishTournament {
             "max number of players reached"
         );
         require(tournaments[tournamentID].isInProgress == false, "tournament in progress");
-        require(!checkIfPlayerAlreadyJoined(tournamentID, msg.sender), "already Joined");
+        require(!isPlayerInTournament(tournamentID, msg.sender), "already Joined");
 
         address token = tournaments[tournamentID].token;
         uint tokenAmount = tournaments[tournamentID].tokenAmount;
@@ -377,20 +363,8 @@ contract ChessFishTournament {
         IERC20(payoutToken).transfer(PaymentSplitter, poolRemaining);
     }
 
-    /// @notice used to deposit prizes to tournament
-    function depositToTournament(uint tournamentID, uint amount) external {
-        require(!tournaments[tournamentID].isComplete, "tournament completed");
-
-        IERC20(tournaments[tournamentID].token).safeTransferFrom(msg.sender, address(this), amount);
-        tournaments[tournamentID].prizePool += amount;
-    }
-
     /// @dev used to calculate wins, saving score to storage.
     function tallyWins(uint tournamentID) private returns (address[] memory, uint[] memory) {
-        require(
-            tournaments[tournamentID].timeLimit < block.timestamp - tournaments[tournamentID].startTime,
-            "Tournament not finished yet"
-        );
         address[] memory players = tournaments[tournamentID].players;
 
         uint numberOfWagersInTournament = tournamentWagerAddresses[tournamentID].length;
@@ -438,5 +412,13 @@ contract ChessFishTournament {
             ];
             tournaments[tournamentID].players.pop();
         }
+    }
+
+    /// @notice used to deposit prizes to tournament
+    function depositToTournament(uint tournamentID, uint amount) external {
+        require(!tournaments[tournamentID].isComplete, "tournament completed");
+
+        IERC20(tournaments[tournamentID].token).safeTransferFrom(msg.sender, address(this), amount);
+        tournaments[tournamentID].prizePool += amount;
     }
 }
