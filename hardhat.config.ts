@@ -127,7 +127,7 @@ const config: HardhatUserConfig = {
     },
     gasReporter: {
         enabled: true,
-        currency: "USD", // currency to show
+        currency: "ETH", // currency to show
         outputFile: "gas-report.txt", // optional
         noColors: true, //optional
         coinmarketcap: process.env.COINMARKETCAP_API_KEY, //to fetch gas data

@@ -117,6 +117,7 @@ contract ChessWager is MoveHelper {
     /* 
     //// EVENTS ////
     */
+
     event createGameWagerEvent(address wager, address wagerToken, uint wagerAmount, uint timeLimit, uint numberOfGames);
     event acceptWagerEvent(address wagerAddress, address userAddress);
     event playMoveEvent(address wagerAddress, uint16 move);
@@ -250,6 +251,8 @@ contract ChessWager is MoveHelper {
         return (outcome, gameState, player0State, player1State);
     }
 
+    /// @notice gets chainId
+    /// @dev used for ensuring unique hash independent of chain
     function getChainId() internal view returns (uint256) {
         uint256 chainId;
         assembly {
@@ -292,7 +295,7 @@ contract ChessWager is MoveHelper {
     //// Tournament functions ////
     */
 
-    // Tournament Address
+    // Tournament Contract Address
     address public TournamentHandler;
 
     modifier onlyTournament() {
@@ -366,7 +369,6 @@ contract ChessWager is MoveHelper {
         return abi.encode(wager, move, moveNumber, expiration);
     }
 
-    /// @dev this function is public for debugging
     function decodeMoveMessage(bytes memory message) public pure returns (address, uint16, uint, uint) {
         (address wager, uint16 move, uint moveNumber, uint expiration) = abi.decode(
             message,
@@ -399,11 +401,11 @@ contract ChessWager is MoveHelper {
         require(ECDSA.recover(ethSignedMessageHash, signature) == signer, "invalid sig");
     }
 
+    /// @notice checks if on-chain moves already exist
     function getOnChainMoveLength(
         address wagerAddress,
         uint messageLength
     ) internal view returns (uint index, uint length) {
-        // check if on-chain moves already exist
         uint16[] memory onChainMoves = games[wagerAddress][gameIDs[wagerAddress].length].moves;
 
         if (onChainMoves.length > 0) {
@@ -438,7 +440,7 @@ contract ChessWager is MoveHelper {
             moveData.signer = (i % 2 == 0) == (playerToMove == moveData.player0) ? moveData.player0 : moveData.player1;
 
             (, moveData.move, moveData.moveNumber, moveData.expiration) = decodeMoveMessage(messages[i]);
-            require(moveData.expiration >= block.timestamp, "Move has expired");
+            require(moveData.expiration >= block.timestamp, "move expired");
 
             moveData.messageHash = getMessageHash(
                 decodeWagerAddress(messages[i]),
@@ -449,7 +451,7 @@ contract ChessWager is MoveHelper {
             validate(moveData.messageHash, signatures[i], moveData.signer);
 
             if (i != 0) {
-                require(moveNumbers[i - 1] < moveData.moveNumber, "Moves must be in sequential order");
+                require(moveNumbers[i - 1] < moveData.moveNumber, "moves must be sequential");
             }
             moveNumbers[i] = moveData.moveNumber;
             moves[i] = moveData.move;
@@ -638,9 +640,8 @@ contract ChessWager is MoveHelper {
             gameWagers[wagerAddress].player0 == msg.sender || gameWagers[wagerAddress].player1 == msg.sender,
             "not listed"
         );
-        require(gameWagers[wagerAddress].isComplete == true, "wager not finished yet");
-        // require(gameWagers[wagerAddress].wager > 0, "wager amount is 0");
-        require(gameWagers[wagerAddress].isTournament == false, "Tournament payment is handled by tournament contract");
+        require(gameWagers[wagerAddress].isComplete == true, "wager not finished");
+        require(gameWagers[wagerAddress].isTournament == false, "tournament payment handled by tournament contract");
 
         address winner;
 
@@ -689,9 +690,9 @@ contract ChessWager is MoveHelper {
     /// @dev Cancel wager only if other player has not yet accepted
     /// @dev && only if msg.sender is one of the players
     function cancelWager(address wagerAddress) external returns (bool) {
-        require(gameWagers[wagerAddress].hasPlayerAccepted == false, "wager in progress");
+        require(gameWagers[wagerAddress].hasPlayerAccepted == false, "in progress");
         require(gameWagers[wagerAddress].player0 == msg.sender, "not listed");
-        require(gameWagers[wagerAddress].isTournament == false, "cannot cancel tournament wager in this contract");
+        require(gameWagers[wagerAddress].isTournament == false, "cannot cancel tournament wager");
 
         address token = gameWagers[wagerAddress].wagerToken;
         uint wagerAmount = gameWagers[wagerAddress].wager;
@@ -709,7 +710,7 @@ contract ChessWager is MoveHelper {
     /// @dev check when called with timeout w tournament
     /// @dev Set to public so that anyone can update time if player disappears
     function updateWagerStateTime(address wagerAddress) public returns (bool) {
-        require(getNumberOfGamesPlayed(wagerAddress) <= gameWagers[wagerAddress].numberOfGames, "Wager ended");
+        require(getNumberOfGamesPlayed(wagerAddress) <= gameWagers[wagerAddress].numberOfGames, "wager ended");
         require(gameWagers[wagerAddress].timeLastMove != 0, "tournament match not started yet");
 
         (int timePlayer0, int timePlayer1) = checkTimeRemaining(wagerAddress);
@@ -732,7 +733,7 @@ contract ChessWager is MoveHelper {
     /// @notice Update wager state if insufficient material 
     /// @dev Set to public so that anyone can update 
     function updateWagerStateInsufficientMaterial(address wagerAddress) public returns (bool) {
-        require(getNumberOfGamesPlayed(wagerAddress) <= gameWagers[wagerAddress].numberOfGames, "Wager ended");
+        require(getNumberOfGamesPlayed(wagerAddress) <= gameWagers[wagerAddress].numberOfGames, "wager ended");
 
         uint gameID = gameIDs[wagerAddress].length;
         uint16[] memory moves = games[wagerAddress][gameID].moves;
@@ -755,7 +756,7 @@ contract ChessWager is MoveHelper {
 
     /// @notice checks the moves of the wager and updates state if neccessary
     function updateWagerState(address wagerAddress) private returns (bool) {
-        require(getNumberOfGamesPlayed(wagerAddress) <= gameWagers[wagerAddress].numberOfGames, "Wager ended");
+        require(getNumberOfGamesPlayed(wagerAddress) <= gameWagers[wagerAddress].numberOfGames, "wager ended");
 
         uint gameID = gameIDs[wagerAddress].length;
         uint16[] memory moves = games[wagerAddress][gameID].moves;

@@ -25,8 +25,8 @@ async function deploy(): Promise<void> {
     // 1) SET USDC VALUE
     // 2) SET RECIEVER ADDRESS
     // 3) CONFIRM VALUE AMOUNT
-    const USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
-    const VALUE = ethers.utils.parseUnits("2", 18);
+    // const USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
+    // const VALUE = ethers.utils.parseUnits("2", 18);
     const OWNER = owner.address;
 
     const ChessToken = await ethers.getContractFactory("ChessFish");

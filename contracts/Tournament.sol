@@ -280,7 +280,7 @@ contract ChessFishTournament {
         }
     }
 
-    /// @notice user can exit tournament
+    /// @notice exit tournament
     /// @dev user can exit if tournament is not in progress
     function exitTournament(uint tournamentID) external {
         require(tournaments[tournamentID].isInProgress == false, "Tournament in progress");
