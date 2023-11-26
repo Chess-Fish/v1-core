@@ -556,7 +556,6 @@ describe("evm_chess Wager Unit Tests", function () {
             }
         });
 
-
         it("Should test wager prize", async function () {
             const { chess, deployer, otherAccount, token } = await loadFixture(deploy);
 

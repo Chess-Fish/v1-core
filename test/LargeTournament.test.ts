@@ -261,8 +261,8 @@ describe("evm_chess Wager Unit Tests", function () {
 
             const tournamentNonce = await tournament.tournamentNonce();
 
-            const playersSansPlayer0 = [...players]; 
-            playersSansPlayer0.shift(); 
+            const playersSansPlayer0 = [...players];
+            playersSansPlayer0.shift();
 
             await Promise.all(
                 playersSansPlayer0.map(async (player) => {

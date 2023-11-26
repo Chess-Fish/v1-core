@@ -267,7 +267,7 @@ contract ChessFishTournament {
     function startTournament(uint tournamentID) external {
         require(tournaments[tournamentID].isInProgress == false, "already started");
         require(tournaments[tournamentID].players.length >= 3, "not enough players");
-        
+
         if (tournaments[tournamentID].players.length != tournaments[tournamentID].numberOfPlayers) {
             require(block.timestamp - tournaments[tournamentID].startTime > 86400, "must wait 1day before starting");
         }

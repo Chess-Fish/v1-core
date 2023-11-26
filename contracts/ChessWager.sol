@@ -730,8 +730,8 @@ contract ChessWager is MoveHelper {
         return false;
     }
 
-    /// @notice Update wager state if insufficient material 
-    /// @dev Set to public so that anyone can update 
+    /// @notice Update wager state if insufficient material
+    /// @dev Set to public so that anyone can update
     function updateWagerStateInsufficientMaterial(address wagerAddress) public returns (bool) {
         require(getNumberOfGamesPlayed(wagerAddress) <= gameWagers[wagerAddress].numberOfGames, "wager ended");
 
