@@ -154,11 +154,12 @@ async function deploy(): Promise<void> {
 
     // const USDC = ""
     const USDC = "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8"; // USDC.e on Arbitrum
-    const CFSH = "0x25b2be535c9009Ac91A3150A5Ee38F348545CEe5"; // CFSH.e on Arbitrum
+    const CFSH = "0xE9e136a8fd4D06CA36bbE47734Fb4D13D3e48C59"; // CFSH.e on Arbitrum
     const VALUE = ethers.utils.parseUnits("2", 18); // 2 USDC => 1 CFSH
 
     const CROWDSALE = await ethers.getContractFactory("CrowdSale");
     const crowdsale = await CROWDSALE.deploy(CFSH, USDC, VALUE);
+    console.log("Crowdsale contract deployed");
 
     const vestingAmount = ethers.utils.parseEther("300000");
     const timeNow = Date.now();
@@ -177,7 +178,7 @@ async function deploy(): Promise<void> {
         vestingEnd
     );
     console.log("Treasury contract deployed");
-    // END nonce 3
+    // END nonce 2
 
     const SPLITTER = await ethers.getContractFactory("PaymentSplitter");
     const splitter = await SPLITTER.deploy(CFSH);

@@ -265,8 +265,9 @@ contract ChessFishTournament {
     /// @dev if the number of players is greater than 3 and not equal to
     /// the maxNumber of players the tournament can start 1 day after creation
     function startTournament(uint tournamentID) external {
+        require(tournaments[tournamentID].isInProgress == false, "already started");
         require(tournaments[tournamentID].players.length >= 3, "not enough players");
-
+        
         if (tournaments[tournamentID].players.length != tournaments[tournamentID].numberOfPlayers) {
             require(block.timestamp - tournaments[tournamentID].startTime > 86400, "must wait 1day before starting");
         }
