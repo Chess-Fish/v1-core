@@ -178,7 +178,7 @@ async function deploy(): Promise<void> {
         vestingEnd
     );
     console.log("Treasury contract deployed");
-    // END nonce 
+    // END nonce
 
     const SPLITTER = await ethers.getContractFactory("PaymentSplitter");
     const splitter = await SPLITTER.deploy(CFSH);
