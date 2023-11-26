@@ -28,15 +28,6 @@ import "./interfaces/interfaces.sol";
 contract ChessFishTournament {
     using SafeERC20 for IERC20;
 
-    /// @dev increments for each new tournament
-    uint public tournamentNonce;
-
-    /// @dev uint tournamentNonce => Tournament struct
-    mapping(uint => Tournament) public tournaments;
-
-    /// @dev uint tournament nonce => address[] wagerIDs
-    mapping(uint => address[]) internal tournamentWagerAddresses;
-
     struct Tournament {
         uint numberOfPlayers;
         address[] players;
@@ -50,14 +41,10 @@ contract ChessFishTournament {
         bool isComplete;
     }
 
-    /// @dev sorting function
     struct PlayerWins {
         address player;
         uint wins;
     }
-
-    /// @dev uint tournamentID = > address player => wins
-    mapping(uint => mapping(address => uint)) public tournamentWins;
 
     /// @dev 7% protocol fee
     uint protocolFee = 700;
@@ -70,6 +57,18 @@ contract ChessFishTournament {
 
     /// @dev 40% 25% 13.5% 10% 5% 2.5% 2.5%
     uint[7] public payoutProfile10_25 = [365, 230, 135, 100, 50, 25, 25];
+
+    /// @dev increments for each new tournament
+    uint public tournamentNonce;
+
+    /// @dev uint tournamentNonce => Tournament struct
+    mapping(uint => Tournament) public tournaments;
+
+    /// @dev uint tournament nonce => address[] wagerIDs
+    mapping(uint => address[]) internal tournamentWagerAddresses;
+
+    /// @dev uint tournamentID = > address player => wins
+    mapping(uint => mapping(address => uint)) public tournamentWins;
 
     address public ChessWagerAddress;
     address public PaymentSplitter;
