@@ -17,16 +17,11 @@ function delay(ms: number) {
 async function deploy(): Promise<void> {
     const [deployer, owner] = await ethers.getSigners();
 
-    const GAS_LIMIT = 5000000; // Adjust this value based on your contract's complexity
+    const GAS_LIMIT = 5000000;
     const options = {
         gasLimit: GAS_LIMIT,
     };
 
-    // 1) SET USDC VALUE
-    // 2) SET RECIEVER ADDRESS
-    // 3) CONFIRM VALUE AMOUNT
-    // const USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
-    // const VALUE = ethers.utils.parseUnits("2", 18);
     const OWNER = owner.address;
 
     const ChessToken = await ethers.getContractFactory("ChessFish");
@@ -58,10 +53,6 @@ async function deploy(): Promise<void> {
     await treasury.deployTransaction.wait(); // Wait for confirmation
     console.log("Treasury contract deployed");
     // nonce 3
-
-    // const tx1 = await chessToken.connect(owner).transfer(treasury.address, vestingAmount, options);
-    // await tx1.wait();
-    // console.log("40% transfered to treasury");
 
     const contractAddresses: ContractAddresses = {
         network: ethers.provider._network.name,
