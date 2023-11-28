@@ -26,8 +26,8 @@ import "hardhat/console.sol";
  * @author ChessFish
  * @notice https://github.com/Chess-Fish
  *
- * @dev This contract handles the logic for storing wagers between users, storing game moves, and handling the payout of 1v1 matches.
- * The Tournament Contract is able to call into this contract to create matches between users.
+ * @dev This contract handles the logic for storing chess wagers between users, storing game moves, and handling the payout of 1v1 matches.
+ * The Tournament Contract is able to call into this contract to create tournament matches between users.
  */
 
 contract ChessWager is MoveHelper {
@@ -369,6 +369,15 @@ contract ChessWager is MoveHelper {
         return abi.encode(wager, move, moveNumber, expiration);
     }
 
+    function getMessageHash(
+        address wager,
+        uint16 move,
+        uint moveNumber,
+        uint expiration
+    ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(generateMoveMessage(wager, move, moveNumber, expiration)));
+    }
+
     function decodeMoveMessage(bytes memory message) public pure returns (address, uint16, uint, uint) {
         (address wager, uint16 move, uint moveNumber, uint expiration) = abi.decode(
             message,
@@ -382,15 +391,6 @@ contract ChessWager is MoveHelper {
         return wager;
     }
 
-    function getMessageHash(
-        address wager,
-        uint16 move,
-        uint moveNumber,
-        uint expiration
-    ) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(generateMoveMessage(wager, move, moveNumber, expiration)));
-    }
-
     function getEthSignedMessageHash(bytes32 _messageHash) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _messageHash));
     }
@@ -399,24 +399,6 @@ contract ChessWager is MoveHelper {
     function validate(bytes32 messageHash, bytes memory signature, address signer) internal pure {
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
         require(ECDSA.recover(ethSignedMessageHash, signature) == signer, "invalid sig");
-    }
-
-    /// @notice checks if on-chain moves already exist
-    function getOnChainMoveLength(
-        address wagerAddress,
-        uint messageLength
-    ) internal view returns (uint index, uint length) {
-        uint16[] memory onChainMoves = games[wagerAddress][gameIDs[wagerAddress].length].moves;
-
-        if (onChainMoves.length > 0) {
-            // append
-            length = onChainMoves.length + messageLength;
-        } else {
-            // continue
-            length = messageLength;
-        }
-
-        return (onChainMoves.length, length);
     }
 
     /// @notice Verifies signed messages and signatures in for loop
@@ -754,6 +736,13 @@ contract ChessWager is MoveHelper {
         }
     }
 
+    /// @notice used to deposit prizes to wager
+    function depositToWager(address wagerAddress, uint amount) external {
+        require(!gameWagers[wagerAddress].isComplete, "wager completed");
+        IERC20(gameWagers[wagerAddress].wagerToken).safeTransferFrom(msg.sender, address(this), amount);
+        wagerPrizes[wagerAddress] += amount;
+    }
+
     /// @notice checks the moves of the wager and updates state if neccessary
     function updateWagerState(address wagerAddress) private returns (bool) {
         require(getNumberOfGamesPlayed(wagerAddress) <= gameWagers[wagerAddress].numberOfGames, "wager ended");
@@ -822,12 +811,5 @@ contract ChessWager is MoveHelper {
             gameWagers[wagerAddress].timePlayer1 += dTime;
             gameWagers[wagerAddress].timeLastMove = currentTime; // Update the start time for the next turn
         }
-    }
-
-    /// @notice used to deposit prizes to wager
-    function depositToWager(address wagerAddress, uint amount) external {
-        require(!gameWagers[wagerAddress].isComplete, "wager completed");
-        IERC20(gameWagers[wagerAddress].wagerToken).safeTransferFrom(msg.sender, address(this), amount);
-        wagerPrizes[wagerAddress] += amount;
     }
 }

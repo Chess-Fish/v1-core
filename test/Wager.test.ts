@@ -705,7 +705,7 @@ describe("evm_chess Wager Unit Tests", function () {
             await chess.connect(_otherAccount).acceptWager(gameAddr);
 
             let promise0 = chess.connect(_deployer).cancelWager(gameAddr);
-            await expect(promise0).to.be.revertedWith("wager in progress");
+            await expect(promise0).to.be.revertedWith("in progress");
         });
     });
 });

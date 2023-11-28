@@ -242,7 +242,7 @@ describe("evm_chess Wager Unit Tests", function () {
     }
 
     describe("Tournament Unit Tests", function () {
-        it("Should start tournament and play games 11 players", async function () {
+        it("Should start gasless tournament and play games 11 players", async function () {
             this.timeout(100000); // sets the timeout to 100 seconds
 
             const { chess, tournament, players, token } = await loadFixture(deploy);
@@ -403,6 +403,7 @@ describe("evm_chess Wager Unit Tests", function () {
             const player9wins = await tournament.tournamentWins(tournamentNonce - 1, players[9].address);
             const player10wins = await tournament.tournamentWins(tournamentNonce - 1, players[10].address);
 
+            // Tournament of 3 games
             expect(player0wins).to.equal(20);
             expect(player1wins).to.equal(19);
             expect(player2wins).to.equal(18);

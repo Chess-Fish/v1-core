@@ -49,7 +49,7 @@ contract ChessFishTournament {
     /// @dev 7% protocol fee
     uint protocolFee = 700;
 
-    /// @dev 60% 35%
+    /// @dev 56% 37%
     uint[3] public payoutProfile3 = [560, 370];
 
     /// @dev 40% 25% 20% 15%
@@ -121,20 +121,7 @@ contract ChessFishTournament {
         return (players, wins);
     }
 
-    /// @notice checks if address is in tournament
-    function isPlayerInTournament(uint tournamentID, address player) internal view returns (bool) {
-        for (uint i = 0; i < tournaments[tournamentID].players.length; ) {
-            if (tournaments[tournamentID].players[i] == player) {
-                return true;
-            }
-            unchecked {
-                i++;
-            }
-        }
-        return false;
-    }
-
-    /// @dev returns addresses winners sorted by highest wins
+    /// @dev Returns addresses winners sorted by highest wins
     function getPlayersSortedByWins(uint tournamentID) public view returns (address[] memory) {
         require(
             tournaments[tournamentID].timeLimit < block.timestamp - tournaments[tournamentID].startTime,
@@ -151,7 +138,6 @@ contract ChessFishTournament {
             }
         }
 
-        // Sorting playerWinsArray based on the win count
         bool swapped;
         for (uint i = 0; i < playerWinsArray.length - 1; ) {
             swapped = false;
@@ -171,7 +157,6 @@ contract ChessFishTournament {
             }
         }
 
-        // Extracting sorted player addresses
         address[] memory sortedPlayers = new address[](players.length);
         for (uint i = 0; i < playerWinsArray.length; ) {
             sortedPlayers[i] = playerWinsArray[i].player;
@@ -181,6 +166,19 @@ contract ChessFishTournament {
         }
 
         return sortedPlayers;
+    }
+
+    /// @notice checks if address is in tournament
+    function isPlayerInTournament(uint tournamentID, address player) internal view returns (bool) {
+        for (uint i = 0; i < tournaments[tournamentID].players.length; ) {
+            if (tournaments[tournamentID].players[i] == player) {
+                return true;
+            }
+            unchecked {
+                i++;
+            }
+        }
+        return false;
     }
 
     /* 
