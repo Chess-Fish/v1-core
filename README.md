@@ -1,5 +1,5 @@
 <p align="center">
-   <img src="/doc/4d_chess.jpeg" width="250">
+   <img src="/public/4d_chess.jpeg" width="250">
 </p>
 
 # ChessFish v1-Core
