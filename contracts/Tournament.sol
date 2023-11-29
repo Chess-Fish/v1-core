@@ -82,17 +82,20 @@ contract ChessFishTournament {
     //// VIEW FUNCTIONS ////
     */
 
+    /// @notice Returns players in tournament
     function getTournamentPlayers(uint tournamentID) external view returns (address[] memory) {
         return (tournaments[tournamentID].players);
     }
 
+    /// @notice Returns wager addresses in tournament
     function getTournamentWagerAddresses(uint tournamentID) external view returns (address[] memory) {
         return (tournamentWagerAddresses[tournamentID]);
     }
 
-    /// @dev used to calculate score but only designed for view as this will lead to more gas
-    // returns addresses players
-    // returns uint scores
+    /// @notice Calculates score
+    /// @dev designed as view only
+    /// @dev returns addresses[] players
+    /// @dev returns uint[] scores
     function viewTournamentScore(uint tournamentID) external view returns (address[] memory, uint[] memory) {
         address[] memory players = tournaments[tournamentID].players;
         uint numberOfWagersInTournament = tournamentWagerAddresses[tournamentID].length;
@@ -119,7 +122,7 @@ contract ChessFishTournament {
         return (players, wins);
     }
 
-    /// @dev Returns addresses winners sorted by highest wins
+    /// @notice Returns addresses winners sorted by highest wins
     function getPlayersSortedByWins(uint tournamentID) public view returns (address[] memory) {
         require(
             tournaments[tournamentID].timeLimit < block.timestamp - tournaments[tournamentID].startTime,
@@ -166,7 +169,7 @@ contract ChessFishTournament {
         return sortedPlayers;
     }
 
-    /// @notice checks if address is in tournament
+    /// @notice Checks if address is in tournament
     function isPlayerInTournament(uint tournamentID, address player) internal view returns (bool) {
         for (uint i = 0; i < tournaments[tournamentID].players.length; ) {
             if (tournaments[tournamentID].players[i] == player) {
@@ -255,7 +258,7 @@ contract ChessFishTournament {
         tournaments[tournamentID].players.push(msg.sender);
     }
 
-    /// @notice starts the tournament
+    /// @notice Starts the tournament
     /// @dev minimum number of players = 3
     /// @dev if the number of players is greater than 3 and not equal to
     /// the maxNumber of players the tournament can start 1 day after creation
@@ -276,7 +279,7 @@ contract ChessFishTournament {
         }
     }
 
-    /// @notice exit tournament
+    /// @notice Exit tournament
     /// @dev user can exit if tournament is not in progress
     function exitTournament(uint tournamentID) external {
         require(tournaments[tournamentID].isInProgress == false, "Tournament in progress");
@@ -290,7 +293,7 @@ contract ChessFishTournament {
         IERC20(token).safeTransfer(msg.sender, tokenAmount);
     }
 
-    /// @notice handle payout of tournament
+    /// @notice Handle payout of tournament
     /// @dev tallies, gets payout profile, sorts players by wins, handles payout
     function payoutTournament(uint tournamentID) external {
         require(
@@ -359,7 +362,7 @@ contract ChessFishTournament {
         IERC20(payoutToken).transfer(PaymentSplitter, poolRemaining);
     }
 
-    /// @dev used to calculate wins, saving score to storage.
+    /// @dev Used to calculate wins, saving score to storage.
     function tallyWins(uint tournamentID) private returns (address[] memory, uint[] memory) {
         address[] memory players = tournaments[tournamentID].players;
 
@@ -410,7 +413,7 @@ contract ChessFishTournament {
         }
     }
 
-    /// @notice used to deposit prizes to tournament
+    /// @notice Used to deposit prizes to tournament
     function depositToTournament(uint tournamentID, uint amount) external {
         require(!tournaments[tournamentID].isComplete, "tournament completed");
 
