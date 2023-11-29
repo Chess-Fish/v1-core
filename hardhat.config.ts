@@ -26,6 +26,7 @@ const chainIds = {
     "polygon-mumbai": 80001,
     sepolia: 11155111,
     arb_sepolia: 421614,
+    arb_goerli: 421613,
     goerli: 5,
     chiado: 10200,
     "celo-testnet": 44787,
@@ -57,6 +58,9 @@ function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
             jsonRpcUrl = "https://rpc.notadegen.com/eth/sepolia";
             break;
         case "arb_sepolia":
+            jsonRpcUrl = "https://sepolia-rollup.arbitrum.io/rpc";
+            break;
+        case "arb_goerli":
             jsonRpcUrl = "https://sepolia-rollup.arbitrum.io/rpc";
             break;
         case "chiado":
@@ -97,6 +101,7 @@ const config: HardhatUserConfig = {
         goerli: getChainConfig("goerli"),
         sepolia: getChainConfig("sepolia"),
         arb_sepolia: getChainConfig("arb_sepolia"),
+        arb_goerli: getChainConfig("arb_goerli"),
         chiado: getChainConfig("chiado"),
         "celo-testnet": getChainConfig("celo-testnet"),
     },
@@ -127,11 +132,11 @@ const config: HardhatUserConfig = {
     },
     gasReporter: {
         enabled: true,
-        currency: "AETH", // currency to show
+        currency: "ETH", // currency to show
         outputFile: "gas-report.txt", // optional
         noColors: true, //optional
         coinmarketcap: process.env.COINMARKETCAP_API_KEY, //to fetch gas data
-        token: "AETH", //
+        token: "ETH", //
     },
 };
 
