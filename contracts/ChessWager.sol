@@ -24,7 +24,8 @@ import "./MoveHelper.sol";
  * @author ChessFish
  * @notice https://github.com/Chess-Fish
  *
- * @dev This contract handles the logic for storing chess wagers between users, storing game moves, and handling the payout of 1v1 matches.
+ * @dev This contract handles the logic for storing chess wagers between users,
+ * storing game moves, and handling the payout of 1v1 matches.
  * The Tournament Contract is able to call into this contract to create tournament matches between users.
  */
 
@@ -249,7 +250,7 @@ contract ChessWager is MoveHelper {
         return (outcome, gameState, player0State, player1State);
     }
 
-    /// @notice gets chainId
+    /// @notice Returns chainId
     /// @dev used for ensuring unique hash independent of chain
     function getChainId() internal view returns (uint256) {
         uint256 chainId;
@@ -301,17 +302,19 @@ contract ChessWager is MoveHelper {
         _;
     }
 
+    /// @notice Adds Tournament contract
     function addTournamentHandler(address _tournamentHandler) external OnlyDeployer {
         TournamentHandler = _tournamentHandler;
     }
 
+    /// @notice Starts tournament wagers
     function startWagersInTournament(address wagerAddress) external onlyTournament {
         gameWagers[wagerAddress].timeLastMove = block.timestamp;
     }
 
-    /// @notice Function that creates a wager between two players
+    /// @notice Creates a wager between two players
     /// @dev only the tournament contract can call
-    /// @return wagerAddress wager address
+    /// @return wagerAddress created wager address
     function createGameWagerTournamentSingle(
         address player0,
         address player1,
@@ -358,6 +361,7 @@ contract ChessWager is MoveHelper {
     //// GASLESS MOVE VERIFICATION FUNCTIONS ////
     */
 
+    /// @notice Generates gasless move message
     function generateMoveMessage(
         address wager,
         uint16 move,
@@ -367,6 +371,7 @@ contract ChessWager is MoveHelper {
         return abi.encode(wager, move, moveNumber, expiration);
     }
 
+    /// @notice Generates gasless move hash
     function getMessageHash(
         address wager,
         uint16 move,
@@ -376,6 +381,7 @@ contract ChessWager is MoveHelper {
         return keccak256(abi.encodePacked(generateMoveMessage(wager, move, moveNumber, expiration)));
     }
 
+    /// @notice Decodes gasless move message
     function decodeMoveMessage(bytes memory message) public pure returns (address, uint16, uint, uint) {
         (address wager, uint16 move, uint moveNumber, uint expiration) = abi.decode(
             message,
@@ -384,11 +390,13 @@ contract ChessWager is MoveHelper {
         return (wager, move, moveNumber, expiration);
     }
 
+    /// @notice Decodes gasless move message and returns wager address
     function decodeWagerAddress(bytes memory message) internal pure returns (address) {
         (address wager, , , ) = abi.decode(message, (address, uint16, uint, uint));
         return wager;
     }
 
+    /// @notice Gets signed message from gasless move hash
     function getEthSignedMessageHash(bytes32 _messageHash) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _messageHash));
     }
@@ -502,7 +510,7 @@ contract ChessWager is MoveHelper {
     //// WRITE FUNCTIONS ////
     */
 
-    /// @notice create a 1v1 chess wager
+    /// @notice Creates a 1v1 chess wager
     function createGameWager(
         address player1,
         address wagerToken,
@@ -549,7 +557,7 @@ contract ChessWager is MoveHelper {
         return wagerAddress;
     }
 
-    /// @notice player1 calls if they accept challenge
+    /// @notice Player1 calls if they accept challenge
     function acceptWager(address wagerAddress) external {
         address player1 = gameWagers[wagerAddress].player1;
 
@@ -613,7 +621,7 @@ contract ChessWager is MoveHelper {
         return isEndgame;
     }
 
-    /// @notice handles payout of wager
+    /// @notice Handles payout of wager
     /// @dev smallest wager amount is 18 wei before fees => 0
     function payoutWager(address wagerAddress) external returns (bool) {
         require(
@@ -625,7 +633,7 @@ contract ChessWager is MoveHelper {
 
         address winner;
 
-        /// @notice if there was a stalemate and now both players have the same score
+        /// @dev if there was a stalemate and now both players have the same score
         /// @dev add another game to play, and return payout successful as false
         if (wagerStatus[wagerAddress].winsPlayer0 == wagerStatus[wagerAddress].winsPlayer1) {
             gameWagers[wagerAddress].numberOfGames++;
@@ -661,7 +669,7 @@ contract ChessWager is MoveHelper {
     }
 
     /// @notice Cancel wager
-    /// @dev Cancel wager only if other player has not yet accepted
+    /// @dev cancel wager only if other player has not yet accepted
     /// @dev && only if msg.sender is one of the players
     function cancelWager(address wagerAddress) external returns (bool) {
         require(gameWagers[wagerAddress].hasPlayerAccepted == false, "in progress");
@@ -682,7 +690,7 @@ contract ChessWager is MoveHelper {
 
     /// @notice Updates the state of the wager if player time is < 0
     /// @dev check when called with timeout w tournament
-    /// @dev Set to public so that anyone can update time if player disappears
+    /// @dev set to public so that anyone can update time if player disappears
     function updateWagerStateTime(address wagerAddress) public returns (bool) {
         require(getNumberOfGamesPlayed(wagerAddress) <= gameWagers[wagerAddress].numberOfGames, "wager ended");
         require(gameWagers[wagerAddress].timeLastMove != 0, "tournament match not started yet");
@@ -705,7 +713,7 @@ contract ChessWager is MoveHelper {
     }
 
     /// @notice Update wager state if insufficient material
-    /// @dev Set to public so that anyone can update
+    /// @dev set to public so that anyone can update
     function updateWagerStateInsufficientMaterial(address wagerAddress) public returns (bool) {
         require(getNumberOfGamesPlayed(wagerAddress) <= gameWagers[wagerAddress].numberOfGames, "wager ended");
 
@@ -728,14 +736,15 @@ contract ChessWager is MoveHelper {
         }
     }
 
-    /// @notice used to deposit prizes to wager
+    /// @notice Deposits prize to wager address
+    /// @dev used to deposit prizes to wager
     function depositToWager(address wagerAddress, uint amount) external {
         require(!gameWagers[wagerAddress].isComplete, "wager completed");
         IERC20(gameWagers[wagerAddress].wagerToken).safeTransferFrom(msg.sender, address(this), amount);
         wagerPrizes[wagerAddress] += amount;
     }
 
-    /// @notice checks the moves of the wager and updates state if neccessary
+    /// @notice Checks the moves of the wager and updates state if neccessary
     function updateWagerState(address wagerAddress) private returns (bool) {
         require(getNumberOfGamesPlayed(wagerAddress) <= gameWagers[wagerAddress].numberOfGames, "wager ended");
 
@@ -789,7 +798,7 @@ contract ChessWager is MoveHelper {
         return false;
     }
 
-    /// @notice update wager time
+    /// @notice Updates wager time
     function updateTime(address wagerAddress, address player) private {
         bool isPlayer0 = gameWagers[wagerAddress].player0 == player;
         uint startTime = gameWagers[wagerAddress].timeLastMove;
