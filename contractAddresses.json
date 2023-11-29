@@ -18,5 +18,18 @@
     "crowdSale": "0x5181dEF100143C952104755375DEC440B3683613",
     "tournament": "0xC7919fCA749b8E56e00e8b704005D3D9815944C6",
     "treasuryVesting": "0x0b9Ce35706c9B91283EAEa7C2A7F197b51f90359"
+  },
+  {
+    "network": "unknown",
+    "chainID": 421613,
+    "deployer": "0x4F607Fa62d889eD81428c858Aa8652865f07bab3",
+    "chessFishToken": "0xE9e136a8fd4D06CA36bbE47734Fb4D13D3e48C59",
+    "dividendSplitter": "0xfC7d5f236428A14a6BD5424331C925285e6336C9",
+    "chessNFT": "0x5a12976020b2C7e7b2D383c7faA815599fEb2107",
+    "moveVerification": "0x0Cd03d04b66f2f26593e38725E0Ab88F0C5Ece60",
+    "chessWager": "0x94922AD8bbb6C72730eCAAB67A9eE97D6f4aF9a3",
+    "crowdSale": "0x35ACFc35790F1Af081EAeA1d384038D3D67bf9d2",
+    "tournament": "0xb06A91546B9A708dcB1081c8a55eF5aA09A509f7",
+    "treasuryVesting": "0xD250C1c310b1B40DAfC506bec871122C1Caf2f54"
   }
 ]
