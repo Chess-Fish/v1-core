@@ -46,6 +46,8 @@ contract PaymentSplitter {
     event ERC20PaymentReleased(IERC20 indexed token, address to, uint256 amount);
     event PaymentReceived(address from, uint256 amount);
 
+    using SafeERC20 for IERC20;
+
     uint256 private _totalReleased;
 
     mapping(address => uint256) private _released;

@@ -70,14 +70,12 @@ contract ChessFishTournament {
     /// @dev uint tournamentID = > address player => wins
     mapping(uint => mapping(address => uint)) public tournamentWins;
 
-    address public ChessWagerAddress;
-    address public PaymentSplitter;
-    address public deployer;
+    address public immutable ChessWagerAddress;
+    address public immutable PaymentSplitter;
 
     constructor(address _chessWager, address _paymentSplitter) {
         ChessWagerAddress = _chessWager;
         PaymentSplitter = _paymentSplitter;
-        deployer = msg.sender;
     }
 
     /* 

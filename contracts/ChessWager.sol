@@ -19,8 +19,6 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./interfaces/interfaces.sol";
 import "./MoveHelper.sol";
 
-import "hardhat/console.sol";
-
 /**
  * @title ChessFish ChessWager Contract
  * @author ChessFish
@@ -292,7 +290,7 @@ contract ChessWager is MoveHelper {
     }
 
     /* 
-    //// Tournament functions ////
+    //// TOURNAMENT FUNCTIONS ////
     */
 
     // Tournament Contract Address
@@ -536,7 +534,7 @@ contract ChessWager is MoveHelper {
         gameWagers[wagerAddress] = gameWager;
 
         // first player to challenge is black since randomness is impossible
-        // but each subsequent game players switch colors
+        // each subsequent game players switch colors
         WagerStatus memory status = WagerStatus(false, 0, 0);
         wagerStatus[wagerAddress] = status;
 
@@ -640,13 +638,10 @@ contract ChessWager is MoveHelper {
             winner = gameWagers[wagerAddress].player1;
         }
 
-        console.log(winner);
-
         address token = gameWagers[wagerAddress].wagerToken;
         uint wagerAmount = gameWagers[wagerAddress].wager * 2;
         uint prize = wagerPrizes[wagerAddress];
 
-        // Set amounts to 0
         gameWagers[wagerAddress].wager = 0;
         wagerPrizes[wagerAddress] = 0;
 
@@ -659,9 +654,6 @@ contract ChessWager is MoveHelper {
 
         // Mint NFT for Winner
         IChessFishNFT(ChessFishNFT).awardWinner(winner, wagerAddress);
-
-        console.log(shareHolderFee);
-        console.log(wagerPayout);
 
         emit payoutWagerEvent(wagerAddress, winner, token, wagerPayout, protocolFee);
 
