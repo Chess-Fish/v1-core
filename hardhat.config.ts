@@ -61,7 +61,7 @@ function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
             jsonRpcUrl = "https://sepolia-rollup.arbitrum.io/rpc";
             break;
         case "arb_goerli":
-            jsonRpcUrl = "https://sepolia-rollup.arbitrum.io/rpc";
+            jsonRpcUrl = "https://arbitrum-goerli.publicnode.com";
             break;
         case "chiado":
             jsonRpcUrl = "https://rpc.chiado.gnosis.gateway.fm";
