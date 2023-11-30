@@ -45,6 +45,7 @@ contract ChessWager is MoveHelper {
         uint timePlayer1;
         bool isTournament;
         bool isComplete;
+        bool hasBeenPaid;
     }
 
     struct WagerStatus {
@@ -331,11 +332,12 @@ contract ChessWager is MoveHelper {
             numberOfGames,
             true, // hasPlayerAccepted
             timeLimit,
-            0, // timeLastMove // setting to zero since tournament hasn't started
+            0, // timeLastMove => setting to zero since tournament hasn't started
             0, // timePlayer0
             0, // timePlayer1
             true, // isTournament
-            false // isComplete
+            false, // isComplete
+            false // hasBeenPaid
         );
         wagerAddress = getWagerAddress(gameWager);
 
@@ -424,7 +426,7 @@ contract ChessWager is MoveHelper {
         moveData.player1 = player1;
 
         for (uint i = 0; i < messages.length; ) {
-            // Determine signer based on the move index
+            /// @dev determine signer based on the move index
             moveData.signer = (i % 2 == 0) == (playerToMove == moveData.player0) ? moveData.player0 : moveData.player1;
 
             (, moveData.move, moveData.moveNumber, moveData.expiration) = decodeMoveMessage(messages[i]);
@@ -530,7 +532,8 @@ contract ChessWager is MoveHelper {
             0, // timePlayer0
             0, // timePlayer1
             false, // isTournament
-            false // isComplete
+            false, // isComplete
+            false // hasBeenPaid
         );
 
         IERC20(wagerToken).safeTransferFrom(msg.sender, address(this), wager);
@@ -630,6 +633,9 @@ contract ChessWager is MoveHelper {
         );
         require(gameWagers[wagerAddress].isComplete == true, "wager not finished");
         require(gameWagers[wagerAddress].isTournament == false, "tournament payment handled by tournament contract");
+        require(gameWagers[wagerAddress].hasBeenPaid == false, "already paid");
+
+        gameWagers[wagerAddress].hasBeenPaid = true; 
 
         address winner;
 

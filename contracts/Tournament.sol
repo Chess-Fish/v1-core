@@ -350,7 +350,6 @@ contract ChessFishTournament {
         for (uint16 i = 0; i < payoutProfile.length; ) {
             uint payout = (poolSize * payoutProfile[i]) / 1000;
 
-            /// @dev is this if statement needed?
             if (payout > 0) {
                 IERC20(payoutToken).safeTransfer(playersSorted[i], payout);
                 poolRemaining -= payout;

@@ -189,7 +189,7 @@ describe("evm_chess Wager Unit Tests", function () {
         };
     }
 
-    describe("Gasless Game Verification Unit Tests", function () {
+    describe("Gasless Game Verification Unit Tests - Partially Gasless", function () {
         it("Should play game", async function () {
             const { chess, chessFishToken, paymentSplitter, deployer, otherAccount, token, chessNFT } =
                 await loadFixture(deploy);

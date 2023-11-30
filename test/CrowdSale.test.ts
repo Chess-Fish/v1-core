@@ -15,7 +15,7 @@ describe("Crowdsale tests", function () {
 
         await usdc.transfer(otherAccount.address, ethers.utils.parseUnits("150000", 6));
 
-        const value = ethers.utils.parseUnits("2", 18);
+        const value = ethers.utils.parseUnits("0.31459", 18);
 
         const CROWDSALE = await ethers.getContractFactory("CrowdSale");
         const crowdsale = await CROWDSALE.deploy(chessToken.address, usdc.address, value);
@@ -62,7 +62,7 @@ describe("Crowdsale tests", function () {
         await crowdsale.connect(otherAccount).getChessFishTokens(usdcIn);
         const recievedTokens = await chessToken.balanceOf(otherAccount.address);
 
-        expect(recievedTokens).to.equal(ethers.utils.parseUnits("200", 18));
+        expect(recievedTokens).to.equal(ethers.utils.parseUnits("31.459", 18));
     });
 
     it("Should withdraw", async function () {
@@ -84,7 +84,7 @@ describe("Crowdsale tests", function () {
         await crowdsale.connect(otherAccount).getChessFishTokens(usdcIn);
         const recievedTokens = await chessToken.balanceOf(otherAccount.address);
 
-        expect(recievedTokens).to.equal(ethers.utils.parseUnits("200", 18));
+        expect(recievedTokens).to.equal(ethers.utils.parseUnits("31.459", 18));
 
         const bal0 = await usdc.balanceOf(deployer.address);
         await crowdsale.connect(deployer).withdrawERC20(usdc.address);
@@ -114,7 +114,7 @@ describe("Crowdsale tests", function () {
         await crowdsale.connect(otherAccount).getChessFishTokens(usdcIn);
         const recievedTokens = await chessToken.balanceOf(otherAccount.address);
 
-        expect(recievedTokens).to.equal(ethers.utils.parseUnits("300000", 18));
+        expect(recievedTokens).to.equal(ethers.utils.parseUnits("47188.5", 18));
 
         const bal0 = await usdc.balanceOf(deployer.address);
         await crowdsale.connect(deployer).withdrawERC20(usdc.address);
