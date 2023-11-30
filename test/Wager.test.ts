@@ -767,7 +767,6 @@ describe("evm_chess Wager Unit Tests", function () {
             expect(numberOfWagers).to.equal(1);
         });
 
-
         it("Should test cancel wager", async function () {
             const { chess, deployer, otherAccount, token } = await loadFixture(deploy);
 

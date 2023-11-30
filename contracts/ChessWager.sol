@@ -161,7 +161,7 @@ contract ChessWager is MoveHelper {
     /// @notice Get Wager Status
     /// @dev returns the status of the wager
     /// @return (address, address, uint, uint) address player0, address player1, winsPlayer0, winsPlayer1
-    function getWagerStatus(address wagerAddress) external view returns (address, address, uint, uint) {
+    function getWagerStatus(address wagerAddress) public view returns (address, address, uint, uint) {
         return (
             gameWagers[wagerAddress].player0,
             gameWagers[wagerAddress].player1,
@@ -635,7 +635,7 @@ contract ChessWager is MoveHelper {
         require(gameWagers[wagerAddress].isTournament == false, "tournament payment handled by tournament contract");
         require(gameWagers[wagerAddress].hasBeenPaid == false, "already paid");
 
-        gameWagers[wagerAddress].hasBeenPaid = true; 
+        gameWagers[wagerAddress].hasBeenPaid = true;
 
         address winner;
 
@@ -672,6 +672,25 @@ contract ChessWager is MoveHelper {
         emit payoutWagerEvent(wagerAddress, winner, token, wagerPayout, protocolFee);
 
         return true;
+    }
+
+    /// @notice mint tournament winner NFT
+    function mintWinnerNFT(address wagerAddress) external {
+        require(gameWagers[wagerAddress].isComplete == true, "wager not finished");
+        require(gameWagers[wagerAddress].hasBeenPaid == false, "already paid");
+
+        gameWagers[wagerAddress].hasBeenPaid == true;
+
+        (address player0, address player1, uint wins0, uint wins1) = getWagerStatus(wagerAddress);
+
+        address winner;
+        if (wins0 > wins1) {
+            winner = player0;
+        } else {
+            winner = player1;
+        }
+
+        IChessFishNFT(ChessFishNFT).awardWinner(winner, wagerAddress);
     }
 
     /// @notice Cancel wager

@@ -295,7 +295,7 @@ describe("evm_chess Tournament Unit Tests", function () {
         });
 
         it("Should start tournament and play games", async function () {
-            const { chess, tournament, player0, player1, player2, token } = await loadFixture(deploy);
+            const { chess, tournament, chessNFT, player0, player1, player2, token } = await loadFixture(deploy);
 
             let numberOfPlayers = 3;
             let wagerToken = token.address;
@@ -418,6 +418,18 @@ describe("evm_chess Tournament Unit Tests", function () {
 
             let isComplete = (await tournament.tournaments(tournamentNonce - 1)).isComplete;
             expect(isComplete).to.equal(true);
+
+            for (let i = 0; i < wagerAddresses.length; i++) {
+                await chess.mintWinnerNFT(wagerAddresses[i]);
+            }
+
+            let bal0 = await chessNFT.balanceOf(player0.address);
+            let bal1 = await chessNFT.balanceOf(player1.address);
+            let bal2 = await chessNFT.balanceOf(player2.address);
+
+            expect(bal0).to.equal(2);
+            expect(bal1).to.equal(1);
+            expect(bal2).to.equal(0);
         });
 
         it("Should start tournament and play games 5 players", async function () {
