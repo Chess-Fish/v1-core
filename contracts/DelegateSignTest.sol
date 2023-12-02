@@ -7,23 +7,11 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "hardhat/console.sol";
 
 contract DelegatedSignature {
-    struct DelegatedSignatures {
-        address delegatorAddress;
-        address delegatedAddress;
-    }
-    mapping(uint => DelegatedSignatures) public delegatedAddresses;
-
-    uint public counter = 0;
 
     mapping(address => uint) public userData; // on chain data
 
-    function setDelegatedAddress(address delegatedAddress) public {
-        uint id = counter++;
-        DelegatedSignatures memory data = DelegatedSignatures(msg.sender, delegatedAddress);
-        delegatedAddresses[id] = data;
-    }
-
-    /*     function setUserData(address user ) public {
+    /*     
+    function setUserData(address user ) public {
         if (user == msg.sender) {
             // continue
             userData[user] = data;
@@ -31,7 +19,8 @@ contract DelegatedSignature {
             // check if delegated signer
 
         }
-    } */
+    } 
+    */
 
     // DELEGATED SIGNER FUNCTIONS
 
