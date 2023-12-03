@@ -50,7 +50,7 @@ describe("ChessFish Delegate Sign Tests", function () {
 
             // 2) sign new public key (address) string with signer0
             const delegatedAddress = wallet.address.toString();
-            const hashedDelegatedAddresss = await delegatedSignature.generateHash(delegatedAddress);
+            const hashedDelegatedAddresss = await delegatedSignature.hashDelegatedAddress(delegatedAddress);
             const signedDelegatedAddressHash = await signer0.signMessage(
                 ethers.utils.arrayify(hashedDelegatedAddresss)
             );
@@ -81,7 +81,7 @@ describe("ChessFish Delegate Sign Tests", function () {
 
             // 2) sign new public key (address) string with signer0
             const delegatedAddress = delegatedSigner.address.toString();
-            const hashedDelegatedAddresss = await delegatedSignature.generateHash(delegatedAddress);
+            const hashedDelegatedAddresss = await delegatedSignature.hashDelegatedAddress(delegatedAddress);
             const signedDelegatedAddressHash = await signer0.signMessage(
                 ethers.utils.arrayify(hashedDelegatedAddresss)
             );

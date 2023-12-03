@@ -8,14 +8,12 @@ contract DelegatedSignature {
     // gameAddress => uint16 moves
     mapping(address => uint16[]) public userData; // on chain data
 
-    // DELEGATED SIGNER FUNCTIONS
+    // AUTHORIZE DELEGATED SIGNER FUNCTIONS
+
     function getEthSignedMessageHash(bytes32 _messageHash) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _messageHash));
     }
 
-    function generateHash(address delegator) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(delegator));
-    }
 
     function verifyDelegatedAddress(
         bytes32 delegatedAddressBytes,
@@ -23,8 +21,8 @@ contract DelegatedSignature {
         address delegatorAddress,
         address delegatedAddress
     ) public pure {
-        bytes32 delegatedHash = generateHash(delegatedAddress);
-        require(delegatedHash == delegatedAddressBytes);
+        bytes32 delegatedAddressHash = hashDelegatedAddress(delegatedAddress);
+        require(delegatedAddressHash == delegatedAddressBytes);
 
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(delegatedAddressBytes);
         require(ECDSA.recover(ethSignedMessageHash, signature) == delegatorAddress, "Delegated signature verification failed");
@@ -43,6 +41,10 @@ contract DelegatedSignature {
         return abi.decode(delegation, (bytes32, bytes, address, address));
     }
 
+    function hashDelegatedAddress(address delegator) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(delegator));
+    }
+
     function verifyDelegation(bytes memory delegation) public pure returns (address, address) {
         (
             bytes32 delegatedAddressBytes,
@@ -55,6 +57,8 @@ contract DelegatedSignature {
 
         return (delegatorAddress, delegatedAddress);
     }
+
+    // DELEGATED SIGNER FUNCTIONS
 
     function writeToStateOnBehalfOfDelegator(
         bytes memory delegation,
