@@ -2,20 +2,26 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-import crypto from 'crypto';
+import crypto from "crypto";
 
-function generateRandomHash(): string {
-  // Generate a random number (64-bit) using Node.js crypto
-  const randomBytes = crypto.randomBytes(8);
-  const randomNumber = randomBytes.readBigUInt64LE();
+function generateRandomHash() {
+    // Generate a random number (64-bit) using Node.js crypto
+    const randomBytes = crypto.randomBytes(8);
+    const randomNumber = randomBytes.readBigUInt64LE();
 
-  // Convert the random number to a hexadecimal string
-  const randomHex = randomNumber.toString(16);
+    // Convert the random number to a hexadecimal string
+    const randomHex = randomNumber.toString(16);
 
-  // Create a hash (SHA-256) from the hexadecimal string
-  const hash = crypto.createHash('sha256').update(randomHex).digest('hex');
+    // Get the current timestamp in milliseconds
+    const timestamp = Date.now().toString();
 
-  return hash;
+    // Append the timestamp to the random hexadecimal string
+    const combinedString = randomHex + timestamp;
+
+    // Create a hash (SHA-256) from the combined string
+    const hash = crypto.createHash("sha256").update(combinedString).digest("hex");
+
+    return hash;
 }
 
 describe("ChessFish Delegate Sign Tests", function () {
@@ -49,10 +55,10 @@ describe("ChessFish Delegate Sign Tests", function () {
                 ethers.utils.arrayify(hashedDelegatedAddresss)
             );
 
-            // 4) verify that the signer0 signed the hash of the delegated address
-            // await delegatedSignature.verifyDelegatedAddress(hashedDelegatedAddresss, signedDelegatedAddressHash, signer0.address , delegatedAddress);
+            // 3) verify that the signer0 signed the hash of the delegated address
+            await delegatedSignature.verifyDelegatedAddress(hashedDelegatedAddresss, signedDelegatedAddressHash, signer0.address , delegatedAddress);
 
-            // 5) create delegation abstraction
+            // 4) create delegation abstraction
             const delegationData = await delegatedSignature.encodeDelegation(
                 hashedDelegatedAddresss,
                 signedDelegatedAddressHash,
@@ -60,20 +66,51 @@ describe("ChessFish Delegate Sign Tests", function () {
                 delegatedAddress
             );
 
-            // 6) sign data with delegated address
-            
-
-
             // 5) update state using the delegation abstraction
-            await delegatedSignature.writeToStateOnBehalfOfDelegator(delegationData, 5);
+            await delegatedSignature.verifyDelegation(delegationData);
 
-            const userData = await delegatedSignature.userData(signer0.address);
+        });
 
-            expect(userData).to.equal(5);
+        it("Should test delegation, sign move with delegator, and write to state", async function () {
+            const { signer0, signer1, delegatedSignature } = await loadFixture(deploy);
 
-            // let tx = await delegatedSignature.getSigner(delegator, signature);
+            // ON THE FRONT END:
+            // 1) Generate random public private key pair
+            const entropy = generateRandomHash();
+            const delegatedSigner = ethers.Wallet.createRandom(entropy);
 
-            // console.log(tx);
+            // 2) sign new public key (address) string with signer0
+            const delegatedAddress = delegatedSigner.address.toString();
+            const hashedDelegatedAddresss = await delegatedSignature.generateHash(delegatedAddress);
+            const signedDelegatedAddressHash = await signer0.signMessage(
+                ethers.utils.arrayify(hashedDelegatedAddresss)
+            );
+
+            // 3) create delegation abstraction
+            const delegationData = await delegatedSignature.encodeDelegation(
+                hashedDelegatedAddresss,
+                signedDelegatedAddressHash,
+                signer0.address,
+                delegatedAddress
+            );
+
+            // 4) sign game data with delegated address
+            const gameAddress = ethers.constants.AddressZero;
+            const move = 731;
+            const gameNumber = 0;
+            const expiration = 1;
+
+            const moveMessage = await delegatedSignature.encodeMoveData(gameAddress, move, gameNumber, expiration);
+            const moveDataHash = await delegatedSignature.hashMoveData(gameAddress, move, gameNumber, expiration);
+            const signedMoveData = await delegatedSigner.signMessage(
+                ethers.utils.arrayify(moveDataHash)
+            );
+            
+            await delegatedSignature.writeToStateOnBehalfOfDelegator(delegationData, moveMessage, signedMoveData);
+
+            // 5) check state update
+            let moveData = await delegatedSignature.userData(gameAddress, 0);
+            expect(moveData).to.equal(move);
         });
     });
 });
