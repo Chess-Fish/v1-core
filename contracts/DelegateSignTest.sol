@@ -79,7 +79,7 @@ contract DelegatedSignature {
         userData[gameAddress] = newMoves;
     }
 
-    function checkDelegation(bytes[2] memory delegations) internal {
+    function checkDelegation(bytes[2] memory delegations) internal pure {
         (, address delegatedAddress0) = verifyDelegation(delegations[0]);
         (, address delegatedAddress1) = verifyDelegation(delegations[1]);
 
