@@ -2,6 +2,8 @@
 
 pragma solidity ^0.8.22;
 
+import "./ChessWager.sol";
+
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract DelegatedSignature {
@@ -9,11 +11,6 @@ contract DelegatedSignature {
     mapping(address => uint16[]) public userData; // on chain data
 
     // AUTHORIZE DELEGATED SIGNER FUNCTIONS
-
-    function getEthSignedMessageHash(bytes32 _messageHash) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _messageHash));
-    }
-
 
     function verifyDelegatedAddress(
         bytes32 delegatedAddressBytes,
@@ -25,7 +22,10 @@ contract DelegatedSignature {
         require(delegatedAddressHash == delegatedAddressBytes);
 
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(delegatedAddressBytes);
-        require(ECDSA.recover(ethSignedMessageHash, signature) == delegatorAddress, "Delegated signature verification failed");
+        require(
+            ECDSA.recover(ethSignedMessageHash, signature) == delegatorAddress,
+            "Delegated signature verification failed"
+        );
     }
 
     function encodeDelegation(
@@ -70,7 +70,7 @@ contract DelegatedSignature {
 
         bytes32 moveDataHash = hashMoveData(gameAddress, move, gameNumber, expiration);
 
-        verifyMove(moveDataHash, moveSignature, delegatedAddress);   
+        verifyMove(moveDataHash, moveSignature, delegatedAddress);
 
         uint moveLength = userData[gameAddress].length;
         uint16[] memory newMoves = new uint16[](moveLength + 1);
@@ -78,6 +78,36 @@ contract DelegatedSignature {
         newMoves[moveLength] = move;
         userData[gameAddress] = newMoves;
     }
+
+    function checkDelegation(bytes[2] memory delegations) internal {
+        (, address delegatedAddress0) = verifyDelegation(delegations[0]);
+        (, address delegatedAddress1) = verifyDelegation(delegations[1]);
+
+        require(delegatedAddress0 == delegatedAddress1, "non matching");
+    }
+
+    /*     function verifyGameUpdateStateDelegated(
+        bytes[2] memory delegations,
+        bytes[] memory moveData,
+        bytes[] memory moveSignature
+    ) public {
+
+        // check delegations
+        checkDelegation(delegations);
+
+        // (, address delegatedAddress) = verifyDelegation(delegation);
+        (address gameAddress, uint16 move, uint gameNumber, uint expiration) = decodeMoveData(moveData);
+
+        bytes32 moveDataHash = hashMoveData(gameAddress, move, gameNumber, expiration);
+
+        // verifyMove(moveDataHash, moveSignature, delegatedAddress);
+
+        uint moveLength = userData[gameAddress].length;
+        uint16[] memory newMoves = new uint16[](moveLength + 1);
+
+        newMoves[moveLength] = move;
+        userData[gameAddress] = newMoves;
+    } */
 
     function encodeMoveData(
         address gameAddress,
@@ -92,16 +122,16 @@ contract DelegatedSignature {
         return abi.decode(moveData, (address, uint16, uint, uint));
     }
 
-    function hashMoveData(        
-        address wager,
-        uint16 move,
-        uint moveNumber,
-        uint expiration) public pure returns (bytes32) {
+    function hashMoveData(address wager, uint16 move, uint moveNumber, uint expiration) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(encodeMoveData(wager, move, moveNumber, expiration)));
     }
 
     function verifyMove(bytes32 moveDataHash, bytes memory moveSignature, address delegatorAddress) internal pure {
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(moveDataHash);
         require(ECDSA.recover(ethSignedMessageHash, moveSignature) == delegatorAddress, "invalid sig");
+    }
+
+    function getEthSignedMessageHash(bytes32 _messageHash) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _messageHash));
     }
 }
