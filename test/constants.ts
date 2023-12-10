@@ -1,3 +1,5 @@
+import crypto from "crypto";
+
 export const coordinates_array = [
     "h1",
     "g1",
@@ -130,3 +132,24 @@ export const bitCoordinates_array = [
     "57",
     "56",
 ];
+
+
+export function generateRandomHash() {
+    // Generate a random number (64-bit) using Node.js crypto
+    const randomBytes = crypto.randomBytes(8);
+    const randomNumber = randomBytes.readBigUInt64LE();
+
+    // Convert the random number to a hexadecimal string
+    const randomHex = randomNumber.toString(16);
+
+    // Get the current timestamp in milliseconds
+    const timestamp = Date.now().toString();
+
+    // Append the timestamp to the random hexadecimal string
+    const combinedString = randomHex + timestamp;
+
+    // Create a hash (SHA-256) from the combined string
+    const hash = crypto.createHash("sha256").update(combinedString).digest("hex");
+
+    return hash;
+}

@@ -512,8 +512,17 @@ contract ChessWager is MoveHelper {
     //// DELEGATED GASLESS MOVE VERIFICATION FUNCTIONS ////
     */
 
-    function hashDelegatedAddress(address delegator) internal pure returns (bytes32) {
+    function hashDelegatedAddress(address delegator) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(delegator));
+    }
+
+    function encodeDelegation(
+        bytes32 delegatedAddressBytes,
+        bytes memory signature,
+        address delegatorAddress,
+        address delegatedAddress
+    ) external pure returns (bytes memory) {
+        return abi.encode(delegatedAddressBytes, signature, delegatorAddress, delegatedAddress);
     }
 
     function decodeDelegation(bytes memory delegation) internal pure returns (bytes32, bytes memory, address, address) {
@@ -545,7 +554,7 @@ contract ChessWager is MoveHelper {
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(delegatedAddressBytes);
         require(
             ECDSA.recover(ethSignedMessageHash, signature) == delegatorAddress,
-            "Delegated signature verification failed"
+            "557"
         );
     }
 
@@ -553,15 +562,15 @@ contract ChessWager is MoveHelper {
         (, address delegatedAddress0) = verifyDelegation(delegations[0]);
         (, address delegatedAddress1) = verifyDelegation(delegations[1]);
 
-        require(delegatedAddress0 == delegatedAddress1, "non matching");
+        require(delegatedAddress0 == delegatedAddress1, "565");
     }
 
     function verifyGameViewDelegated(
         bytes[2] memory delegations,
         bytes[] memory messages,
         bytes[] memory signatures
-    ) internal view returns (address wagerAddress, uint8 outcome, uint16[] memory moves) {
-        require(messages.length == signatures.length, "msg.len == sig.len");
+    ) external view returns (address wagerAddress, uint8 outcome, uint16[] memory moves) {
+        require(messages.length == signatures.length, "573");
 
         checkDelegation(delegations);
 
