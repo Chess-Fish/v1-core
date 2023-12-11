@@ -14,7 +14,7 @@
 /// @author ChessFish
 /// @notice https://github.com/Chess-Fish
 
-pragma solidity ^0.8.22;
+pragma solidity ^0.8.23;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";

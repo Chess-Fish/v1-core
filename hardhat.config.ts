@@ -115,7 +115,7 @@ const config: HardhatUserConfig = {
         apiKey: process.env.ARBITRUM_API_KEY,
     },
     solidity: {
-        version: "0.8.22",
+        version: "0.8.23",
         settings: {
             metadata: {
                 // Not including the metadata hash

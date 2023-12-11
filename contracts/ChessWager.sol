@@ -10,7 +10,7 @@
                              
 */
 
-pragma solidity ^0.8.22;
+pragma solidity ^0.8.23;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -110,12 +110,12 @@ contract ChessWager is MoveHelper {
         address _GaslessGame
     ) {
         moveVerification = MoveVerification(moveVerificationAddress);
+        gaslessGame = GaslessGame(_GaslessGame);
+
         initPieces();
 
         DividendSplitter = _DividendSplitter;
         ChessFishNFT = _ChessFishNFT;
-
-        gaslessGame = GaslessGame(_GaslessGame);
 
         deployer = msg.sender;
     }
