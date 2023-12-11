@@ -531,13 +531,13 @@ contract ChessWager is MoveHelper {
     /// @notice Verifies game moves and updates the state of the wager
     function verifyGameUpdateStateDelegated(
         bytes[2] memory delegations,
-        bytes[] memory message,
-        bytes[] memory signature
+        bytes[] memory messages,
+        bytes[] memory signatures
     ) external returns (bool) {
         (address wagerAddress, uint outcome, uint16[] memory moves) = gaslessGame.verifyGameViewDelegated(
             delegations,
-            message,
-            signature
+            messages,
+            signatures
         );
 
         uint gameID = gameIDs[wagerAddress].length;

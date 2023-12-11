@@ -27,13 +27,18 @@ describe("Delegated Signed Gasless Game Unit Tests", function () {
         const MoveVerification = await ethers.getContractFactory("MoveVerification");
         const moveVerification = await MoveVerification.deploy();
 
+        const GaslessGame = await ethers.getContractFactory("GaslessGame");
+        const gaslessGame = await GaslessGame.deploy(moveVerification.address);
+
         const ChessWager = await ethers.getContractFactory("ChessWager");
         const chess = await ChessWager.deploy(
             moveVerification.address,
-            chessFishToken.address,
+            gaslessGame.address,
             paymentSplitter.address,
             chessNFT.address
         );
+
+        await gaslessGame.setChessWager(chess.address);
 
         const amount = ethers.utils.parseEther("100");
         await token.transfer(signer1.address, amount);
@@ -47,6 +52,7 @@ describe("Delegated Signed Gasless Game Unit Tests", function () {
 
         return {
             chess,
+            gaslessGame,
             chessFishToken,
             paymentSplitter,
             chessNFT,
@@ -61,9 +67,7 @@ describe("Delegated Signed Gasless Game Unit Tests", function () {
 
     describe("Gasless Delegated Game Verification Unit Tests", function () {
         it("Should play game", async function () {
-            const { chess, chessFishToken, paymentSplitter, signer0, signer1, token, chessNFT } = await loadFixture(
-                deploy
-            );
+            const { chess, gaslessGame, signer0, signer1, token } = await loadFixture(deploy);
 
             let player1 = signer1.address;
             let wagerToken = token.address;
@@ -92,13 +96,13 @@ describe("Delegated Signed Gasless Game Unit Tests", function () {
 
             // 2) sign new public key (address) string with signer0
             const delegatedAddress0 = delegatedSigner0.address.toString();
-            const hashedDelegatedAddresss0 = await chess.hashDelegatedAddress(delegatedAddress0);
+            const hashedDelegatedAddresss0 = await gaslessGame.hashDelegatedAddress(delegatedAddress0);
             const signedDelegatedAddressHash0 = await signer0.signMessage(
                 ethers.utils.arrayify(hashedDelegatedAddresss0)
             );
 
             // 4) create delegation abstraction
-            const delegationData0 = await chess.encodeDelegation(
+            const delegationData0 = await gaslessGame.encodeDelegation(
                 hashedDelegatedAddresss0,
                 signedDelegatedAddressHash0,
                 signer0.address,
@@ -112,18 +116,21 @@ describe("Delegated Signed Gasless Game Unit Tests", function () {
 
             // 2) sign new public key (address) string with signer0
             const delegatedAddress1 = delegatedSigner1.address.toString();
-            const hashedDelegatedAddresss1 = await chess.hashDelegatedAddress(delegatedAddress1);
+            const hashedDelegatedAddresss1 = await gaslessGame.hashDelegatedAddress(delegatedAddress1);
             const signedDelegatedAddressHash1 = await signer1.signMessage(
                 ethers.utils.arrayify(hashedDelegatedAddresss1)
             );
 
             // 4) create delegation abstraction
-            const delegationData1 = await chess.encodeDelegation(
+            const delegationData1 = await gaslessGame.encodeDelegation(
                 hashedDelegatedAddresss1,
                 signedDelegatedAddressHash1,
                 signer1.address,
                 delegatedAddress1
             );
+
+            console.log(signer0.address, signer1.address);
+            console.log(delegatedAddress0, delegatedAddress1);
 
             // const moves = ["f2f3", "e7e5", "g2g4", "d8h4"]; // fool's mate
             const moves = ["e2e4", "f7f6", "d2d4", "g7g5", "d1h5"]; // reversed fool's mate
@@ -148,29 +155,37 @@ describe("Delegated Signed Gasless Game Unit Tests", function () {
                 let playerAddress = await chess.getPlayerMove(gameAddr);
                 let startingPlayer = playerAddress === signer1.address ? delegatedSigner1 : delegatedSigner0;
 
+                let playerAddresses: any[] = [];
                 for (let i = 0; i < moves.length; i++) {
                     let player;
                     if (i % 2 == 0) {
                         player = startingPlayer;
                     } else {
-                        player = startingPlayer.address === signer1.address ? delegatedSigner0 : delegatedSigner1;
+                        player =
+                            startingPlayer.address === delegatedSigner1.address ? delegatedSigner0 : delegatedSigner1;
                     }
+
+                    // if (player.address)
 
                     const hex_move = await chess.moveToHex(moves[i]);
 
-                    const message = await chess.generateMoveMessage(gameAddr, hex_move, i, timeStamp);
+                    const message = await gaslessGame.generateMoveMessage(gameAddr, hex_move, i, timeStamp);
                     messageArray.push(message);
 
-                    const messageHash = await chess.getMessageHash(gameAddr, hex_move, i, timeStamp);
+                    const messageHash = await gaslessGame.getMessageHash(gameAddr, hex_move, i, timeStamp);
                     messageHashesArray.push(messageHash);
 
                     const signature = await player.signMessage(ethers.utils.arrayify(messageHash));
                     signatureArray.push(signature);
-                }
 
+                    console.log("playeradd", player.address);
+                    playerAddresses.push(player.address);
+                }
+                console.log("_____");
+                console.log(playerAddresses);
                 const delegations = [delegationData0, delegationData1];
 
-                await chess.verifyGameViewDelegated(delegations, messageArray, signatureArray);
+                await chess.verifyGameUpdateStateDelegated(delegations, messageArray, signatureArray);
             }
 
             const wins = await chess.wagerStatus(gameAddr);

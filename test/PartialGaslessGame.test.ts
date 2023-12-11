@@ -66,8 +66,7 @@ describe("evm_chess Wager Unit Tests", function () {
 
     describe("Gasless Game Verification Unit Tests - Partially Gasless", function () {
         it("Should play game", async function () {
-            const { chess, gaslessGame, deployer, otherAccount, token, chessNFT } =
-                await loadFixture(deploy);
+            const { chess, gaslessGame, deployer, otherAccount, token, chessNFT } = await loadFixture(deploy);
 
             let player1 = otherAccount.address;
             let wagerToken = token.address;

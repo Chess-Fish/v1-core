@@ -19,6 +19,8 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./MoveVerification.sol";
 import "./ChessWager.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @title ChessFish GaslessGame Contract
  * @author ChessFish
@@ -101,6 +103,13 @@ contract GaslessGame {
     /// @notice Validates that the signed hash was signed by the player
     function validate(bytes32 messageHash, bytes memory signature, address signer) internal pure {
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
+
+        if (ECDSA.recover(ethSignedMessageHash, signature) != signer) {
+            console.log("________");
+            console.log(ECDSA.recover(ethSignedMessageHash, signature));
+            console.log(signer);
+        }
+
         require(ECDSA.recover(ethSignedMessageHash, signature) == signer, "invalid sig");
     }
 
@@ -164,13 +173,10 @@ contract GaslessGame {
         address playerToMove = chessWager.getPlayerMove(wagerAddress);
 
         (address player0, address player1) = chessWager.getWagerPlayers(wagerAddress);
-        // address player0 = chessWager.gameWagers[wagerAddress].player0;
-        // address player1 = chessWager.gameWagers[wagerAddress].player1;
 
         moves = verifyMoves(playerToMove, player0, player1, messages, signatures);
 
         // appending moves to onChainMoves if they exist
-        // uint16[] memory onChainMoves = chessWager.games[wagerAddress][chessWager.gameIDs[wagerAddress].length].moves;
         uint16[] memory onChainMoves = chessWager.getLatestGameMoves(wagerAddress);
 
         if (onChainMoves.length > 0) {
@@ -210,7 +216,7 @@ contract GaslessGame {
         return abi.decode(delegation, (bytes32, bytes, address, address));
     }
 
-    function verifyDelegation(bytes memory delegation) public pure returns (address, address) {
+    function verifyDelegation(bytes memory delegation) public pure {
         (
             bytes32 delegatedAddressBytes,
             bytes memory signature,
@@ -219,8 +225,6 @@ contract GaslessGame {
         ) = decodeDelegation(delegation);
 
         verifyDelegatedAddress(delegatedAddressBytes, signature, delegatorAddress, delegatedAddress);
-
-        return (delegatorAddress, delegatedAddress);
     }
 
     function verifyDelegatedAddress(
@@ -237,10 +241,8 @@ contract GaslessGame {
     }
 
     function checkDelegation(bytes[2] memory delegations) internal pure {
-        (, address delegatedAddress0) = verifyDelegation(delegations[0]);
-        (, address delegatedAddress1) = verifyDelegation(delegations[1]);
-
-        require(delegatedAddress0 == delegatedAddress1, "565");
+        verifyDelegation(delegations[0]);
+        verifyDelegation(delegations[1]);
     }
 
     function verifyGameViewDelegated(
@@ -257,8 +259,12 @@ contract GaslessGame {
 
         address playerToMove = chessWager.getPlayerMove(wagerAddress);
 
-        (, , address player0, ) = decodeDelegation(delegations[0]);
-        (, , address player1, ) = decodeDelegation(delegations[1]);
+        (, , , address player0) = decodeDelegation(delegations[0]);
+        (, , , address player1) = decodeDelegation(delegations[1]);
+
+        console.log("GAME");
+        console.log(player0);
+        console.log(player1);
 
         moves = verifyMoves(playerToMove, player0, player1, messages, signatures);
 
