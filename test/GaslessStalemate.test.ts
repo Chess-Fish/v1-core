@@ -5,7 +5,6 @@ import { ethers } from "hardhat";
 import { coordinates_array, bitCoordinates_array } from "./constants";
 
 describe("evm_chess gasless stalemate unit test", function () {
-    // We define a fixture to reuse the same setup in every test.
     async function deploy() {
         const [deployer, otherAccount] = await ethers.getSigners();
 
@@ -26,16 +25,21 @@ describe("evm_chess gasless stalemate unit test", function () {
         const MoveVerification = await ethers.getContractFactory("MoveVerification");
         const moveVerification = await MoveVerification.deploy();
 
+        const GaslessGame = await ethers.getContractFactory("GaslessGame");
+        const gaslessGame = await GaslessGame.deploy(moveVerification.address);
+
         const ChessWager = await ethers.getContractFactory("ChessWager");
         const chess = await ChessWager.deploy(
             moveVerification.address,
-            chessFishToken.address,
+            gaslessGame.address,
             paymentSplitter.address,
             chessNFT.address
         );
 
+        await gaslessGame.setChessWager(chess.address);
+
         const amount = ethers.utils.parseEther("100");
-        const tx = await token.transfer(otherAccount.address, amount);
+        await token.transfer(otherAccount.address, amount);
 
         await chess.initCoordinates(coordinates_array, bitCoordinates_array);
         await chessNFT.setChessFishAddress(chess.address);
@@ -46,6 +50,7 @@ describe("evm_chess gasless stalemate unit test", function () {
 
         return {
             chess,
+            gaslessGame,
             chessFishToken,
             paymentSplitter,
             chessNFT,

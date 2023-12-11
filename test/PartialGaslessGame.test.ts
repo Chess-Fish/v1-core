@@ -26,10 +26,13 @@ describe("evm_chess Wager Unit Tests", function () {
         const MoveVerification = await ethers.getContractFactory("MoveVerification");
         const moveVerification = await MoveVerification.deploy();
 
+        const GaslessGame = await ethers.getContractFactory("GaslessGame");
+        const gaslessGame = await GaslessGame.deploy(moveVerification.address);
+
         const ChessWager = await ethers.getContractFactory("ChessWager");
         const chess = await ChessWager.deploy(
             moveVerification.address,
-            chessFishToken.address,
+            gaslessGame.address,
             paymentSplitter.address,
             chessNFT.address
         );
@@ -46,6 +49,7 @@ describe("evm_chess Wager Unit Tests", function () {
 
         return {
             chess,
+            gaslessGame,
             chessFishToken,
             paymentSplitter,
             chessNFT,
