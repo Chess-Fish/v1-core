@@ -66,7 +66,7 @@ describe("evm_chess Wager Unit Tests", function () {
 
     describe("Gasless Game Verification Unit Tests - Partially Gasless", function () {
         it("Should play game", async function () {
-            const { chess, chessFishToken, paymentSplitter, deployer, otherAccount, token, chessNFT } =
+            const { chess, gaslessGame, deployer, otherAccount, token, chessNFT } =
                 await loadFixture(deploy);
 
             let player1 = otherAccount.address;
@@ -133,10 +133,10 @@ describe("evm_chess Wager Unit Tests", function () {
 
                 const hex_move = await chess.moveToHex(moves[i]);
 
-                const message = await chess.generateMoveMessage(gameAddr, hex_move, i, timeStamp);
+                const message = await gaslessGame.generateMoveMessage(gameAddr, hex_move, i, timeStamp);
                 messageArray.push(message);
 
-                const messageHash = await chess.getMessageHash(gameAddr, hex_move, i, timeStamp);
+                const messageHash = await gaslessGame.getMessageHash(gameAddr, hex_move, i, timeStamp);
                 messageHashesArray.push(messageHash);
 
                 const signature = await player.signMessage(ethers.utils.arrayify(messageHash));
