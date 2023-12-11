@@ -37,8 +37,10 @@ describe("evm_chess Wager Unit Tests", function () {
             chessNFT.address
         );
 
+        await gaslessGame.setChessWager(chess.address);
+
         const amount = ethers.utils.parseEther("100");
-        const tx = await token.transfer(otherAccount.address, amount);
+        await token.transfer(otherAccount.address, amount);
 
         await chess.initCoordinates(coordinates_array, bitCoordinates_array);
         await chessNFT.setChessFishAddress(chess.address);

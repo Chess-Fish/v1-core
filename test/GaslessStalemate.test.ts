@@ -2,7 +2,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-import { coordinates_array, bitCoordinates_array } from "./constants";
+import { coordinates_array, bitCoordinates_array, moves_stalemate } from "./constants";
 
 describe("evm_chess gasless stalemate unit test", function () {
     async function deploy() {
@@ -65,7 +65,7 @@ describe("evm_chess gasless stalemate unit test", function () {
 
     describe("Gasless Game Verification Unit Tests - Stalemate", function () {
         it("Should play game", async function () {
-            const { chess, chessFishToken, paymentSplitter, deployer, otherAccount, token, chessNFT } =
+            const { chess, gaslessGame, paymentSplitter, deployer, otherAccount, token, chessNFT } =
                 await loadFixture(deploy);
 
             let player1 = otherAccount.address;
@@ -88,83 +88,6 @@ describe("evm_chess gasless stalemate unit test", function () {
 
             // const moves = ["f2f3", "e7e5", "g2g4", "d8h4"]; // fool's mate
             const moves_checkmate = ["e2e4", "f7f6", "d2d4", "g7g5", "d1h5"]; // reversed fool's mate
-
-            // stalemate 2 kings remaining
-            const moves_stalemate = [
-                "d2d3",
-                "d7d6",
-                "e2e4",
-                "c7c5",
-                "a2a3",
-                "a7a6",
-                "g1f3",
-                "g8f6",
-                "g2g3",
-                "h7h6",
-                "b1c3",
-                "d6d5",
-                "e4d5",
-                "f6d5",
-                "c3d5",
-                "d8d5",
-                "b2b4",
-                "c5b4",
-                "a3b4",
-                "d5f3",
-                "d1f3",
-                "e7e6",
-                "f1g2",
-                "b8c6",
-                "f3c6",
-                "b7c6",
-                "g2c6",
-                "e8e7",
-                "c6a8",
-                "c8b7",
-                "c1h6",
-                "h8h6",
-                "a8b7",
-                "h6h2",
-                "h1h2",
-                "g7g6",
-                "b7a6",
-                "e7f6",
-                "h2h6",
-                "f8h6",
-                "a6c4",
-                "h6g7",
-                "c4e6",
-                "f7e6",
-                "f2f4",
-                "f6f5",
-                "g3g4",
-                "f5g4",
-                "c2c4",
-                "g7a1",
-                "e1f2",
-                "g4f4",
-                "d3d4",
-                "g6g5",
-                "f2e2",
-                "e6e5",
-                "e2d3",
-                "a1d4",
-                "c4c5",
-                "d4c5",
-                "b4c5",
-                "f4f5",
-                "d3e3",
-                "f5e6",
-                "e3f3",
-                "e6d5",
-                "f3g4",
-                "d5c5",
-                "g4g5",
-                "c5b4",
-                "g5f5",
-                "e5e4",
-                "f5e4",
-            ];
 
             // approve chess contract
             await token.connect(otherAccount).approve(chess.address, wager);
@@ -205,16 +128,16 @@ describe("evm_chess gasless stalemate unit test", function () {
 
                     const hex_move = await chess.moveToHex(moves[i]);
 
-                    const message = await chess.generateMoveMessage(gameAddr, hex_move, i, timeStamp);
+                    const message = await gaslessGame.generateMoveMessage(gameAddr, hex_move, i, timeStamp);
                     messageArray.push(message);
 
-                    const messageHash = await chess.getMessageHash(gameAddr, hex_move, i, timeStamp);
+                    const messageHash = await gaslessGame.getMessageHash(gameAddr, hex_move, i, timeStamp);
                     messageHashesArray.push(messageHash);
 
                     const signature = await player.signMessage(ethers.utils.arrayify(messageHash));
                     signatureArray.push(signature);
                 }
-                let data = await chess.verifyGameView(messageArray, signatureArray);
+                let data = await gaslessGame.verifyGameView(messageArray, signatureArray);
                 console.log("OUTCOME", data.outcome);
 
                 await chess.verifyGameUpdateState(messageArray, signatureArray);
