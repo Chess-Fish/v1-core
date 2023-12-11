@@ -190,7 +190,12 @@ describe("evm_chess Wager Unit Tests", function () {
 
                         let hex_move = await chess.moveToHex(moves[k]);
 
-                        const message = await gaslessGame.generateMoveMessage(wagerAddresses[i], hex_move, k, timeStamp);
+                        const message = await gaslessGame.generateMoveMessage(
+                            wagerAddresses[i],
+                            hex_move,
+                            k,
+                            timeStamp
+                        );
                         messageArray.push(message);
 
                         const messageHash = await gaslessGame.getMessageHash(wagerAddresses[i], hex_move, k, timeStamp);

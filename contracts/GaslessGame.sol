@@ -50,8 +50,8 @@ contract GaslessGame {
     }
 
     modifier onlyDeployer() {
-      _;
-      require(msg.sender == deployer);
+        _;
+        require(msg.sender == deployer);
     }
 
     function setChessWager(address _chessWager) external onlyDeployer {

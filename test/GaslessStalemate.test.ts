@@ -65,8 +65,9 @@ describe("evm_chess gasless stalemate unit test", function () {
 
     describe("Gasless Game Verification Unit Tests - Stalemate", function () {
         it("Should play game", async function () {
-            const { chess, gaslessGame, paymentSplitter, deployer, otherAccount, token, chessNFT } =
-                await loadFixture(deploy);
+            const { chess, gaslessGame, paymentSplitter, deployer, otherAccount, token, chessNFT } = await loadFixture(
+                deploy
+            );
 
             let player1 = otherAccount.address;
             let wagerToken = token.address;
