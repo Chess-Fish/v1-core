@@ -26,16 +26,21 @@ describe("evm_chess Wager Unit Tests", function () {
         const MoveVerification = await ethers.getContractFactory("MoveVerification");
         const moveVerification = await MoveVerification.deploy();
 
+        const GaslessGame = await ethers.getContractFactory("GaslessGame");
+        const gaslessGame = await GaslessGame.deploy(moveVerification.address);
+
         const ChessWager = await ethers.getContractFactory("ChessWager");
         const chess = await ChessWager.deploy(
             moveVerification.address,
-            chessFishToken.address,
+            gaslessGame.address,
             paymentSplitter.address,
             chessNFT.address
         );
 
+        await gaslessGame.setChessWager(chess.address);
+
         const amount = ethers.utils.parseEther("100");
-        const tx = await token.transfer(otherAccount.address, amount);
+        await token.transfer(otherAccount.address, amount);
 
         await chess.initCoordinates(coordinates_array, bitCoordinates_array);
         await chessNFT.setChessFishAddress(chess.address);
@@ -46,6 +51,7 @@ describe("evm_chess Wager Unit Tests", function () {
 
         return {
             chess,
+            gaslessGame,
             chessFishToken,
             paymentSplitter,
             chessNFT,
@@ -60,7 +66,7 @@ describe("evm_chess Wager Unit Tests", function () {
 
     describe("Gasless Game Verification Unit Tests", function () {
         it("Should play game", async function () {
-            const { chess, chessFishToken, paymentSplitter, deployer, otherAccount, token, chessNFT } =
+            const { chess, gaslessGame, deployer, otherAccount, token } =
                 await loadFixture(deploy);
 
             let player1 = otherAccount.address;
@@ -114,10 +120,10 @@ describe("evm_chess Wager Unit Tests", function () {
 
                     const hex_move = await chess.moveToHex(moves[i]);
 
-                    const message = await chess.generateMoveMessage(gameAddr, hex_move, i, timeStamp);
+                    const message = await gaslessGame.generateMoveMessage(gameAddr, hex_move, i, timeStamp);
                     messageArray.push(message);
 
-                    const messageHash = await chess.getMessageHash(gameAddr, hex_move, i, timeStamp);
+                    const messageHash = await gaslessGame.getMessageHash(gameAddr, hex_move, i, timeStamp);
                     messageHashesArray.push(messageHash);
 
                     const signature = await player.signMessage(ethers.utils.arrayify(messageHash));

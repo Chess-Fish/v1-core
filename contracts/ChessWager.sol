@@ -105,9 +105,9 @@ contract ChessWager is MoveHelper {
 
     constructor(
         address moveVerificationAddress,
+        address _GaslessGame,
         address _DividendSplitter,
-        address _ChessFishNFT,
-        address _GaslessGame
+        address _ChessFishNFT
     ) {
         moveVerification = MoveVerification(moveVerificationAddress);
         gaslessGame = GaslessGame(_GaslessGame);

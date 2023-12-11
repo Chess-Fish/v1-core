@@ -40,10 +40,21 @@ contract GaslessGame {
 
     MoveVerification public immutable moveVerification;
 
-    ChessWager public immutable chessWager;
+    ChessWager public chessWager;
 
-    constructor(address _chessWager, address moveVerificationAddress) {
+    address deployer;
+
+    constructor(address moveVerificationAddress) {
         moveVerification = MoveVerification(moveVerificationAddress);
+        deployer = msg.sender;
+    }
+
+    modifier onlyDeployer() {
+      _;
+      require(msg.sender == deployer);
+    }
+
+    function setChessWager(address _chessWager) external onlyDeployer {
         chessWager = ChessWager(_chessWager);
     }
 
