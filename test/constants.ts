@@ -133,7 +133,6 @@ export const bitCoordinates_array = [
     "56",
 ];
 
-
 export function generateRandomHash() {
     // Generate a random number (64-bit) using Node.js crypto
     const randomBytes = crypto.randomBytes(8);

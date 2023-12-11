@@ -4,8 +4,7 @@ import { ethers } from "hardhat";
 
 import { coordinates_array, bitCoordinates_array } from "./constants";
 
-import { generateRandomHash } from './constants';
-
+import { generateRandomHash } from "./constants";
 
 describe("Delegated Signed Gasless Game Unit Tests", function () {
     async function deploy() {
@@ -62,8 +61,9 @@ describe("Delegated Signed Gasless Game Unit Tests", function () {
 
     describe("Gasless Delegated Game Verification Unit Tests", function () {
         it("Should play game", async function () {
-            const { chess, chessFishToken, paymentSplitter, signer0, signer1, token, chessNFT } =
-                await loadFixture(deploy);
+            const { chess, chessFishToken, paymentSplitter, signer0, signer1, token, chessNFT } = await loadFixture(
+                deploy
+            );
 
             let player1 = signer1.address;
             let wagerToken = token.address;
@@ -124,8 +124,6 @@ describe("Delegated Signed Gasless Game Unit Tests", function () {
                 signer1.address,
                 delegatedAddress1
             );
-
-
 
             // const moves = ["f2f3", "e7e5", "g2g4", "d8h4"]; // fool's mate
             const moves = ["e2e4", "f7f6", "d2d4", "g7g5", "d1h5"]; // reversed fool's mate

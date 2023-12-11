@@ -19,6 +19,8 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./interfaces/interfaces.sol";
 import "./MoveHelper.sol";
 
+import "./GaslessGame.sol";
+
 /**
  * @title ChessFish ChessWager Contract
  * @author ChessFish
@@ -98,18 +100,22 @@ contract ChessWager is MoveHelper {
     /// @dev ChessFish Winner NFT contract
     address public ChessFishNFT;
 
+    /// @dev Gasless Game Helper Contract
+    GaslessGame public gaslessGame;
+
     constructor(
         address moveVerificationAddress,
-        address _ChessFishToken,
         address _DividendSplitter,
-        address _ChessFishNFT
+        address _ChessFishNFT,
+        address _GaslessGame
     ) {
         moveVerification = MoveVerification(moveVerificationAddress);
         initPieces();
 
-        ChessFishToken = _ChessFishToken;
         DividendSplitter = _DividendSplitter;
         ChessFishNFT = _ChessFishNFT;
+
+        gaslessGame = GaslessGame(_GaslessGame);
 
         deployer = msg.sender;
     }
@@ -154,8 +160,20 @@ contract ChessWager is MoveHelper {
         return games[wagerAddress][gameID];
     }
 
+    function getLatestGameMoves(address wagerAddress) external view returns (uint16[] memory) {
+        return games[wagerAddress][gameIDs[wagerAddress].length].moves;
+    }
+
     function getNumberOfGamesPlayed(address wagerAddress) internal view returns (uint) {
         return gameIDs[wagerAddress].length + 1;
+    }
+
+    function getGameWagers(address wagerAddress) external view returns (GameWager memory) {
+        return gameWagers[wagerAddress];
+    }
+
+    function getWagerPlayers(address wagerAddress) external view returns (address, address) {
+        return (gameWagers[wagerAddress].player0, gameWagers[wagerAddress].player1);
     }
 
     /// @notice Get Wager Status
@@ -363,7 +381,7 @@ contract ChessWager is MoveHelper {
     //// GASLESS MOVE VERIFICATION FUNCTIONS ////
     */
 
-    /// @notice Generates gasless move message
+    /*     /// @notice Generates gasless move message
     function generateMoveMessage(
         address wager,
         uint16 move,
@@ -490,9 +508,37 @@ contract ChessWager is MoveHelper {
         return (wagerAddress, outcome, moves);
     }
 
+ */
+
     /// @notice Verifies game moves and updates the state of the wager
     function verifyGameUpdateState(bytes[] memory message, bytes[] memory signature) external returns (bool) {
-        (address wagerAddress, uint outcome, uint16[] memory moves) = verifyGameView(message, signature);
+        (address wagerAddress, uint outcome, uint16[] memory moves) = gaslessGame.verifyGameView(message, signature);
+
+        uint gameID = gameIDs[wagerAddress].length;
+        games[wagerAddress][gameID].moves = moves;
+
+        if (outcome != 0) {
+            updateWagerState(wagerAddress);
+            return true;
+        }
+        if (outcome == 0) {
+            return updateWagerStateInsufficientMaterial(wagerAddress);
+        } else {
+            return false;
+        }
+    }
+
+    /// @notice Verifies game moves and updates the state of the wager
+    function verifyGameUpdateStateDelegated(
+        bytes[2] memory delegations,
+        bytes[] memory message,
+        bytes[] memory signature
+    ) external returns (bool) {
+        (address wagerAddress, uint outcome, uint16[] memory moves) = gaslessGame.verifyGameViewDelegated(
+            delegations,
+            message,
+            signature
+        );
 
         uint gameID = gameIDs[wagerAddress].length;
         games[wagerAddress][gameID].moves = moves;
@@ -512,7 +558,7 @@ contract ChessWager is MoveHelper {
     //// DELEGATED GASLESS MOVE VERIFICATION FUNCTIONS ////
     */
 
-    function hashDelegatedAddress(address delegator) public pure returns (bytes32) {
+    /*     function hashDelegatedAddress(address delegator) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(delegator));
     }
 
@@ -600,7 +646,7 @@ contract ChessWager is MoveHelper {
         (outcome, , , ) = moveVerification.checkGameFromStart(moves);
 
         return (wagerAddress, outcome, moves);
-    }
+    } */
 
     /*
     //// WRITE FUNCTIONS ////

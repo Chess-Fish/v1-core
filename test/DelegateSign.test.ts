@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 
 import crypto from "crypto";
 
-import { generateRandomHash } from './constants';
+import { generateRandomHash } from "./constants";
 
 describe("ChessFish Delegate Sign Tests", function () {
     // We define a fixture to reuse the same setup in every test.
