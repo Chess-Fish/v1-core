@@ -67,7 +67,9 @@ describe("Delegated Signed Gasless Game Unit Tests", function () {
 
     describe("Gasless Delegated Game Verification Unit Tests", function () {
         it("Should play game", async function () {
-            const { chess, gaslessGame, signer0, signer1, token } = await loadFixture(deploy);
+            const { chess, gaslessGame, signer0, signer1, token  } = await loadFixture(
+                deploy
+            );
 
             let player1 = signer1.address;
             let wagerToken = token.address;
@@ -132,6 +134,7 @@ describe("Delegated Signed Gasless Game Unit Tests", function () {
             console.log(signer0.address, signer1.address);
             console.log(delegatedAddress0, delegatedAddress1);
 
+
             // const moves = ["f2f3", "e7e5", "g2g4", "d8h4"]; // fool's mate
             const moves = ["e2e4", "f7f6", "d2d4", "g7g5", "d1h5"]; // reversed fool's mate
 
@@ -161,11 +164,8 @@ describe("Delegated Signed Gasless Game Unit Tests", function () {
                     if (i % 2 == 0) {
                         player = startingPlayer;
                     } else {
-                        player =
-                            startingPlayer.address === delegatedSigner1.address ? delegatedSigner0 : delegatedSigner1;
+                        player = startingPlayer.address === delegatedSigner1.address ? delegatedSigner0 : delegatedSigner1;
                     }
-
-                    // if (player.address)
 
                     const hex_move = await chess.moveToHex(moves[i]);
 
@@ -182,7 +182,11 @@ describe("Delegated Signed Gasless Game Unit Tests", function () {
                     playerAddresses.push(player.address);
                 }
                 console.log("_____");
-                console.log(playerAddresses);
+
+                if (game == 1) {
+                    console.log(playerAddresses);
+                }
+
                 const delegations = [delegationData0, delegationData1];
 
                 await chess.verifyGameUpdateStateDelegated(delegations, messageArray, signatureArray);

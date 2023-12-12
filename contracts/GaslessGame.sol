@@ -257,14 +257,20 @@ contract GaslessGame {
         // optimistically use the wagerAddress from the first index
         wagerAddress = decodeWagerAddress(messages[0]);
 
-        address playerToMove = chessWager.getPlayerMove(wagerAddress);
+        (, , address delegatorAddress0, address player0) = decodeDelegation(delegations[0]);
+        (, , address delegatorAddress1, address player1) = decodeDelegation(delegations[1]);
 
-        (, , , address player0) = decodeDelegation(delegations[0]);
-        (, , , address player1) = decodeDelegation(delegations[1]);
+        // add check for delegator addresses are infact players in sc
+
+        address playerToMove = chessWager.getPlayerMove(wagerAddress) == delegatorAddress0 ? player0 : player1;
+
+
 
         console.log("GAME");
+        console.log(playerToMove);
         console.log(player0);
         console.log(player1);
+        
 
         moves = verifyMoves(playerToMove, player0, player1, messages, signatures);
 
