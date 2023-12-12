@@ -18,5 +18,4 @@ interface IChessWager {
     function startWagersInTournament(address wagerAddress) external;
 
     function getWagerStatus(address wagerAddress) external view returns (address, address, uint, uint);
-
 }
