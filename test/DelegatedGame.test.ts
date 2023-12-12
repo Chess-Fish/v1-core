@@ -112,7 +112,8 @@ describe("Delegated Signed Gasless Game Unit Tests", function () {
                 signedDelegationHash0
             );
 
-            // await gaslessGame.verifyDelegation(signedDelegationData0);
+            const signedDelegation = await gaslessGame.decodeSignedDelegation(signedDelegationData0);
+            await gaslessGame.verifyDelegation(signedDelegation);
 
             // ON THE FRONT END user 1
             // 1) Generate random public private key pair

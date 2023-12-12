@@ -240,9 +240,10 @@ contract GaslessGame {
         );
     }
 
+    // this can be internal unless it's somehow required on the frontend
     function decodeSignedDelegation(
         bytes memory signedDelegationBytes
-    ) internal pure returns (SignedDelegation memory signedDelegation) {
+    ) public pure returns (SignedDelegation memory signedDelegation) {
         return abi.decode(signedDelegationBytes, (SignedDelegation));
     }
 
