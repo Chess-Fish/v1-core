@@ -554,7 +554,7 @@ _used to deposit prizes to wager_
 
 https://github.com/Chess-Fish
 
-_This smart contract is designed to handle gasless game moves. Key features include:
+This smart contract is designed to handle gasless game moves. Key features include:
 
 1. Off-Chain Move Signing: This contract enables game moves to be signed off-chain,
    significantly reducing the need for constant on-chain transactions. This approach
@@ -564,7 +564,7 @@ _This smart contract is designed to handle gasless game moves. Key features incl
    (generated on the front end) to execute moves on their behalf. This delegated
    signer functionality reduces the frequency of wallet signature requests,
    providing a smoother and more uninterrupted gameplay experience. It ensures
-   that players can focus on strategy rather than managing transaction confirmations._
+   that players can focus on strategy rather than managing transaction confirmations.
 
 ### GaslessMoveData
 
@@ -922,9 +922,9 @@ _returns string of letters representing the board
 ## MoveVerification
 
 https://github.com/Chess-Fish
-Forked from: https://github.com/marioevz/chess.eth (Updated from Solidity 0.7.6 to 0.8.17 & Added features and functionality)
-
 This contract handles the logic for verifying the validity moves on the chessboard. Currently, pawns autoqueen by default.
+
+_Forked from: https://github.com/marioevz/chess.eth (Updated from Solidity 0.7.6 to 0.8.17 & Added features and functionality)_
 
 ### empty_const
 

@@ -18,7 +18,7 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
  * @title ChessFish MoveVerification Contract
  * @author ChessFish
  * @notice https://github.com/Chess-Fish
- * @notice Forked from: https://github.com/marioevz/chess.eth (Updated from Solidity 0.7.6 to 0.8.17 & Added features and functionality)
+ * @dev Forked from: https://github.com/marioevz/chess.eth (Updated from Solidity 0.7.6 to 0.8.17 & Added features and functionality)
  *
  * @notice This contract handles the logic for verifying the validity moves on the chessboard. Currently, pawns autoqueen by default.
  */
