@@ -98,7 +98,7 @@ _address wager => gameIDs_
 mapping(address => struct ChessWager.WagerStatus) wagerStatus
 ```
 
-_addres wager => Player Wins_
+_address wager => Player Wins_
 
 ### userGames
 
@@ -246,16 +246,22 @@ function getWagerStatus(address wagerAddress) public view returns (address, addr
 
 Get Wager Status
 
-_returns the status of the wager_
+_Returns the current status of a specific wager._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| wagerAddress | address | The address of the wager for which the status is being requested. |
 
 #### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | address | (address, address, uint, uint) address player0, address player1, winsPlayer0, winsPlayer1 |
-| [1] | address |  |
-| [2] | uint256 |  |
-| [3] | uint256 |  |
+| [0] | address | player0 The address of the first player in the wager. |
+| [1] | address | player1 The address of the second player in the wager. |
+| [2] | uint256 | winsPlayer0 The number of wins recorded for player0. |
+| [3] | uint256 | winsPlayer1 The number of wins recorded for player1. |
 
 ### checkTimeRemaining
 
@@ -271,8 +277,8 @@ _using int to quickly check if game lost on time and to prevent underflow revert
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | int256 | timeRemainingPlayer0, timeRemainingPlayer1 |
-| [1] | int256 |  |
+| [0] | int256 | timeRemainingPlayer0 |
+| [1] | int256 | timeRemainingPlayer1 |
 
 ### getPlayerMove
 
@@ -292,7 +298,7 @@ Gets the address of the player whose turn it is
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | address | user |
+| [0] | address | playerAddress |
 
 ### isPlayerWhite
 
@@ -313,7 +319,7 @@ Returns boolean if player is white or not
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | bool | bool |
+| [0] | bool | isPlayerWhite |
 
 ### getGameStatus
 
@@ -333,10 +339,10 @@ Gets the game status for the last played game in a wager
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | uint8 | (outcome, gameState, player0State, player1State) |
-| [1] | uint256 |  |
-| [2] | uint32 |  |
-| [3] | uint32 |  |
+| [0] | uint8 | outcome, |
+| [1] | uint256 | gameState |
+| [2] | uint32 | player0State |
+| [3] | uint32 | player1State |
 
 ### getChainId
 
@@ -347,6 +353,12 @@ function getChainId() internal view returns (uint256)
 Returns chainId
 
 _used for ensuring unique hash independent of chain_
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint256 | chainId |
 
 ### getWagerAddress
 
@@ -362,7 +374,7 @@ _using keccak256 to generate a hash which is converted to an address_
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | address | address wagerAddress |
+| [0] | address | wagerAddress |
 
 ### verifyGameUpdateState
 
@@ -372,6 +384,12 @@ function verifyGameUpdateState(bytes[] message, bytes[] signature) external retu
 
 Verifies game moves and updates the state of the wager
 
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | bool | isEndGame |
+
 ### verifyGameUpdateStateDelegated
 
 ```solidity
@@ -379,6 +397,12 @@ function verifyGameUpdateStateDelegated(bytes[2] delegations, bytes[] messages, 
 ```
 
 Verifies game moves and updates the state of the wager
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | bool | isEndGame |
 
 ### TournamentHandler
 
@@ -475,7 +499,7 @@ mint tournament winner NFT
 ### cancelWager
 
 ```solidity
-function cancelWager(address wagerAddress) external returns (bool)
+function cancelWager(address wagerAddress) external
 ```
 
 Cancel wager
@@ -494,6 +518,12 @@ Updates the state of the wager if player time is < 0
 _check when called with timeout w tournament
 set to public so that anyone can update time if player disappears_
 
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | bool | wasUpdated returns true if status was updated |
+
 ### updateWagerStateInsufficientMaterial
 
 ```solidity
@@ -503,6 +533,12 @@ function updateWagerStateInsufficientMaterial(address wagerAddress) public retur
 Update wager state if insufficient material
 
 _set to public so that anyone can update_
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | bool | wasUpdated returns true if status was updated |
 
 ### depositToWager
 
@@ -1475,6 +1511,34 @@ _Gets the piece at a given position in the current gameState.
         @param pos is the position to get the piece: 6-bit var, 3-bit word, high word = row, low word = column.
         @return piece value including color_
 
+## IChessFishNFT
+
+### awardWinner
+
+```solidity
+function awardWinner(address player, address wagerHash) external returns (uint256)
+```
+
+## IChessWager
+
+### createGameWagerTournamentSingle
+
+```solidity
+function createGameWagerTournamentSingle(address player0, address player1, address wagerToken, uint256 wagerAmount, uint256 numberOfGames, uint256 timeLimit) external returns (address wagerAddress)
+```
+
+### startWagersInTournament
+
+```solidity
+function startWagersInTournament(address wagerAddress) external
+```
+
+### getWagerStatus
+
+```solidity
+function getWagerStatus(address wagerAddress) external view returns (address, address, uint256, uint256)
+```
+
 ## ChessFishTournament
 
 https://github.com/Chess-Fish
@@ -1697,34 +1761,6 @@ function depositToTournament(uint256 tournamentID, uint256 amount) external
 ```
 
 Used to deposit prizes to tournament
-
-## IChessFishNFT
-
-### awardWinner
-
-```solidity
-function awardWinner(address player, address wagerHash) external returns (uint256)
-```
-
-## IChessWager
-
-### createGameWagerTournamentSingle
-
-```solidity
-function createGameWagerTournamentSingle(address player0, address player1, address wagerToken, uint256 wagerAmount, uint256 numberOfGames, uint256 timeLimit) external returns (address wagerAddress)
-```
-
-### startWagersInTournament
-
-```solidity
-function startWagersInTournament(address wagerAddress) external
-```
-
-### getWagerStatus
-
-```solidity
-function getWagerStatus(address wagerAddress) external view returns (address, address, uint256, uint256)
-```
 
 ## Token
 

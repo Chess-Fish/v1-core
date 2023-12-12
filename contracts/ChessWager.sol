@@ -177,8 +177,12 @@ contract ChessWager is MoveHelper {
     }
 
     /// @notice Get Wager Status
-    /// @dev returns the status of the wager
-    /// @return (address, address, uint, uint) address player0, address player1, winsPlayer0, winsPlayer1
+    /// @dev Returns the current status of a specific wager.
+    /// @param wagerAddress The address of the wager for which the status is being requested.
+    /// @return player0 The address of the first player in the wager.
+    /// @return player1 The address of the second player in the wager.
+    /// @return winsPlayer0 The number of wins recorded for player0.
+    /// @return winsPlayer1 The number of wins recorded for player1.
     function getWagerStatus(address wagerAddress) public view returns (address, address, uint, uint) {
         return (
             gameWagers[wagerAddress].player0,
@@ -190,7 +194,8 @@ contract ChessWager is MoveHelper {
 
     /// @notice Checks how much time is remaining in game
     /// @dev using int to quickly check if game lost on time and to prevent underflow revert
-    /// @return timeRemainingPlayer0, timeRemainingPlayer1
+    /// @return timeRemainingPlayer0
+    /// @return timeRemainingPlayer1
     function checkTimeRemaining(address wagerAddress) public view returns (int, int) {
         address player0 = gameWagers[wagerAddress].player0;
 
@@ -218,7 +223,7 @@ contract ChessWager is MoveHelper {
 
     /// @notice Gets the address of the player whose turn it is
     /// @param wagerAddress address of the wager
-    /// @return user
+    /// @return playerAddress
     function getPlayerMove(address wagerAddress) public view returns (address) {
         uint gameID = gameIDs[wagerAddress].length;
         uint moves = games[wagerAddress][gameID].moves.length;
@@ -243,7 +248,7 @@ contract ChessWager is MoveHelper {
     /// @notice Returns boolean if player is white or not
     /// @param wagerAddress address of the wager
     /// @param player address player
-    /// @return bool
+    /// @return isPlayerWhite
     function isPlayerWhite(address wagerAddress, address player) public view returns (bool) {
         if (gameWagers[wagerAddress].player0 == player) {
             return wagerStatus[wagerAddress].isPlayer0White;
@@ -254,7 +259,10 @@ contract ChessWager is MoveHelper {
 
     /// @notice Gets the game status for the last played game in a wager
     /// @param wagerAddress address of the wager
-    /// @return (outcome, gameState, player0State, player1State)
+    /// @return outcome, 
+    /// @return gameState
+    /// @return player0State
+    /// @return player1State
     function getGameStatus(address wagerAddress) public view returns (uint8, uint256, uint32, uint32) {
         uint gameID = gameIDs[wagerAddress].length;
         uint16[] memory moves = games[wagerAddress][gameID].moves;
@@ -271,6 +279,7 @@ contract ChessWager is MoveHelper {
 
     /// @notice Returns chainId
     /// @dev used for ensuring unique hash independent of chain
+    /// @return chainId
     function getChainId() internal view returns (uint256) {
         uint256 chainId;
         assembly {
@@ -281,7 +290,7 @@ contract ChessWager is MoveHelper {
 
     /// @notice Generates unique hash for a game wager
     /// @dev using keccak256 to generate a hash which is converted to an address
-    /// @return address wagerAddress
+    /// @return wagerAddress 
     function getWagerAddress(GameWager memory wager) internal view returns (address) {
         require(wager.player0 != wager.player1, "players must be different");
         require(wager.numberOfGames % 2 == 1, "number of games must be odd");
@@ -314,6 +323,7 @@ contract ChessWager is MoveHelper {
     */
 
     /// @notice Verifies game moves and updates the state of the wager
+    /// @return isEndGame
     function verifyGameUpdateState(bytes[] memory message, bytes[] memory signature) external returns (bool) {
         (address wagerAddress, uint outcome, uint16[] memory moves) = gaslessGame.verifyGameView(message, signature);
 
@@ -332,6 +342,7 @@ contract ChessWager is MoveHelper {
     }
 
     /// @notice Verifies game moves and updates the state of the wager
+    /// @return isEndGame
     function verifyGameUpdateStateDelegated(
         bytes[2] memory delegations,
         bytes[] memory messages,
@@ -409,8 +420,6 @@ contract ChessWager is MoveHelper {
 
         gameWagers[wagerAddress] = gameWager;
 
-        // player0 is black since randomness is impossible
-        // but each subsequent game players switch colors
         WagerStatus memory status = WagerStatus(false, 0, 0);
         wagerStatus[wagerAddress] = status;
 
@@ -461,8 +470,6 @@ contract ChessWager is MoveHelper {
 
         gameWagers[wagerAddress] = gameWager;
 
-        // first player to challenge is black since randomness is impossible
-        // each subsequent game players switch colors
         WagerStatus memory status = WagerStatus(false, 0, 0);
         wagerStatus[wagerAddress] = status;
 
@@ -576,14 +583,14 @@ contract ChessWager is MoveHelper {
         gameWagers[wagerAddress].wager = 0;
         wagerPrizes[wagerAddress] = 0;
 
-        // 5% shareholder fee
+        /// @dev 5% shareholder fee
         uint shareHolderFee = ((wagerAmount + prize) * protocolFee) / 10000;
         uint wagerPayout = (wagerAmount + prize) - shareHolderFee;
 
         IERC20(token).safeTransfer(DividendSplitter, shareHolderFee);
         IERC20(token).safeTransfer(winner, wagerPayout);
 
-        // Mint NFT for Winner
+        /// @dev Mint NFT for Winner
         IChessFishNFT(ChessFishNFT).awardWinner(winner, wagerAddress);
 
         emit payoutWagerEvent(wagerAddress, winner, token, wagerPayout, protocolFee);
@@ -613,7 +620,7 @@ contract ChessWager is MoveHelper {
     /// @notice Cancel wager
     /// @dev cancel wager only if other player has not yet accepted
     /// @dev && only if msg.sender is one of the players
-    function cancelWager(address wagerAddress) external returns (bool) {
+    function cancelWager(address wagerAddress) external {
         require(gameWagers[wagerAddress].hasPlayerAccepted == false, "in progress");
         require(gameWagers[wagerAddress].player0 == msg.sender, "not listed");
         require(gameWagers[wagerAddress].isTournament == false, "cannot cancel tournament wager");
@@ -627,12 +634,12 @@ contract ChessWager is MoveHelper {
 
         emit cancelWagerEvent(wagerAddress, msg.sender);
 
-        return true;
     }
 
     /// @notice Updates the state of the wager if player time is < 0
     /// @dev check when called with timeout w tournament
     /// @dev set to public so that anyone can update time if player disappears
+    /// @return wasUpdated returns true if status was updated
     function updateWagerStateTime(address wagerAddress) public returns (bool) {
         require(getNumberOfGamesPlayed(wagerAddress) <= gameWagers[wagerAddress].numberOfGames, "wager ended");
         require(gameWagers[wagerAddress].timeLastMove != 0, "tournament match not started yet");
@@ -656,6 +663,7 @@ contract ChessWager is MoveHelper {
 
     /// @notice Update wager state if insufficient material
     /// @dev set to public so that anyone can update
+    /// @return wasUpdated returns true if status was updated
     function updateWagerStateInsufficientMaterial(address wagerAddress) public returns (bool) {
         require(getNumberOfGamesPlayed(wagerAddress) <= gameWagers[wagerAddress].numberOfGames, "wager ended");
 
@@ -687,6 +695,7 @@ contract ChessWager is MoveHelper {
     }
 
     /// @notice Checks the moves of the wager and updates state if neccessary
+     /// @return isEndGame
     function updateWagerState(address wagerAddress) private returns (bool) {
         require(getNumberOfGamesPlayed(wagerAddress) <= gameWagers[wagerAddress].numberOfGames, "wager ended");
 
