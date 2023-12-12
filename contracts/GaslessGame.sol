@@ -237,12 +237,17 @@ contract GaslessGame {
         require(delegatedAddressHash == delegatedAddressBytes);
 
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(delegatedAddressBytes);
-        require(ECDSA.recover(ethSignedMessageHash, signature) == delegatorAddress, "557");
+        require(ECDSA.recover(ethSignedMessageHash, signature) == delegatorAddress, "invalid signature");
     }
 
     function checkDelegation(bytes[2] memory delegations) internal pure {
         verifyDelegation(delegations[0]);
         verifyDelegation(delegations[1]);
+    }
+
+    function checkIfAddressesArePlayers(address delegator0, address delegator1, address wagerAddress) internal view {
+        (address player0, address player1) = chessWager.getWagerPlayers(wagerAddress);
+        require(delegator0 == player0 && delegator1 == player1, "players don't match");
     }
 
     function verifyGameViewDelegated(
@@ -261,16 +266,9 @@ contract GaslessGame {
         (, , address delegatorAddress1, address player1) = decodeDelegation(delegations[1]);
 
         // add check for delegator addresses are infact players in sc
+        checkIfAddressesArePlayers(delegatorAddress0, delegatorAddress1, wagerAddress);
 
         address playerToMove = chessWager.getPlayerMove(wagerAddress) == delegatorAddress0 ? player0 : player1;
-
-
-
-        console.log("GAME");
-        console.log(playerToMove);
-        console.log(player0);
-        console.log(player1);
-        
 
         moves = verifyMoves(playerToMove, player0, player1, messages, signatures);
 
