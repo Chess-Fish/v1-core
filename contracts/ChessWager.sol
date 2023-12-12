@@ -26,9 +26,9 @@ import "./GaslessGame.sol";
  * @author ChessFish
  * @notice https://github.com/Chess-Fish
  *
- * @dev This contract handles the logic for storing chess wagers between users,
- * storing game moves, and handling the payout of 1v1 matches.
- * The Tournament Contract is able to call into this contract to create tournament matches between users.
+ * @dev This contract is designed for managing chess wagers between users, saving
+ * game moves, and handling the payout of 1v1 matches. The Tournament
+ * Contract can call into this contract to create tournament matches among users.
  */
 
 contract ChessWager is MoveHelper {

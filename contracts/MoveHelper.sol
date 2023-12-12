@@ -19,7 +19,7 @@ import "./MoveVerification.sol";
  * @author ChessFish
  * @notice https://github.com/Chess-Fish
  *
- * @dev This contract handles move conversion functionality to the MoveVerifican contract as well as admin functionality.
+ * @dev This contract handles move conversion functionality to the MoveVerification contract as well as setting board coordinates.
  */
 
 contract MoveHelper {

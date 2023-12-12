@@ -24,7 +24,17 @@ import "./ChessWager.sol";
  * @author ChessFish
  * @notice https://github.com/Chess-Fish
  *
- * @dev This contract handles the logic for ...
+ * @dev This smart contract is designed to handle gasless game moves. Key features include:
+ *
+ * 1. Off-Chain Move Signing: This contract enables game moves to be signed off-chain,
+ *    significantly reducing the need for constant on-chain transactions. This approach
+ *    substantially lowers transaction costs.
+ *
+ * 2. Delegated Signer Functionality: Players have the option to delegate a signer
+ *    (generated on the front end) to execute moves on their behalf. This delegated
+ *    signer functionality reduces the frequency of wallet signature requests,
+ *    providing a smoother and more uninterrupted gameplay experience. It ensures
+ *    that players can focus on strategy rather than managing transaction confirmations.
  */
 
 contract GaslessGame {
@@ -38,22 +48,37 @@ contract GaslessGame {
         bytes32 messageHash;
     }
 
+    struct Delegation {
+        address delegatorAddress;
+        address delegatedAddress;
+        address wagerAddress;
+    }
+
+    struct SignedDelegation {
+        Delegation delegation;
+        bytes signature;
+    }
+
+    /// @dev MoveVerification contract
     MoveVerification public immutable moveVerification;
 
+    // @dev ChessWager contract
     ChessWager public chessWager;
 
+    /// @dev address deployer
     address deployer;
-
-    constructor(address moveVerificationAddress) {
-        moveVerification = MoveVerification(moveVerificationAddress);
-        deployer = msg.sender;
-    }
 
     modifier onlyDeployer() {
         _;
         require(msg.sender == deployer);
     }
 
+    constructor(address moveVerificationAddress) {
+        moveVerification = MoveVerification(moveVerificationAddress);
+        deployer = msg.sender;
+    }
+
+    /// @notice set ChessWager contract
     function setChessWager(address _chessWager) external onlyDeployer {
         chessWager = ChessWager(_chessWager);
     }
@@ -190,17 +215,7 @@ contract GaslessGame {
     //// DELEGATED GASLESS MOVE VERIFICATION FUNCTIONS ////
     */
 
-    struct Delegation {
-        address delegatorAddress;
-        address delegatedAddress;
-        address wagerAddress;
-    }
-
-    struct SignedDelegation {
-        Delegation delegation;
-        bytes signature;
-    }
-
+    /// @notice Create delegation data type helper function
     function createDelegation(
         address delegatorAddress,
         address delegatedAddress,
@@ -210,6 +225,7 @@ contract GaslessGame {
         return delegation;
     }
 
+    /// @notice Encode signed delegation helper function
     function encodeSignedDelegation(
         Delegation memory delegation,
         bytes memory signature
@@ -218,6 +234,7 @@ contract GaslessGame {
         return abi.encode(signedDelegation);
     }
 
+    /// @notice Check delegations
     function checkDelegations(
         SignedDelegation memory signedDelegation0,
         SignedDelegation memory signedDelegation1
@@ -231,6 +248,7 @@ contract GaslessGame {
         verifyDelegation(signedDelegation1);
     }
 
+    /// @notice Verify delegation signature
     function verifyDelegation(SignedDelegation memory signedDelegation) public pure {
         bytes32 hashedDelegation = hashDelegation(signedDelegation.delegation);
         verifyDelegatedAddress(
@@ -240,17 +258,20 @@ contract GaslessGame {
         );
     }
 
-    // this can be internal unless it's somehow required on the frontend
+    /// @notice Decode Signed Delegation
+    /// @dev this can be internal unless it's somehow required on the frontend
     function decodeSignedDelegation(
         bytes memory signedDelegationBytes
     ) public pure returns (SignedDelegation memory signedDelegation) {
         return abi.decode(signedDelegationBytes, (SignedDelegation));
     }
 
+    /// @notice Hash Delegation data type
     function hashDelegation(Delegation memory delegationData) public pure returns (bytes32) {
         return keccak256(abi.encode(delegationData));
     }
 
+    /// @notice Verify delegator signature
     function verifyDelegatedAddress(
         bytes32 hashedDelegation,
         bytes memory signature,
@@ -260,11 +281,13 @@ contract GaslessGame {
         require(ECDSA.recover(ethSignedMessageHash, signature) == delegatorAddress, "invalid signature");
     }
 
+    /// @notice Check if delegators match players in wagerAddress
     function checkIfAddressesArePlayers(address delegator0, address delegator1, address wagerAddress) internal view {
         (address player0, address player1) = chessWager.getWagerPlayers(wagerAddress);
         require(delegator0 == player0 && delegator1 == player1, "players don't match");
     }
 
+    /// @notice Verify game moves via delegated signature
     function verifyGameViewDelegated(
         bytes[2] memory delegations,
         bytes[] memory messages,
@@ -272,18 +295,15 @@ contract GaslessGame {
     ) external view returns (address wagerAddress, uint8 outcome, uint16[] memory moves) {
         require(messages.length == signatures.length, "573");
 
-        // Decode each delegation once
         SignedDelegation memory signedDelegation0 = decodeSignedDelegation(delegations[0]);
         SignedDelegation memory signedDelegation1 = decodeSignedDelegation(delegations[1]);
 
-        // Pass the decoded delegations to checkDelegations
         checkDelegations(signedDelegation0, signedDelegation1);
 
         address player0 = signedDelegation0.delegation.delegatedAddress;
         address player1 = signedDelegation1.delegation.delegatedAddress;
         wagerAddress = signedDelegation0.delegation.wagerAddress;
 
-        // add check for delegator addresses are infact players in sc
         checkIfAddressesArePlayers(
             signedDelegation0.delegation.delegatorAddress,
             signedDelegation1.delegation.delegatorAddress,
@@ -296,7 +316,6 @@ contract GaslessGame {
 
         moves = verifyMoves(playerToMove, player0, player1, messages, signatures);
 
-        // appending moves to onChainMoves if they exist
         uint16[] memory onChainMoves = chessWager.getLatestGameMoves(wagerAddress);
         if (onChainMoves.length > 0) {
             uint16[] memory combinedMoves = new uint16[](onChainMoves.length + moves.length);
