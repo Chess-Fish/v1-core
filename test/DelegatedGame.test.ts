@@ -155,7 +155,6 @@ describe("Delegated Signed Gasless Game Unit Tests", function () {
                 let playerAddress = await chess.getPlayerMove(gameAddr);
                 let startingPlayer = playerAddress === signer1.address ? delegatedSigner1 : delegatedSigner0;
 
-                let playerAddresses: any[] = [];
                 for (let i = 0; i < moves.length; i++) {
                     let player;
                     if (i % 2 == 0) {
@@ -175,16 +174,7 @@ describe("Delegated Signed Gasless Game Unit Tests", function () {
 
                     const signature = await player.signMessage(ethers.utils.arrayify(messageHash));
                     signatureArray.push(signature);
-
-                    console.log("playeradd", player.address);
-                    playerAddresses.push(player.address);
                 }
-                console.log("_____");
-
-                if (game == 1) {
-                    console.log(playerAddresses);
-                }
-
                 const delegations = [delegationData0, delegationData1];
 
                 await chess.verifyGameUpdateStateDelegated(delegations, messageArray, signatureArray);
