@@ -1511,34 +1511,6 @@ _Gets the piece at a given position in the current gameState.
         @param pos is the position to get the piece: 6-bit var, 3-bit word, high word = row, low word = column.
         @return piece value including color_
 
-## IChessFishNFT
-
-### awardWinner
-
-```solidity
-function awardWinner(address player, address wagerHash) external returns (uint256)
-```
-
-## IChessWager
-
-### createGameWagerTournamentSingle
-
-```solidity
-function createGameWagerTournamentSingle(address player0, address player1, address wagerToken, uint256 wagerAmount, uint256 numberOfGames, uint256 timeLimit) external returns (address wagerAddress)
-```
-
-### startWagersInTournament
-
-```solidity
-function startWagersInTournament(address wagerAddress) external
-```
-
-### getWagerStatus
-
-```solidity
-function getWagerStatus(address wagerAddress) external view returns (address, address, uint256, uint256)
-```
-
 ## ChessFishTournament
 
 https://github.com/Chess-Fish
@@ -1761,6 +1733,34 @@ function depositToTournament(uint256 tournamentID, uint256 amount) external
 ```
 
 Used to deposit prizes to tournament
+
+## IChessFishNFT
+
+### awardWinner
+
+```solidity
+function awardWinner(address player, address wagerHash) external returns (uint256)
+```
+
+## IChessWager
+
+### createGameWagerTournamentSingle
+
+```solidity
+function createGameWagerTournamentSingle(address player0, address player1, address wagerToken, uint256 wagerAmount, uint256 numberOfGames, uint256 timeLimit) external returns (address wagerAddress)
+```
+
+### startWagersInTournament
+
+```solidity
+function startWagersInTournament(address wagerAddress) external
+```
+
+### getWagerStatus
+
+```solidity
+function getWagerStatus(address wagerAddress) external view returns (address, address, uint256, uint256)
+```
 
 ## Token
 

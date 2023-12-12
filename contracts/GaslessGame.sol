@@ -24,7 +24,7 @@ import "./ChessWager.sol";
  * @author ChessFish
  * @notice https://github.com/Chess-Fish
  *
- * @dev This smart contract is designed to handle gasless game moves. Key features include:
+ * This smart contract is designed to handle gasless game moves. Key features include:
  *
  * 1. Off-Chain Move Signing: This contract enables game moves to be signed off-chain,
  *    significantly reducing the need for constant on-chain transactions. This approach
