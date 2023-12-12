@@ -4,9 +4,9 @@
 
 https://github.com/Chess-Fish
 
-_This contract handles the logic for storing chess wagers between users,
-storing game moves, and handling the payout of 1v1 matches.
-The Tournament Contract is able to call into this contract to create tournament matches between users._
+_This contract is designed for managing chess wagers between users, saving
+game moves, and handling the payout of 1v1 matches. The Tournament
+Contract can call into this contract to create tournament matches among users._
 
 ### GameWager
 
@@ -24,6 +24,7 @@ struct GameWager {
   uint256 timePlayer1;
   bool isTournament;
   bool isComplete;
+  bool hasBeenPaid;
 }
 ```
 
@@ -139,10 +140,18 @@ address ChessFishNFT
 
 _ChessFish Winner NFT contract_
 
+### gaslessGame
+
+```solidity
+contract GaslessGame gaslessGame
+```
+
+_Gasless Game Helper Contract_
+
 ### constructor
 
 ```solidity
-constructor(address moveVerificationAddress, address _ChessFishToken, address _DividendSplitter, address _ChessFishNFT) public
+constructor(address moveVerificationAddress, address _GaslessGame, address _DividendSplitter, address _ChessFishNFT) public
 ```
 
 ### createGameWagerEvent
@@ -205,16 +214,34 @@ function getGameLength(address wagerAddress) external view returns (uint256)
 function getGameMoves(address wagerAddress, uint256 gameID) external view returns (struct ChessWager.Game)
 ```
 
+### getLatestGameMoves
+
+```solidity
+function getLatestGameMoves(address wagerAddress) external view returns (uint16[])
+```
+
 ### getNumberOfGamesPlayed
 
 ```solidity
 function getNumberOfGamesPlayed(address wagerAddress) internal view returns (uint256)
 ```
 
+### getGameWagers
+
+```solidity
+function getGameWagers(address wagerAddress) external view returns (struct ChessWager.GameWager)
+```
+
+### getWagerPlayers
+
+```solidity
+function getWagerPlayers(address wagerAddress) external view returns (address, address)
+```
+
 ### getWagerStatus
 
 ```solidity
-function getWagerStatus(address wagerAddress) external view returns (address, address, uint256, uint256)
+function getWagerStatus(address wagerAddress) public view returns (address, address, uint256, uint256)
 ```
 
 Get Wager Status
@@ -337,6 +364,22 @@ _using keccak256 to generate a hash which is converted to an address_
 | ---- | ---- | ----------- |
 | [0] | address | address wagerAddress |
 
+### verifyGameUpdateState
+
+```solidity
+function verifyGameUpdateState(bytes[] message, bytes[] signature) external returns (bool)
+```
+
+Verifies game moves and updates the state of the wager
+
+### verifyGameUpdateStateDelegated
+
+```solidity
+function verifyGameUpdateStateDelegated(bytes[2] delegations, bytes[] messages, bytes[] signatures) external returns (bool)
+```
+
+Verifies game moves and updates the state of the wager
+
 ### TournamentHandler
 
 ```solidity
@@ -380,6 +423,187 @@ _only the tournament contract can call_
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | wagerAddress | address | created wager address |
+
+### createGameWager
+
+```solidity
+function createGameWager(address player1, address wagerToken, uint256 wager, uint256 timeLimit, uint256 numberOfGames) external payable returns (address wagerAddress)
+```
+
+Creates a 1v1 chess wager
+
+### acceptWager
+
+```solidity
+function acceptWager(address wagerAddress) external
+```
+
+Player1 calls if they accept challenge
+
+### playMove
+
+```solidity
+function playMove(address wagerAddress, uint16 move) external returns (bool)
+```
+
+Plays move on the board
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | bool | bool true if endGame, adds extra game if stalemate |
+
+### payoutWager
+
+```solidity
+function payoutWager(address wagerAddress) external returns (bool)
+```
+
+Handles payout of wager
+
+_smallest wager amount is 18 wei before fees => 0_
+
+### mintWinnerNFT
+
+```solidity
+function mintWinnerNFT(address wagerAddress) external
+```
+
+mint tournament winner NFT
+
+### cancelWager
+
+```solidity
+function cancelWager(address wagerAddress) external returns (bool)
+```
+
+Cancel wager
+
+_cancel wager only if other player has not yet accepted
+&& only if msg.sender is one of the players_
+
+### updateWagerStateTime
+
+```solidity
+function updateWagerStateTime(address wagerAddress) public returns (bool)
+```
+
+Updates the state of the wager if player time is < 0
+
+_check when called with timeout w tournament
+set to public so that anyone can update time if player disappears_
+
+### updateWagerStateInsufficientMaterial
+
+```solidity
+function updateWagerStateInsufficientMaterial(address wagerAddress) public returns (bool)
+```
+
+Update wager state if insufficient material
+
+_set to public so that anyone can update_
+
+### depositToWager
+
+```solidity
+function depositToWager(address wagerAddress, uint256 amount) external
+```
+
+Deposits prize to wager address
+
+_used to deposit prizes to wager_
+
+## GaslessGame
+
+https://github.com/Chess-Fish
+
+_This smart contract is designed to handle gasless game moves. Key features include:
+
+1. Off-Chain Move Signing: This contract enables game moves to be signed off-chain,
+   significantly reducing the need for constant on-chain transactions. This approach
+   substantially lowers transaction costs.
+
+2. Delegated Signer Functionality: Players have the option to delegate a signer
+   (generated on the front end) to execute moves on their behalf. This delegated
+   signer functionality reduces the frequency of wallet signature requests,
+   providing a smoother and more uninterrupted gameplay experience. It ensures
+   that players can focus on strategy rather than managing transaction confirmations._
+
+### GaslessMoveData
+
+```solidity
+struct GaslessMoveData {
+  address signer;
+  address player0;
+  address player1;
+  uint16 move;
+  uint256 moveNumber;
+  uint256 expiration;
+  bytes32 messageHash;
+}
+```
+
+### Delegation
+
+```solidity
+struct Delegation {
+  address delegatorAddress;
+  address delegatedAddress;
+  address wagerAddress;
+}
+```
+
+### SignedDelegation
+
+```solidity
+struct SignedDelegation {
+  struct GaslessGame.Delegation delegation;
+  bytes signature;
+}
+```
+
+### moveVerification
+
+```solidity
+contract MoveVerification moveVerification
+```
+
+_MoveVerification contract_
+
+### chessWager
+
+```solidity
+contract ChessWager chessWager
+```
+
+### deployer
+
+```solidity
+address deployer
+```
+
+_address deployer_
+
+### onlyDeployer
+
+```solidity
+modifier onlyDeployer()
+```
+
+### constructor
+
+```solidity
+constructor(address moveVerificationAddress) public
+```
+
+### setChessWager
+
+```solidity
+function setChessWager(address _chessWager) external
+```
+
+set ChessWager contract
 
 ### generateMoveMessage
 
@@ -450,101 +674,85 @@ Verifies all signed messages and signatures
 _appends onchain moves to gasless moves
 reverts if invalid signature_
 
-### verifyGameUpdateState
+### createDelegation
 
 ```solidity
-function verifyGameUpdateState(bytes[] message, bytes[] signature) external returns (bool)
+function createDelegation(address delegatorAddress, address delegatedAddress, address wagerAddress) external pure returns (struct GaslessGame.Delegation)
 ```
 
-Verifies game moves and updates the state of the wager
+Create delegation data type helper function
 
-### createGameWager
+### encodeSignedDelegation
 
 ```solidity
-function createGameWager(address player1, address wagerToken, uint256 wager, uint256 timeLimit, uint256 numberOfGames) external payable returns (address wagerAddress)
+function encodeSignedDelegation(struct GaslessGame.Delegation delegation, bytes signature) external pure returns (bytes)
 ```
 
-Creates a 1v1 chess wager
+Encode signed delegation helper function
 
-### acceptWager
+### checkDelegations
 
 ```solidity
-function acceptWager(address wagerAddress) external
+function checkDelegations(struct GaslessGame.SignedDelegation signedDelegation0, struct GaslessGame.SignedDelegation signedDelegation1) internal pure
 ```
 
-Player1 calls if they accept challenge
+Check delegations
 
-### playMove
+### verifyDelegation
 
 ```solidity
-function playMove(address wagerAddress, uint16 move) external returns (bool)
+function verifyDelegation(struct GaslessGame.SignedDelegation signedDelegation) public pure
 ```
 
-Plays move on the board
+Verify delegation signature
 
-#### Return Values
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | bool | bool true if endGame, adds extra game if stalemate |
-
-### payoutWager
+### decodeSignedDelegation
 
 ```solidity
-function payoutWager(address wagerAddress) external returns (bool)
+function decodeSignedDelegation(bytes signedDelegationBytes) public pure returns (struct GaslessGame.SignedDelegation signedDelegation)
 ```
 
-Handles payout of wager
+Decode Signed Delegation
 
-_smallest wager amount is 18 wei before fees => 0_
+_this can be internal unless it's somehow required on the frontend_
 
-### cancelWager
+### hashDelegation
 
 ```solidity
-function cancelWager(address wagerAddress) external returns (bool)
+function hashDelegation(struct GaslessGame.Delegation delegationData) public pure returns (bytes32)
 ```
 
-Cancel wager
+Hash Delegation data type
 
-_cancel wager only if other player has not yet accepted
-&& only if msg.sender is one of the players_
-
-### updateWagerStateTime
+### verifyDelegatedAddress
 
 ```solidity
-function updateWagerStateTime(address wagerAddress) public returns (bool)
+function verifyDelegatedAddress(bytes32 hashedDelegation, bytes signature, address delegatorAddress) internal pure
 ```
 
-Updates the state of the wager if player time is < 0
+Verify delegator signature
 
-_check when called with timeout w tournament
-set to public so that anyone can update time if player disappears_
-
-### updateWagerStateInsufficientMaterial
+### checkIfAddressesArePlayers
 
 ```solidity
-function updateWagerStateInsufficientMaterial(address wagerAddress) public returns (bool)
+function checkIfAddressesArePlayers(address delegator0, address delegator1, address wagerAddress) internal view
 ```
 
-Update wager state if insufficient material
+Check if delegators match players in wagerAddress
 
-_set to public so that anyone can update_
-
-### depositToWager
+### verifyGameViewDelegated
 
 ```solidity
-function depositToWager(address wagerAddress, uint256 amount) external
+function verifyGameViewDelegated(bytes[2] delegations, bytes[] messages, bytes[] signatures) external view returns (address wagerAddress, uint8 outcome, uint16[] moves)
 ```
 
-Deposits prize to wager address
-
-_used to deposit prizes to wager_
+Verify game moves via delegated signature
 
 ## MoveHelper
 
 https://github.com/Chess-Fish
 
-_This contract handles move conversion functionality to the MoveVerifican contract as well as admin functionality._
+_This contract handles move conversion functionality to the MoveVerification contract as well as setting board coordinates._
 
 ### pieces
 
@@ -1518,166 +1726,6 @@ function startWagersInTournament(address wagerAddress) external
 function getWagerStatus(address wagerAddress) external view returns (address, address, uint256, uint256)
 ```
 
-## PaymentSplitter
-
-_This contract allows to split Ether payments among a group of accounts. The sender does not need to be aware
-that the Ether will be split in this way, since it is handled transparently by the contract.
-
-The split can be in equal parts or in any other arbitrary proportion. The way this is specified is by assigning each
-account to a number of shares. Of all the Ether that this contract receives, each account will then be able to claim
-an amount proportional to the percentage of total shares they were assigned. The distribution of shares is set at the
-time of contract deployment and can't be updated thereafter.
-
-`PaymentSplitter` follows a _pull payment_ model. This means that payments are not automatically forwarded to the
-accounts but kept in this contract, and the actual transfer is triggered as a separate step by calling the {release}
-function.
-
-NOTE: This contract assumes that ERC20 tokens will behave similarly to native tokens (Ether). Rebasing tokens, and
-tokens that apply fees during transfers, are likely to not be supported as expected. If in doubt, we encourage you
-to run tests before sending real value to this contract._
-
-### PayeeAdded
-
-```solidity
-event PayeeAdded(address account, uint256 shares)
-```
-
-### PaymentReleased
-
-```solidity
-event PaymentReleased(address to, uint256 amount)
-```
-
-### ERC20PaymentReleased
-
-```solidity
-event ERC20PaymentReleased(contract IERC20 token, address to, uint256 amount)
-```
-
-### PaymentReceived
-
-```solidity
-event PaymentReceived(address from, uint256 amount)
-```
-
-### CFSH_token
-
-```solidity
-address CFSH_token
-```
-
-### constructor
-
-```solidity
-constructor(address _token) public
-```
-
-_Creates an instance of `PaymentSplitter` where each account in `payees` is assigned the number of shares at
-the matching position in the `shares` array.
-
-All addresses in `payees` must be non-zero. Both arrays must have the same non-zero length, and there must be no
-duplicates in `payees`._
-
-### receive
-
-```solidity
-receive() external payable
-```
-
-_The Ether received will be logged with {PaymentReceived} events. Note that these events are not fully
-reliable: it's possible for a contract to receive Ether without triggering this function. This only affects the
-reliability of the events, and not the actual splitting of Ether.
-
-To learn more about this see the Solidity documentation for
-https://solidity.readthedocs.io/en/latest/contracts.html#fallback-function[fallback
-functions]._
-
-### totalShares
-
-```solidity
-function totalShares() public view returns (uint256)
-```
-
-_Getter for the total shares held by payees._
-
-### totalReleasedNative
-
-```solidity
-function totalReleasedNative() public view returns (uint256)
-```
-
-_Getter for the total amount of Ether already released._
-
-### totalReleasedERC20
-
-```solidity
-function totalReleasedERC20(contract IERC20 token) public view returns (uint256)
-```
-
-_Getter for the total amount of `token` already released. `token` should be the address of an IERC20
-contract._
-
-### shares
-
-```solidity
-function shares(address account) public view returns (uint256)
-```
-
-_Getter for the amount of shares held by an account._
-
-### releasedNative
-
-```solidity
-function releasedNative(address account) public view returns (uint256)
-```
-
-_Getter for the amount of Ether already released to a payee._
-
-### releasedERC20
-
-```solidity
-function releasedERC20(contract IERC20 token, address account) public view returns (uint256)
-```
-
-_Getter for the amount of `token` tokens already released to a payee. `token` should be the address of an
-IERC20 contract._
-
-### releasableNative
-
-```solidity
-function releasableNative(address account) public view returns (uint256)
-```
-
-_Getter for the amount of payee's releasable Ether._
-
-### releasableERC20
-
-```solidity
-function releasableERC20(contract IERC20 token, address account) public view returns (uint256)
-```
-
-_Getter for the amount of payee's releasable `token` tokens. `token` should be the address of an
-IERC20 contract._
-
-### releaseNative
-
-```solidity
-function releaseNative(address payable account) public
-```
-
-_Triggers a transfer to `account` of the amount of Ether they are owed, according to their percentage of the
-total shares and their previous withdrawals._
-
-### releaseERC20
-
-```solidity
-function releaseERC20(contract IERC20 token, address account) public
-```
-
-_Triggers a transfer to `account` of the amount of `token` tokens they are owed, according to their
-percentage of the total shares and their previous withdrawals. `token` must be the address of an IERC20
-contract._
-
 ## Token
 
 _Test Token with large supply_
@@ -1839,6 +1887,166 @@ function withdraw() external
 ```solidity
 function withdrawERC20(address token) external
 ```
+
+## PaymentSplitter
+
+_This contract allows to split Ether payments among a group of accounts. The sender does not need to be aware
+that the Ether will be split in this way, since it is handled transparently by the contract.
+
+The split can be in equal parts or in any other arbitrary proportion. The way this is specified is by assigning each
+account to a number of shares. Of all the Ether that this contract receives, each account will then be able to claim
+an amount proportional to the percentage of total shares they were assigned. The distribution of shares is set at the
+time of contract deployment and can't be updated thereafter.
+
+`PaymentSplitter` follows a _pull payment_ model. This means that payments are not automatically forwarded to the
+accounts but kept in this contract, and the actual transfer is triggered as a separate step by calling the {release}
+function.
+
+NOTE: This contract assumes that ERC20 tokens will behave similarly to native tokens (Ether). Rebasing tokens, and
+tokens that apply fees during transfers, are likely to not be supported as expected. If in doubt, we encourage you
+to run tests before sending real value to this contract._
+
+### PayeeAdded
+
+```solidity
+event PayeeAdded(address account, uint256 shares)
+```
+
+### PaymentReleased
+
+```solidity
+event PaymentReleased(address to, uint256 amount)
+```
+
+### ERC20PaymentReleased
+
+```solidity
+event ERC20PaymentReleased(contract IERC20 token, address to, uint256 amount)
+```
+
+### PaymentReceived
+
+```solidity
+event PaymentReceived(address from, uint256 amount)
+```
+
+### CFSH_token
+
+```solidity
+address CFSH_token
+```
+
+### constructor
+
+```solidity
+constructor(address _token) public
+```
+
+_Creates an instance of `PaymentSplitter` where each account in `payees` is assigned the number of shares at
+the matching position in the `shares` array.
+
+All addresses in `payees` must be non-zero. Both arrays must have the same non-zero length, and there must be no
+duplicates in `payees`._
+
+### receive
+
+```solidity
+receive() external payable
+```
+
+_The Ether received will be logged with {PaymentReceived} events. Note that these events are not fully
+reliable: it's possible for a contract to receive Ether without triggering this function. This only affects the
+reliability of the events, and not the actual splitting of Ether.
+
+To learn more about this see the Solidity documentation for
+https://solidity.readthedocs.io/en/latest/contracts.html#fallback-function[fallback
+functions]._
+
+### totalShares
+
+```solidity
+function totalShares() public view returns (uint256)
+```
+
+_Getter for the total shares held by payees._
+
+### totalReleasedNative
+
+```solidity
+function totalReleasedNative() public view returns (uint256)
+```
+
+_Getter for the total amount of Ether already released._
+
+### totalReleasedERC20
+
+```solidity
+function totalReleasedERC20(contract IERC20 token) public view returns (uint256)
+```
+
+_Getter for the total amount of `token` already released. `token` should be the address of an IERC20
+contract._
+
+### shares
+
+```solidity
+function shares(address account) public view returns (uint256)
+```
+
+_Getter for the amount of shares held by an account._
+
+### releasedNative
+
+```solidity
+function releasedNative(address account) public view returns (uint256)
+```
+
+_Getter for the amount of Ether already released to a payee._
+
+### releasedERC20
+
+```solidity
+function releasedERC20(contract IERC20 token, address account) public view returns (uint256)
+```
+
+_Getter for the amount of `token` tokens already released to a payee. `token` should be the address of an
+IERC20 contract._
+
+### releasableNative
+
+```solidity
+function releasableNative(address account) public view returns (uint256)
+```
+
+_Getter for the amount of payee's releasable Ether._
+
+### releasableERC20
+
+```solidity
+function releasableERC20(contract IERC20 token, address account) public view returns (uint256)
+```
+
+_Getter for the amount of payee's releasable `token` tokens. `token` should be the address of an
+IERC20 contract._
+
+### releaseNative
+
+```solidity
+function releaseNative(address payable account) public
+```
+
+_Triggers a transfer to `account` of the amount of Ether they are owed, according to their percentage of the
+total shares and their previous withdrawals._
+
+### releaseERC20
+
+```solidity
+function releaseERC20(contract IERC20 token, address account) public
+```
+
+_Triggers a transfer to `account` of the amount of `token` tokens they are owed, according to their
+percentage of the total shares and their previous withdrawals. `token` must be the address of an IERC20
+contract._
 
 ## TreasuryVester
 
