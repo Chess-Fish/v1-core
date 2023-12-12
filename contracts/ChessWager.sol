@@ -310,6 +310,54 @@ contract ChessWager is MoveHelper {
     }
 
     /* 
+    //// GASLESS GAME FUNCTIONS ////
+    */
+
+    /// @notice Verifies game moves and updates the state of the wager
+    function verifyGameUpdateState(bytes[] memory message, bytes[] memory signature) external returns (bool) {
+        (address wagerAddress, uint outcome, uint16[] memory moves) = gaslessGame.verifyGameView(message, signature);
+
+        uint gameID = gameIDs[wagerAddress].length;
+        games[wagerAddress][gameID].moves = moves;
+
+        if (outcome != 0) {
+            updateWagerState(wagerAddress);
+            return true;
+        }
+        if (outcome == 0) {
+            return updateWagerStateInsufficientMaterial(wagerAddress);
+        } else {
+            return false;
+        }
+    }
+
+    /// @notice Verifies game moves and updates the state of the wager
+    function verifyGameUpdateStateDelegated(
+        bytes[2] memory delegations,
+        bytes[] memory messages,
+        bytes[] memory signatures
+    ) external returns (bool) {
+        (address wagerAddress, uint outcome, uint16[] memory moves) = gaslessGame.verifyGameViewDelegated(
+            delegations,
+            messages,
+            signatures
+        );
+
+        uint gameID = gameIDs[wagerAddress].length;
+        games[wagerAddress][gameID].moves = moves;
+
+        if (outcome != 0) {
+            updateWagerState(wagerAddress);
+            return true;
+        }
+        if (outcome == 0) {
+            return updateWagerStateInsufficientMaterial(wagerAddress);
+        } else {
+            return false;
+        }
+    }
+
+    /* 
     //// TOURNAMENT FUNCTIONS ////
     */
 
@@ -375,50 +423,6 @@ contract ChessWager is MoveHelper {
         emit createGameWagerEvent(wagerAddress, wagerToken, wagerAmount, timeLimit, numberOfGames);
 
         return wagerAddress;
-    }
-
-    /// @notice Verifies game moves and updates the state of the wager
-    function verifyGameUpdateState(bytes[] memory message, bytes[] memory signature) external returns (bool) {
-        (address wagerAddress, uint outcome, uint16[] memory moves) = gaslessGame.verifyGameView(message, signature);
-
-        uint gameID = gameIDs[wagerAddress].length;
-        games[wagerAddress][gameID].moves = moves;
-
-        if (outcome != 0) {
-            updateWagerState(wagerAddress);
-            return true;
-        }
-        if (outcome == 0) {
-            return updateWagerStateInsufficientMaterial(wagerAddress);
-        } else {
-            return false;
-        }
-    }
-
-    /// @notice Verifies game moves and updates the state of the wager
-    function verifyGameUpdateStateDelegated(
-        bytes[2] memory delegations,
-        bytes[] memory messages,
-        bytes[] memory signatures
-    ) external returns (bool) {
-        (address wagerAddress, uint outcome, uint16[] memory moves) = gaslessGame.verifyGameViewDelegated(
-            delegations,
-            messages,
-            signatures
-        );
-
-        uint gameID = gameIDs[wagerAddress].length;
-        games[wagerAddress][gameID].moves = moves;
-
-        if (outcome != 0) {
-            updateWagerState(wagerAddress);
-            return true;
-        }
-        if (outcome == 0) {
-            return updateWagerStateInsufficientMaterial(wagerAddress);
-        } else {
-            return false;
-        }
     }
 
     /*
