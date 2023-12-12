@@ -82,7 +82,7 @@ contract ChessWager is MoveHelper {
     /// @dev address wager => gameIDs
     mapping(address => uint[]) gameIDs;
 
-    /// @dev addres wager => Player Wins
+    /// @dev address wager => Player Wins
     mapping(address => WagerStatus) public wagerStatus;
 
     /// @dev player can see game challenges
