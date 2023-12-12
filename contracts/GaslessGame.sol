@@ -19,8 +19,6 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./MoveVerification.sol";
 import "./ChessWager.sol";
 
-import "hardhat/console.sol";
-
 /**
  * @title ChessFish GaslessGame Contract
  * @author ChessFish
@@ -103,13 +101,6 @@ contract GaslessGame {
     /// @notice Validates that the signed hash was signed by the player
     function validate(bytes32 messageHash, bytes memory signature, address signer) internal pure {
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-
-        if (ECDSA.recover(ethSignedMessageHash, signature) != signer) {
-            console.log("________");
-            console.log(ECDSA.recover(ethSignedMessageHash, signature));
-            console.log(signer);
-        }
-
         require(ECDSA.recover(ethSignedMessageHash, signature) == signer, "invalid sig");
     }
 
@@ -199,50 +190,73 @@ contract GaslessGame {
     //// DELEGATED GASLESS MOVE VERIFICATION FUNCTIONS ////
     */
 
-    function hashDelegatedAddress(address delegator) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(delegator));
+    struct Delegation {
+        address delegatorAddress;
+        address delegatedAddress;
+        address wagerAddress;
     }
 
-    function encodeDelegation(
-        bytes32 delegatedAddressBytes,
-        bytes memory signature,
+    struct SignedDelegation {
+        Delegation delegation;
+        bytes signature;
+    }
+
+    function createDelegation(
         address delegatorAddress,
-        address delegatedAddress
+        address delegatedAddress,
+        address wagerAddress
+    ) external pure returns (Delegation memory) {
+        Delegation memory delegation = Delegation(delegatorAddress, delegatedAddress, wagerAddress);
+        return delegation;
+    }
+
+    function encodeSignedDelegation(
+        Delegation memory delegation,
+        bytes memory signature
     ) external pure returns (bytes memory) {
-        return abi.encode(delegatedAddressBytes, signature, delegatorAddress, delegatedAddress);
+        SignedDelegation memory signedDelegation = SignedDelegation(delegation, signature);
+        return abi.encode(signedDelegation);
     }
 
-    function decodeDelegation(bytes memory delegation) internal pure returns (bytes32, bytes memory, address, address) {
-        return abi.decode(delegation, (bytes32, bytes, address, address));
+    function checkDelegations(
+        SignedDelegation memory signedDelegation0,
+        SignedDelegation memory signedDelegation1
+    ) internal pure {
+        require(
+            signedDelegation0.delegation.wagerAddress == signedDelegation1.delegation.wagerAddress,
+            "non matching addresses"
+        );
+
+        verifyDelegation(signedDelegation0);
+        verifyDelegation(signedDelegation1);
     }
 
-    function verifyDelegation(bytes memory delegation) public pure {
-        (
-            bytes32 delegatedAddressBytes,
-            bytes memory signature,
-            address delegatorAddress,
-            address delegatedAddress
-        ) = decodeDelegation(delegation);
+    function verifyDelegation(SignedDelegation memory signedDelegation) public pure {
+        bytes32 hashedDelegation = hashDelegation(signedDelegation.delegation);
+        verifyDelegatedAddress(
+            hashedDelegation,
+            signedDelegation.signature,
+            signedDelegation.delegation.delegatorAddress
+        );
+    }
 
-        verifyDelegatedAddress(delegatedAddressBytes, signature, delegatorAddress, delegatedAddress);
+    function decodeSignedDelegation(
+        bytes memory signedDelegationBytes
+    ) internal pure returns (SignedDelegation memory signedDelegation) {
+        return abi.decode(signedDelegationBytes, (SignedDelegation));
+    }
+
+    function hashDelegation(Delegation memory delegationData) public pure returns (bytes32) {
+        return keccak256(abi.encode(delegationData));
     }
 
     function verifyDelegatedAddress(
-        bytes32 delegatedAddressBytes,
+        bytes32 hashedDelegation,
         bytes memory signature,
-        address delegatorAddress,
-        address delegatedAddress
+        address delegatorAddress
     ) internal pure {
-        bytes32 delegatedAddressHash = hashDelegatedAddress(delegatedAddress);
-        require(delegatedAddressHash == delegatedAddressBytes);
-
-        bytes32 ethSignedMessageHash = getEthSignedMessageHash(delegatedAddressBytes);
+        bytes32 ethSignedMessageHash = getEthSignedMessageHash(hashedDelegation);
         require(ECDSA.recover(ethSignedMessageHash, signature) == delegatorAddress, "invalid signature");
-    }
-
-    function checkDelegation(bytes[2] memory delegations) internal pure {
-        verifyDelegation(delegations[0]);
-        verifyDelegation(delegations[1]);
     }
 
     function checkIfAddressesArePlayers(address delegator0, address delegator1, address wagerAddress) internal view {
@@ -257,18 +271,27 @@ contract GaslessGame {
     ) external view returns (address wagerAddress, uint8 outcome, uint16[] memory moves) {
         require(messages.length == signatures.length, "573");
 
-        checkDelegation(delegations);
+        // Decode each delegation once
+        SignedDelegation memory signedDelegation0 = decodeSignedDelegation(delegations[0]);
+        SignedDelegation memory signedDelegation1 = decodeSignedDelegation(delegations[1]);
 
-        // optimistically use the wagerAddress from the first index
-        wagerAddress = decodeWagerAddress(messages[0]);
+        // Pass the decoded delegations to checkDelegations
+        checkDelegations(signedDelegation0, signedDelegation1);
 
-        (, , address delegatorAddress0, address player0) = decodeDelegation(delegations[0]);
-        (, , address delegatorAddress1, address player1) = decodeDelegation(delegations[1]);
+        address player0 = signedDelegation0.delegation.delegatedAddress;
+        address player1 = signedDelegation1.delegation.delegatedAddress;
+        wagerAddress = signedDelegation0.delegation.wagerAddress;
 
         // add check for delegator addresses are infact players in sc
-        checkIfAddressesArePlayers(delegatorAddress0, delegatorAddress1, wagerAddress);
+        checkIfAddressesArePlayers(
+            signedDelegation0.delegation.delegatorAddress,
+            signedDelegation1.delegation.delegatorAddress,
+            wagerAddress
+        );
 
-        address playerToMove = chessWager.getPlayerMove(wagerAddress) == delegatorAddress0 ? player0 : player1;
+        address playerToMove = chessWager.getPlayerMove(wagerAddress) == signedDelegation0.delegation.delegatorAddress
+            ? player0
+            : player1;
 
         moves = verifyMoves(playerToMove, player0, player1, messages, signatures);
 
