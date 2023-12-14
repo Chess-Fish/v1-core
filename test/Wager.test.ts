@@ -62,13 +62,6 @@ describe("evm_chess Wager Unit Tests", function () {
 		it("Should create wager", async function () {
 			const { chess, deployer, otherAccount, token } = await loadFixture(deploy);
 
-			console.log("Deployer", deployer.address);
-			console.log("Other Account", otherAccount.address);
-			console.log("token address", token.address);
-
-			const balance = await token.balanceOf(deployer.address);
-			console.log(balance);
-
 			let player1 = otherAccount.address;
 			let wagerToken = token.address;
 			let wager = ethers.utils.parseEther("1.0");
@@ -81,17 +74,12 @@ describe("evm_chess Wager Unit Tests", function () {
 			await tx.wait();
 
 			const balance0 = await token.balanceOf(chess.address);
-			console.log("balance of chess contract", balance0);
-
-			// let games = await chess.userGames(deployer.address);
-			// console.log(games);
+	
+			expect(balance0).to.equal(wager);
 		});
 
 		it("Should create game", async function () {
 			const { chess, deployer, otherAccount, token } = await loadFixture(deploy);
-
-			console.log("Deployer", deployer.address);
-			console.log("Other Account", otherAccount.address);
 
 			let player1 = otherAccount.address;
 			let wagerToken = token.address;
@@ -106,7 +94,7 @@ describe("evm_chess Wager Unit Tests", function () {
 
 			let gameAddr = await chess.userGames(deployer.address, 0);
 			let playerMove0 = await chess.getPlayerMove(gameAddr);
-			console.log(playerMove0);
+			expect(playerMove0).to.equal(otherAccount.address);
 
 			let gameAddr0 = await chess.userGames(deployer.address, 0);
 			let gameAddr1 = await chess.userGames(otherAccount.address, 0);
@@ -119,18 +107,12 @@ describe("evm_chess Wager Unit Tests", function () {
 			let tx1 = await chess.connect(otherAccount).acceptWager(gameAddr);
 			await tx1.wait();
 
-			let playerMove1 = await chess.getPlayerMove(gameAddr);
-			console.log("player turn:", playerMove1);
-
 			// first move
 			let hex_move1 = await chess.moveToHex("e2e4");
-			console.log("hex move", hex_move1);
 
 			// player that accepts wager conditions plays first move
-			let tx2 = await chess.connect(otherAccount).playMove(gameAddr, hex_move1);
+			await chess.connect(otherAccount).playMove(gameAddr, hex_move1);
 
-			let playerMove2 = await chess.getPlayerMove(gameAddr);
-			console.log("player turn:", playerMove2);
 		});
 
 		it("Should play game", async function () {
@@ -160,7 +142,6 @@ describe("evm_chess Wager Unit Tests", function () {
 
 			// approve chess contract
 			await token.connect(otherAccount).approve(chess.address, wager);
-			console.log("allowance", await token.allowance(otherAccount.address, chess.address));
 
 			// accept wager terms
 			let tx1 = await chess.connect(otherAccount).acceptWager(gameAddr);
@@ -178,7 +159,6 @@ describe("evm_chess Wager Unit Tests", function () {
 				let hex_move = await chess.moveToHex(moves[i]);
 				await chess.connect(player).playMove(gameAddr, hex_move);
 
-				console.log(hex_move);
 			}
 
 			// let game_status = await chess.getGameStatus(gameAddr);
@@ -192,17 +172,11 @@ describe("evm_chess Wager Unit Tests", function () {
 			const winsPlayer0 = Number(wins.winsPlayer0);
 			const winsPlayer1 = Number(wins.winsPlayer1);
 
-			console.log("Wins player0", winsPlayer0);
-			console.log("Wins player1", winsPlayer1);
-
 			expect(winsPlayer0).to.equal(1);
 			expect(winsPlayer1).to.equal(0);
 
 			const wagerAddresses = await chess.getAllUserGames(player1);
-			console.log(wagerAddresses);
-
 			const gameLength = await chess.getGameLength(gameAddr);
-			console.log(gameLength);
 
 			// #### SECOND GAME ####
 			for (let i = 0; i < moves.length; i++) {
@@ -214,24 +188,18 @@ describe("evm_chess Wager Unit Tests", function () {
 				}
 
 				let hex_move = await chess.moveToHex(moves[i]);
-				console.log(hex_move);
-				let tx = await chess.connect(player).playMove(gameAddr, hex_move);
+				await chess.connect(player).playMove(gameAddr, hex_move);
 
-				//console.log(hex_move);
 			}
 
 			const wins1 = await chess.wagerStatus(gameAddr);
 			const winsPlayer01 = Number(wins1.winsPlayer0);
 			const winsPlayer11 = Number(wins1.winsPlayer1);
 
-			console.log("Wins player0", winsPlayer01);
-			console.log("Wins player1", winsPlayer11);
-
 			expect(winsPlayer01).to.equal(1);
 			expect(winsPlayer11).to.equal(1);
 
 			const timeRemaining = await chess.checkTimeRemaining(gameAddr);
-			console.log("TIME REMAINING", timeRemaining[0], timeRemaining[1]);
 
 			const gameData = await chess.gameWagers(gameAddr);
 			const gameLength1 = await chess.getGameLength(gameAddr);
@@ -247,8 +215,7 @@ describe("evm_chess Wager Unit Tests", function () {
 					player = deployer;
 				}
 				let hex_move = await chess.moveToHex(moves[i]);
-				console.log(hex_move);
-				let tx = await chess.connect(player).playMove(gameAddr, hex_move);
+				await chess.connect(player).playMove(gameAddr, hex_move);
 			}
 
 			const gameData1 = await chess.gameWagers(gameAddr);
@@ -259,9 +226,6 @@ describe("evm_chess Wager Unit Tests", function () {
 			const winsPlayer02 = Number(wins2.winsPlayer0);
 			const winsPlayer12 = Number(wins2.winsPlayer1);
 
-			console.log("Wins player0", winsPlayer02);
-			console.log("Wins player1", winsPlayer12);
-
 			expect(winsPlayer02).to.equal(2);
 			expect(winsPlayer12).to.equal(1);
 
@@ -269,19 +233,14 @@ describe("evm_chess Wager Unit Tests", function () {
 			await chess.payoutWager(gameAddr);
 			const balance1 = await token.balanceOf(deployer.address);
 
-			console.log(Number(balance1.sub(balance0)));
-
 			const wagerPayout = balance1.sub(balance0);
-
-			const chessTokenBalance = await token.balanceOf(paymentSplitter.address);
-			console.log(Number(chessTokenBalance));
-
-			console.log(Number(wager) * 2 * 0.94);
-
 			expect(Number(wagerPayout)).to.equal(Number(wager) * 2 * 0.95);
 
 			const NFTcount = await chessNFT.balanceOf(deployer.address);
 			expect(NFTcount).to.equal(1);
+
+			const chessTokenBalance = await token.balanceOf(paymentSplitter.address);
+			expect(chessTokenBalance).to.equal(ethers.utils.parseUnits("0.1", 18));
 
 			const numberOfWagers = await chess.getAllWagersCount();
 			expect(numberOfWagers).to.equal(1);
@@ -315,7 +274,6 @@ describe("evm_chess Wager Unit Tests", function () {
 
 			// approve chess contract
 			await token.connect(otherAccount).approve(chess.address, wager);
-			console.log("allowance", await token.allowance(otherAccount.address, chess.address));
 
 			let tx1 = await chess.connect(otherAccount).acceptWager(gameAddr);
 			await tx1.wait();
@@ -336,7 +294,6 @@ describe("evm_chess Wager Unit Tests", function () {
 				}
 				let hex_move = await chess.moveToHex(moves[i]);
 				await chess.connect(player).playMove(gameAddr, hex_move);
-				console.log(hex_move);
 			}
 
 			const gameMovesContract = await chess.getGameMoves(gameAddr, 0);
@@ -376,7 +333,6 @@ describe("evm_chess Wager Unit Tests", function () {
 
 			// approve chess contract
 			await token.connect(otherAccount).approve(chess.address, wager);
-			console.log("allowance", await token.allowance(otherAccount.address, chess.address));
 
 			// accept wager terms
 			let tx1 = await chess.connect(otherAccount).acceptWager(gameAddr);
@@ -406,12 +362,10 @@ describe("evm_chess Wager Unit Tests", function () {
 				let gameStatus: Number[] = [];
 				if (i < moves.length - 1) {
 					// not endgame
-					console.log("NOT ENDGAME");
 					gameStatus = await chess.getGameStatus(gameAddr);
 					expect(gameStatus[0]).to.equal(0);
 				} else {
 					// is endgame
-					console.log("IS ENDGAME");
 					gameStatus = await chess.getGameStatus(gameAddr);
 					expect(gameStatus[0]).to.equal(3);
 				}
@@ -447,7 +401,6 @@ describe("evm_chess Wager Unit Tests", function () {
 
 			// approve chess contract
 			await token.connect(otherAccount).approve(chess.address, wager);
-			console.log("allowance", await token.allowance(otherAccount.address, chess.address));
 
 			// accept wager terms
 			let tx1 = await chess.connect(otherAccount).acceptWager(gameAddr);
@@ -487,7 +440,6 @@ describe("evm_chess Wager Unit Tests", function () {
 			}
 
 			let data = await chess.getWagerStatus(gameAddr);
-			console.log(data);
 
 			let bal0p0 = await token.balanceOf(deployer.address);
 			let bal0p1 = await token.balanceOf(otherAccount.address);
@@ -496,9 +448,6 @@ describe("evm_chess Wager Unit Tests", function () {
 
 			let bal1p0 = await token.balanceOf(deployer.address);
 			let bal1p1 = await token.balanceOf(otherAccount.address);
-
-			console.log(bal1p0.sub(bal0p0));
-			console.log(bal1p1.sub(bal0p1));
 
 			expect(bal1p0.sub(bal0p0)).to.equal(ethers.utils.parseEther("11.4"));
 			expect(bal1p1.sub(bal0p1)).to.equal(0);
@@ -522,7 +471,6 @@ describe("evm_chess Wager Unit Tests", function () {
 
 			// approve chess contract
 			await token.connect(otherAccount).approve(chess.address, wager);
-			console.log("allowance", await token.allowance(otherAccount.address, chess.address));
 
 			const [_deployer, _otherAccount, account3] = await ethers.getSigners();
 
@@ -563,7 +511,6 @@ describe("evm_chess Wager Unit Tests", function () {
 
 			// approve chess contract
 			await token.connect(otherAccount).approve(chess.address, wager);
-			console.log("allowance", await token.allowance(otherAccount.address, chess.address));
 
 			// accept wager terms
 			let tx1 = await chess.connect(otherAccount).acceptWager(gameAddr);
@@ -602,8 +549,6 @@ describe("evm_chess Wager Unit Tests", function () {
 				}
 			}
 
-			let data = await chess.getWagerStatus(gameAddr);
-			console.log(data);
 
 			let tx2 = await chess.payoutWager(gameAddr);
 			await tx2.wait();
@@ -612,7 +557,7 @@ describe("evm_chess Wager Unit Tests", function () {
 			await expect(promise).to.be.revertedWith("already paid");
 
 			let nftBal = await chessNFT.balanceOf(deployer.address);
-			console.log(nftBal);
+			expect(nftBal).to.equal(1);
 
 			expect(nftBal).to.be.equal(1);
 

@@ -55,8 +55,6 @@ describe("evm_chess Tournament Unit Tests", function () {
 		const initialWhite = "0x000704ff";
 		const initialBlack = "0x383f3cff";
 
-		console.log("BALANCE INIT", ethers.utils.formatEther(await token.balanceOf(player0.address)));
-
 		return {
 			chess,
 			chessFishToken,
@@ -126,12 +124,6 @@ describe("evm_chess Tournament Unit Tests", function () {
 			await tournament.connect(deployer).depositToTournament(tournamentNonce - 1, depositAmount);
 
 			const wagerAddresses = await tournament.getTournamentWagerAddresses(tournamentNonce - 1);
-
-			console.log(player0.address);
-			console.log(player1.address);
-			console.log(player2.address);
-			console.log(player3.address);
-			console.log(player4.address);
 
 			const moves = ["f2f3", "e7e5", "g2g4", "d8h4"];
 
@@ -225,7 +217,7 @@ describe("evm_chess Tournament Unit Tests", function () {
 			const player3bal1 = await token.balanceOf(player3.address);
 			const player4bal1 = await token.balanceOf(player4.address);
 
-			console.log("PAYOUTS");
+/* 			console.log("PAYOUTS");
 			console.log(ethers.utils.formatEther(player0bal1.sub(player0bal0)));
 			console.log(ethers.utils.formatEther(player1bal1.sub(player1bal0)));
 			console.log(ethers.utils.formatEther(player2bal1.sub(player2bal0)));
@@ -234,7 +226,7 @@ describe("evm_chess Tournament Unit Tests", function () {
 
 			console.log(depositAmount);
 			console.log(wagerAmount);
-			console.log(wagerAmount.mul(5));
+			console.log(wagerAmount.mul(5)); */
 
 			const pool = wagerAmount.mul(5).add(depositAmount);
 
@@ -256,7 +248,7 @@ describe("evm_chess Tournament Unit Tests", function () {
 			const player3wins = await tournament.tournamentWins(tournamentNonce - 1, player3.address);
 			const player4wins = await tournament.tournamentWins(tournamentNonce - 1, player4.address);
 
-			console.log(player0wins, player1wins, player2wins, player3wins, player4wins);
+			// console.log(player0wins, player1wins, player2wins, player3wins, player4wins);
 
 			expect(player0wins).to.equal(4);
 			expect(player1wins).to.equal(3);

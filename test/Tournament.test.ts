@@ -174,8 +174,6 @@ describe("evm_chess Tournament Unit Tests", function () {
 
 			await token.connect(player0).approve(tournament.address, wagerAmount);
 
-			console.log("BALANCE", ethers.utils.formatEther(await token.balanceOf(player0.address)));
-
 			let tx = await tournament
 				.connect(player0)
 				.createTournament(numberOfPlayers, numberOfGames, wagerToken, wagerAmount, timeLimit);
@@ -195,8 +193,6 @@ describe("evm_chess Tournament Unit Tests", function () {
 
 			const players = await tournament.getTournamentPlayers(tournamentNonce - 1);
 			expect(players.length).to.equal(3);
-
-			console.log("BALANCE", ethers.utils.formatEther(await token.balanceOf(player0.address)));
 
 			await tournament.startTournament(tournamentNonce - 1);
 
