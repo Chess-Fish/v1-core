@@ -20,13 +20,13 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ChessFish is ERC20, Ownable {
-    uint constant _initial_supply = 1e6 * 1e18;
+	uint constant _initial_supply = 1e6 * 1e18;
 
-    string name_ = "ChessFish";
-    string symbol_ = "CFSH";
+	string name_ = "ChessFish";
+	string symbol_ = "CFSH";
 
-    constructor(address _owner) ERC20(name_, symbol_) {
-        _mint(_owner, _initial_supply);
-        transferOwnership(_owner);
-    }
+	constructor(address _owner) ERC20(name_, symbol_) {
+		_mint(_owner, _initial_supply);
+		transferOwnership(_owner);
+	}
 }

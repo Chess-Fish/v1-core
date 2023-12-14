@@ -20,41 +20,41 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract ChessFishNFT is ERC721 {
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
+	using Counters for Counters.Counter;
+	Counters.Counter private _tokenIds;
 
-    mapping(uint => address) public wagerAddresses;
+	mapping(uint => address) public wagerAddresses;
 
-    address public ChessWager;
+	address public ChessWager;
 
-    address public deployer;
+	address public deployer;
 
-    modifier onlyChessFishWager() {
-        require(msg.sender == address(ChessWager));
-        _;
-    }
+	modifier onlyChessFishWager() {
+		require(msg.sender == address(ChessWager));
+		_;
+	}
 
-    modifier onlyDeployer() {
-        require(msg.sender == deployer);
-        _;
-    }
+	modifier onlyDeployer() {
+		require(msg.sender == deployer);
+		_;
+	}
 
-    constructor() ERC721("ChessFishNFT", "CFNFT") {
-        deployer = msg.sender;
-    }
+	constructor() ERC721("ChessFishNFT", "CFNFT") {
+		deployer = msg.sender;
+	}
 
-    function setChessFishAddress(address _chessFish) external onlyDeployer {
-        ChessWager = _chessFish;
-    }
+	function setChessFishAddress(address _chessFish) external onlyDeployer {
+		ChessWager = _chessFish;
+	}
 
-    function awardWinner(address player, address wagerAddress) external onlyChessFishWager returns (uint256) {
-        _tokenIds.increment();
+	function awardWinner(address player, address wagerAddress) external onlyChessFishWager returns (uint256) {
+		_tokenIds.increment();
 
-        uint256 newItemId = _tokenIds.current();
-        _mint(player, newItemId);
+		uint256 newItemId = _tokenIds.current();
+		_mint(player, newItemId);
 
-        wagerAddresses[newItemId] = wagerAddress;
+		wagerAddresses[newItemId] = wagerAddress;
 
-        return newItemId;
-    }
+		return newItemId;
+	}
 }
