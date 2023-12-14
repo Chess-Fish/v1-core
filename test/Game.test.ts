@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 
 import { coordinates_array, bitCoordinates_array } from "../scripts/constants";
 
-describe("evm_chess Game Unit Tests", function () {
+describe("ChessFish Game Unit Tests", function () {
 	// We define a fixture to reuse the same setup in every test.
 	async function deploy() {
 		const [owner, otherAccount] = await ethers.getSigners();
@@ -71,7 +71,6 @@ describe("evm_chess Game Unit Tests", function () {
 			let gameState = "92128449317020355091629252608629158979248243942770410860708258515263854891572";
 
 			let data = await chess.getBoard(gameState);
-			console.log(data);
 
 			let result = Object.values(data);
 
@@ -95,7 +94,6 @@ describe("evm_chess Game Unit Tests", function () {
 			board += "  +------------------------+\n";
 			board += "     a  b  c  d  e  f  g  h";
 
-			console.log(board);
 		});
 
 		it("Should get move hex at position", async function () {

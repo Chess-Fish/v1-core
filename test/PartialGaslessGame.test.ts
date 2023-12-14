@@ -145,14 +145,9 @@ describe("evm_chess Wager Unit Tests", function () {
 			const winsPlayer0 = Number(wins.winsPlayer0);
 			const winsPlayer1 = Number(wins.winsPlayer1);
 
-			console.log("Wins player0", winsPlayer0);
-			console.log("Wins player1", winsPlayer1);
-
 			expect(winsPlayer0).to.equal(1);
 			expect(winsPlayer1).to.equal(0);
 
-			const wagerAddresses = await chess.getAllUserGames(player1);
-			console.log(wagerAddresses);
 
 			const gameLength = await chess.getGameLength(gameAddr);
 			console.log(gameLength);

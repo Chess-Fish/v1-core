@@ -62,9 +62,6 @@ describe("evm_chess Wager Unit Tests", function () {
 		it("Should create game", async function () {
 			const { chess, deployer, otherAccount, token } = await loadFixture(deploy);
 
-			console.log("Deployer", deployer.address);
-			console.log("Other Account", otherAccount.address);
-
 			let player1 = otherAccount.address;
 			let wagerToken = token.address;
 			let wager = ethers.utils.parseEther("1.0");
@@ -77,8 +74,6 @@ describe("evm_chess Wager Unit Tests", function () {
 			await tx.wait();
 
 			let gameAddr = await chess.userGames(deployer.address, 0);
-			let playerMove0 = await chess.getPlayerMove(gameAddr);
-			console.log(playerMove0);
 
 			let gameAddr0 = await chess.userGames(deployer.address, 0);
 			let gameAddr1 = await chess.userGames(otherAccount.address, 0);
@@ -91,21 +86,16 @@ describe("evm_chess Wager Unit Tests", function () {
 			let tx1 = await chess.connect(otherAccount).acceptWager(gameAddr);
 			await tx1.wait();
 
-			let playerMove1 = await chess.getPlayerMove(gameAddr);
-			console.log("player turn:", playerMove1);
 
 			let timeRemaining = await chess.checkTimeRemaining(gameAddr);
 			expect(timeRemaining[0]).to.equal(timeLimit);
 
 			// first move
 			let hex_move1 = await chess.moveToHex("e2e4");
-			console.log("hex move", hex_move1);
 
 			// player that accepts wager conditions plays first move
-			let tx2 = await chess.connect(otherAccount).playMove(gameAddr, hex_move1);
+			await chess.connect(otherAccount).playMove(gameAddr, hex_move1);
 
-			let playerMove2 = await chess.getPlayerMove(gameAddr);
-			console.log("player turn:", playerMove2);
 		});
 	});
 });

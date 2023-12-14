@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 
 import { coordinates_array, bitCoordinates_array, moves_stalemate } from "../scripts/constants";
 
-describe("evm_chess gasless stalemate unit test", function () {
+describe("ChessFish gasless stalemate unit test", function () {
 	async function deploy() {
 		const [deployer, otherAccount] = await ethers.getSigners();
 

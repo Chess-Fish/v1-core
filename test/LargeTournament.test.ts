@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 
 import { coordinates_array, bitCoordinates_array } from "../scripts/constants";
 
-describe("evm_chess Wager Unit Tests", function () {
+describe("ChessFish Large Tournament Unit Tests", function () {
 	// We define a fixture to reuse the same setup in every test.
 	async function deploy() {
 		const [
@@ -153,13 +153,12 @@ describe("evm_chess Wager Unit Tests", function () {
 			const wagerAddresses = await tournament.getTournamentWagerAddresses(tournamentNonce - 1);
 			expect(wagerAddresses.length).to.equal(55); // 11 players
 
-			console.log(wagerAddresses);
 
 			const moves = ["f2f3", "e7e5", "g2g4", "d8h4"];
 
 			for (let i = 0; i < wagerAddresses.length; i++) {
 				for (let j = 0; j < moves.length; j++) {
-					console.log(`Playing game ${i} of ${wagerAddresses.length}`);
+					console.log(`Game ${i} of ${wagerAddresses.length}`);
 					let playerAddress = await chess.getPlayerMove(wagerAddresses[i]);
 					let player = await ethers.getSigner(playerAddress);
 					let hex_move = await chess.moveToHex(moves[j]);
@@ -194,15 +193,6 @@ describe("evm_chess Wager Unit Tests", function () {
 			const player8bal1 = await token.balanceOf(players[8].address);
 			const player9bal1 = await token.balanceOf(players[9].address);
 			const player10bal1 = await token.balanceOf(players[10].address);
-
-			console.log("PAYOUTS");
-			console.log(ethers.utils.formatEther(player0bal1.sub(player0bal0)));
-			console.log(ethers.utils.formatEther(player1bal1.sub(player1bal0)));
-			console.log(ethers.utils.formatEther(player2bal1.sub(player2bal0)));
-			console.log(ethers.utils.formatEther(player3bal1.sub(player3bal0)));
-			console.log(ethers.utils.formatEther(player4bal1.sub(player4bal0)));
-			console.log(ethers.utils.formatEther(player5bal1.sub(player5bal0)));
-			console.log(ethers.utils.formatEther(player6bal1.sub(player6bal0)));
 
 			const pool = wagerAmount * 11;
 			const expectedPayoutPlayer0 = pool * 0.365;
