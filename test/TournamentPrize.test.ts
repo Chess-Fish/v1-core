@@ -217,7 +217,7 @@ describe("evm_chess Tournament Unit Tests", function () {
 			const player3bal1 = await token.balanceOf(player3.address);
 			const player4bal1 = await token.balanceOf(player4.address);
 
-/* 			console.log("PAYOUTS");
+			/* 			console.log("PAYOUTS");
 			console.log(ethers.utils.formatEther(player0bal1.sub(player0bal0)));
 			console.log(ethers.utils.formatEther(player1bal1.sub(player1bal0)));
 			console.log(ethers.utils.formatEther(player2bal1.sub(player2bal0)));

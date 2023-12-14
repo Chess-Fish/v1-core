@@ -180,7 +180,6 @@ describe("Delegated Signed Gasless Game Unit Tests", function () {
 
 			expect(winsPlayer0).to.equal(1);
 			expect(winsPlayer1).to.equal(2);
-
 		});
 	});
 });

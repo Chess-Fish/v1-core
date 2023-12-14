@@ -93,7 +93,6 @@ describe("ChessFish Game Unit Tests", function () {
 
 			board += "  +------------------------+\n";
 			board += "     a  b  c  d  e  f  g  h";
-
 		});
 
 		it("Should get move hex at position", async function () {

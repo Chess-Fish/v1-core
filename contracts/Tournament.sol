@@ -39,6 +39,7 @@ contract ChessFishTournament {
 		uint startTime;
 		uint timeLimit;
 		bool isComplete;
+		bool setPlayers;
 	}
 
 	struct PlayerWins {
@@ -213,6 +214,47 @@ contract ChessFishTournament {
 		tournament.startTime = block.timestamp;
 		tournament.timeLimit = timeLimit;
 		tournament.isComplete = false;
+		tournament.setPlayers = false;
+
+		tournaments[tournamentNonce] = tournament;
+		tournamentNonce++;
+
+		return tournamentNonce - 1;
+	}
+
+	/// @notice Creates a Tournament with specific players
+	/// @dev creates a tournament, and increases the global tournament nonce
+	function createTournamentWithSpecificPlayers(
+		uint numberOfPlayers,
+		address[] calldata specificPlayers,
+		uint numberOfGames,
+		address token,
+		uint tokenAmount,
+		uint timeLimit
+	) external returns (uint) {
+		require(numberOfPlayers <= 25, "Too many players");
+		require(specificPlayers.length == numberOfPlayers, "Player count mismatch");
+
+		IERC20(token).safeTransferFrom(msg.sender, address(this), tokenAmount);
+
+		Tournament memory tournament;
+
+		// Use the provided specific players
+		address[] memory players = new address[](numberOfPlayers);
+		for (uint i = 0; i < numberOfPlayers; i++) {
+			players[i] = specificPlayers[i];
+		}
+
+		tournament.numberOfPlayers = numberOfPlayers;
+		tournament.players = players;
+		tournament.token = token;
+		tournament.tokenAmount = tokenAmount;
+		tournament.numberOfGames = numberOfGames;
+		tournament.isInProgress = false;
+		tournament.startTime = block.timestamp;
+		tournament.timeLimit = timeLimit;
+		tournament.isComplete = false;
+		tournament.setPlayers = true;
 
 		tournaments[tournamentNonce] = tournament;
 		tournamentNonce++;
@@ -223,12 +265,18 @@ contract ChessFishTournament {
 	/// @notice Join tournament
 	/// @param tournamentID the tournamentID of the tournament that the user wants to join
 	function joinTournament(uint tournamentID) external {
-		require(
-			tournaments[tournamentID].numberOfPlayers >= tournaments[tournamentID].players.length,
-			"max number of players reached"
-		);
-		require(tournaments[tournamentID].isInProgress == false, "tournament in progress");
-		require(!isPlayerInTournament(tournamentID, msg.sender), "already Joined");
+		/// @dev add functionality so that user can't accidentally join twice
+		/// @dev add functionality to start tournament function to check if someone hasn't joined...
+		if (tournaments[tournamentID].setPlayers) {
+			// require(isPlayerInTournament(tournamentID, msg.sender), "not authorized");
+		} else {
+			require(
+				tournaments[tournamentID].numberOfPlayers >= tournaments[tournamentID].players.length,
+				"max number of players reached"
+			);
+			require(tournaments[tournamentID].isInProgress == false, "tournament in progress");
+			require(!isPlayerInTournament(tournamentID, msg.sender), "already Joined");
+		}
 
 		address token = tournaments[tournamentID].token;
 		uint tokenAmount = tournaments[tournamentID].tokenAmount;

@@ -74,7 +74,7 @@ describe("evm_chess Wager Unit Tests", function () {
 			await tx.wait();
 
 			const balance0 = await token.balanceOf(chess.address);
-	
+
 			expect(balance0).to.equal(wager);
 		});
 
@@ -112,7 +112,6 @@ describe("evm_chess Wager Unit Tests", function () {
 
 			// player that accepts wager conditions plays first move
 			await chess.connect(otherAccount).playMove(gameAddr, hex_move1);
-
 		});
 
 		it("Should play game", async function () {
@@ -158,7 +157,6 @@ describe("evm_chess Wager Unit Tests", function () {
 
 				let hex_move = await chess.moveToHex(moves[i]);
 				await chess.connect(player).playMove(gameAddr, hex_move);
-
 			}
 
 			// let game_status = await chess.getGameStatus(gameAddr);
@@ -189,7 +187,6 @@ describe("evm_chess Wager Unit Tests", function () {
 
 				let hex_move = await chess.moveToHex(moves[i]);
 				await chess.connect(player).playMove(gameAddr, hex_move);
-
 			}
 
 			const wins1 = await chess.wagerStatus(gameAddr);
@@ -548,7 +545,6 @@ describe("evm_chess Wager Unit Tests", function () {
 					expect(gameStatus[0]).to.equal(3);
 				}
 			}
-
 
 			let tx2 = await chess.payoutWager(gameAddr);
 			await tx2.wait();

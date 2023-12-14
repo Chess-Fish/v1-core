@@ -86,7 +86,6 @@ describe("evm_chess Wager Unit Tests", function () {
 			let tx1 = await chess.connect(otherAccount).acceptWager(gameAddr);
 			await tx1.wait();
 
-
 			let timeRemaining = await chess.checkTimeRemaining(gameAddr);
 			expect(timeRemaining[0]).to.equal(timeLimit);
 
@@ -95,7 +94,6 @@ describe("evm_chess Wager Unit Tests", function () {
 
 			// player that accepts wager conditions plays first move
 			await chess.connect(otherAccount).playMove(gameAddr, hex_move1);
-
 		});
 	});
 });

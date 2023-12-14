@@ -153,7 +153,6 @@ describe("ChessFish Large Tournament Unit Tests", function () {
 			const wagerAddresses = await tournament.getTournamentWagerAddresses(tournamentNonce - 1);
 			expect(wagerAddresses.length).to.equal(55); // 11 players
 
-
 			const moves = ["f2f3", "e7e5", "g2g4", "d8h4"];
 
 			for (let i = 0; i < wagerAddresses.length; i++) {

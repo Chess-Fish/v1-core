@@ -65,9 +65,7 @@ describe("ChessFish gasless stalemate unit test", function () {
 
 	describe("Gasless Game Verification Unit Tests - Stalemate", function () {
 		it("Should play games and test stalemate", async function () {
-			const { chess, gaslessGame, deployer, otherAccount, token } = await loadFixture(
-				deploy
-			);
+			const { chess, gaslessGame, deployer, otherAccount, token } = await loadFixture(deploy);
 
 			let player1 = otherAccount.address;
 			let wagerToken = token.address;
@@ -137,7 +135,6 @@ describe("ChessFish gasless stalemate unit test", function () {
 				}
 				let data = await gaslessGame.verifyGameView(messageArray, signatureArray);
 				await chess.verifyGameUpdateState(messageArray, signatureArray);
-
 
 				if (data.outcome === 0) {
 					let moves = await chess.getGameMoves(gameAddr, 1);

@@ -113,7 +113,7 @@ describe("evm_chess Wager Unit Tests", function () {
 				let tx = await chess.connect(player).playMove(gameAddr, hex_move);
 			}
 
-/* 			const status = await chess.wagerStatus(gameAddr);
+			/* 			const status = await chess.wagerStatus(gameAddr);
 			console.log(status);
 			console.log(gameAddr); */
 
@@ -147,7 +147,6 @@ describe("evm_chess Wager Unit Tests", function () {
 
 			expect(winsPlayer0).to.equal(1);
 			expect(winsPlayer1).to.equal(0);
-
 
 			const gameLength = await chess.getGameLength(gameAddr);
 			console.log(gameLength);
