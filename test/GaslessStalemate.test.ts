@@ -2,7 +2,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-import { coordinates_array, bitCoordinates_array, moves_stalemate } from "./constants";
+import { coordinates_array, bitCoordinates_array, moves_stalemate } from "../scripts/constants";
 
 describe("evm_chess gasless stalemate unit test", function () {
 	async function deploy() {
@@ -64,8 +64,8 @@ describe("evm_chess gasless stalemate unit test", function () {
 	}
 
 	describe("Gasless Game Verification Unit Tests - Stalemate", function () {
-		it("Should play game", async function () {
-			const { chess, gaslessGame, paymentSplitter, deployer, otherAccount, token, chessNFT } = await loadFixture(
+		it("Should play games and test stalemate", async function () {
+			const { chess, gaslessGame, deployer, otherAccount, token } = await loadFixture(
 				deploy
 			);
 
@@ -90,7 +90,6 @@ describe("evm_chess gasless stalemate unit test", function () {
 
 			// approve chess contract
 			await token.connect(otherAccount).approve(chess.address, wager);
-			console.log("allowance", await token.allowance(otherAccount.address, chess.address));
 
 			// accept wager terms
 			let tx1 = await chess.connect(otherAccount).acceptWager(gameAddr);
@@ -137,15 +136,12 @@ describe("evm_chess gasless stalemate unit test", function () {
 					signatureArray.push(signature);
 				}
 				let data = await gaslessGame.verifyGameView(messageArray, signatureArray);
-				console.log("OUTCOME", data.outcome);
-
 				await chess.verifyGameUpdateState(messageArray, signatureArray);
-				console.log("PASS");
+
 
 				if (data.outcome === 0) {
 					let moves = await chess.getGameMoves(gameAddr, 1);
-					console.log(moves);
-
+					// console.log(moves);
 					// let result = await chess.updateWagerStateInsufficientMaterial(gameAddr);
 					// expect(result).to.equal(true);
 				}
@@ -156,8 +152,8 @@ describe("evm_chess gasless stalemate unit test", function () {
 			const winsPlayer0 = Number(wins.winsPlayer0);
 			const winsPlayer1 = Number(wins.winsPlayer1);
 
-			console.log("Wins player0", winsPlayer0);
-			console.log("Wins player1", winsPlayer1);
+			// console.log("Wins player0", winsPlayer0);
+			// console.log("Wins player1", winsPlayer1);
 
 			const games = await chess.getGameLength(gameAddr);
 
@@ -170,10 +166,7 @@ describe("evm_chess gasless stalemate unit test", function () {
 			const wagerData = await chess.gameWagers(gameAddr);
 
 			// increases the number of games by 1
-			expect(wagerData.numberOfGames).to.equal(4);
-
-			const gameLength = await chess.getGameLength(gameAddr);
-			console.log(gameLength);
+			expect(wagerData.numberOfGames).to.equal(numberOfGames + 1);
 		});
 	});
 });

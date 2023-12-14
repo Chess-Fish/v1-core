@@ -2,7 +2,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-import { coordinates_array, bitCoordinates_array } from "./constants";
+import { coordinates_array, bitCoordinates_array } from "../scripts/constants";
 
 describe("evm_chess Wager Unit Tests", function () {
 	// We define a fixture to reuse the same setup in every test.
@@ -88,7 +88,6 @@ describe("evm_chess Wager Unit Tests", function () {
 
 			// approve chess contract
 			await token.connect(otherAccount).approve(chess.address, wager);
-			console.log("allowance", await token.allowance(otherAccount.address, chess.address));
 
 			// accept wager terms
 			let tx1 = await chess.connect(otherAccount).acceptWager(gameAddr);
@@ -114,10 +113,9 @@ describe("evm_chess Wager Unit Tests", function () {
 				let tx = await chess.connect(player).playMove(gameAddr, hex_move);
 			}
 
-			const status = await chess.wagerStatus(gameAddr);
+/* 			const status = await chess.wagerStatus(gameAddr);
 			console.log(status);
-
-			console.log(gameAddr);
+			console.log(gameAddr); */
 
 			//// #### last two moves of game gasless #### ////
 			for (let i = 2; i <= 3; i++) {

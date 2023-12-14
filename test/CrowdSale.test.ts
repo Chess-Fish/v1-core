@@ -3,7 +3,6 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 
 describe("Crowdsale tests", function () {
-	// We define a fixture to reuse the same setup in every test.
 	async function deploy() {
 		const [deployer, otherAccount] = await ethers.getSigners();
 

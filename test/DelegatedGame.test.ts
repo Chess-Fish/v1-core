@@ -2,10 +2,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-import { coordinates_array, bitCoordinates_array } from "./constants";
-
-import { generateRandomHash } from "./constants";
-import { verifyMessage } from "ethers/lib/utils";
+import { generateRandomHash, coordinates_array, bitCoordinates_array } from "../scripts/constants";
 
 describe("Delegated Signed Gasless Game Unit Tests", function () {
 	async function deploy() {

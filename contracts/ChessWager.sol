@@ -91,10 +91,10 @@ contract ChessWager is MoveHelper {
 	/// @dev address[] wagers
 	address[] public allWagers;
 
-	/// @dev  CFSH Token Address
+	/// @dev CFSH Token Address
 	address public ChessFishToken;
 
-	/// @dev  Dividend Splitter contract
+	/// @dev Dividend Splitter contract
 	address public DividendSplitter;
 
 	/// @dev ChessFish Winner NFT contract

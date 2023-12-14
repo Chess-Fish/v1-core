@@ -2,7 +2,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-import { coordinates_array, bitCoordinates_array } from "./constants";
+import { coordinates_array, bitCoordinates_array } from "../scripts/constants";
 
 describe("evm_chess Wager Unit Tests", function () {
 	// We define a fixture to reuse the same setup in every test.
@@ -134,17 +134,12 @@ describe("evm_chess Wager Unit Tests", function () {
 			const winsPlayer0 = Number(wins.winsPlayer0);
 			const winsPlayer1 = Number(wins.winsPlayer1);
 
-			console.log("Wins player0", winsPlayer0);
-			console.log("Wins player1", winsPlayer1);
-
 			expect(winsPlayer0).to.equal(1);
 			expect(winsPlayer1).to.equal(2);
 
 			const wagerAddresses = await chess.getAllUserGames(player1);
-			console.log(wagerAddresses);
-
-			const gameLength = await chess.getGameLength(gameAddr);
-			console.log(gameLength);
+			const gameLength = await chess.getGameLength(wagerAddresses[0]);
+			expect(gameLength).to.equal(3);
 		});
 	});
 });
