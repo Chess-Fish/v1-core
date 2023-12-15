@@ -56,8 +56,6 @@ describe("evm_chess Tournament Unit Tests", function () {
 		const initialWhite = "0x000704ff";
 		const initialBlack = "0x383f3cff";
 
-		console.log("BALANCE INIT", ethers.utils.formatEther(await token.balanceOf(player0.address)));
-
 		return {
 			chess,
 			chessFishToken,
@@ -200,10 +198,6 @@ describe("evm_chess Tournament Unit Tests", function () {
 
 			const wagerAddresses = await tournament.getTournamentWagerAddresses(tournamentNonce - 1);
 
-			console.log(player0.address);
-			console.log(player1.address);
-			console.log(player2.address);
-
 			const moves = ["f2f3", "e7e5", "g2g4", "d8h4"];
 
 			//// #### FIRST GAME #### ////
@@ -270,8 +264,6 @@ describe("evm_chess Tournament Unit Tests", function () {
 			const player0wins = await tournament.tournamentWins(tournamentNonce - 1, player0.address);
 			const player1wins = await tournament.tournamentWins(tournamentNonce - 1, player1.address);
 			const player2wins = await tournament.tournamentWins(tournamentNonce - 1, player2.address);
-
-			console.log(player0wins, player1wins, player2wins);
 
 			expect(player0wins).to.equal(2);
 			expect(player1wins).to.equal(1);
@@ -340,12 +332,6 @@ describe("evm_chess Tournament Unit Tests", function () {
 			await tournament.startTournament(tournamentNonce - 1);
 
 			const wagerAddresses = await tournament.getTournamentWagerAddresses(tournamentNonce - 1);
-
-			console.log(player0.address);
-			console.log(player1.address);
-			console.log(player2.address);
-			console.log(player3.address);
-			console.log(player4.address);
 
 			const moves = ["f2f3", "e7e5", "g2g4", "d8h4"];
 
@@ -439,13 +425,6 @@ describe("evm_chess Tournament Unit Tests", function () {
 			const player3bal1 = await token.balanceOf(player3.address);
 			const player4bal1 = await token.balanceOf(player4.address);
 
-			console.log("PAYOUTS");
-			console.log(ethers.utils.formatEther(player0bal1.sub(player0bal0)));
-			console.log(ethers.utils.formatEther(player1bal1.sub(player1bal0)));
-			console.log(ethers.utils.formatEther(player2bal1.sub(player2bal0)));
-			console.log(ethers.utils.formatEther(player3bal1.sub(player3bal0)));
-			console.log(ethers.utils.formatEther(player4bal1.sub(player4bal0)));
-
 			const pool = wagerAmount * 5;
 			const expectedPayoutPlayer0 = pool * 0.33;
 			const expectedPayoutPlayer1 = pool * 0.29;
@@ -465,8 +444,6 @@ describe("evm_chess Tournament Unit Tests", function () {
 			const player3wins = await tournament.tournamentWins(tournamentNonce - 1, player3.address);
 			const player4wins = await tournament.tournamentWins(tournamentNonce - 1, player4.address);
 
-			console.log(player0wins, player1wins, player2wins, player3wins, player4wins);
-
 			expect(player0wins).to.equal(4);
 			expect(player1wins).to.equal(3);
 			expect(player2wins).to.equal(2);
@@ -484,8 +461,9 @@ describe("evm_chess Tournament Unit Tests", function () {
 			let isComplete = (await tournament.tournaments(tournamentNonce - 1)).isComplete;
 			expect(isComplete).to.equal(true);
 		});
-		it("Should start authenticated tournament and play games between 5 players", async function () {
-			const { chess, tournament, player0, player1, player2, player3, player4, player5, token } = await loadFixture(deploy);
+		it("Should start authed tournament, play games between 5 players, msg.sender doesn't join", async function () {
+			const { chess, tournament, player0, player1, player2, player3, player4, player5, otherAccount, token } =
+				await loadFixture(deploy);
 
 			let numberOfPlayers = 5;
 			let wagerToken = token.address;
@@ -496,20 +474,19 @@ describe("evm_chess Tournament Unit Tests", function () {
 			await token.connect(player0).approve(tournament.address, wagerAmount);
 
 			let specificPlayers = [player1.address, player2.address, player3.address, player4.address, player5.address];
-			let shouldJoin = false;	
-
-			console.log(specificPlayers);
+			let shouldJoin = false;
 
 			let tx = await tournament
 				.connect(player0)
 				.createTournamentWithSpecificPlayers(
-					numberOfPlayers, 
-					specificPlayers, 
-					numberOfGames, 
-					wagerToken, 
-					wagerAmount, 
-					timeLimit, 
-					shouldJoin);
+					numberOfPlayers,
+					specificPlayers,
+					numberOfGames,
+					wagerToken,
+					wagerAmount,
+					timeLimit,
+					shouldJoin
+				);
 
 			await tx.wait();
 
@@ -520,12 +497,16 @@ describe("evm_chess Tournament Unit Tests", function () {
 			await token.connect(player3).approve(tournament.address, wagerAmount);
 			await token.connect(player4).approve(tournament.address, wagerAmount);
 			await token.connect(player5).approve(tournament.address, wagerAmount);
+			await token.connect(otherAccount).approve(tournament.address, wagerAmount);
 
 			await tournament.connect(player1).joinTournament(tournamentNonce - 1);
 			await tournament.connect(player2).joinTournament(tournamentNonce - 1);
 			await tournament.connect(player3).joinTournament(tournamentNonce - 1);
 			await tournament.connect(player4).joinTournament(tournamentNonce - 1);
 			await tournament.connect(player5).joinTournament(tournamentNonce - 1);
+
+			let joinAttempt = token.connect(otherAccount).approve(tournament.address, wagerAmount);
+			expect(joinAttempt).to.be.revertedWith("not authorized");
 
 			const balance0 = await token.balanceOf(tournament.address);
 			expect(balance0).to.equal(wagerAmount.mul(5));
@@ -651,8 +632,6 @@ describe("evm_chess Tournament Unit Tests", function () {
 			const player3wins = await tournament.tournamentWins(tournamentNonce - 1, player4.address);
 			const player4wins = await tournament.tournamentWins(tournamentNonce - 1, player5.address);
 
-			// console.log(player0wins, player1wins, player2wins, player3wins, player4wins);
-
 			expect(player0wins).to.equal(4);
 			expect(player1wins).to.equal(3);
 			expect(player2wins).to.equal(2);
@@ -669,10 +648,9 @@ describe("evm_chess Tournament Unit Tests", function () {
 
 			let isComplete = (await tournament.tournaments(tournamentNonce - 1)).isComplete;
 			expect(isComplete).to.equal(true);
-
 		});
 
-		it("Should start authenticated tournament and play games between 5 players", async function () {
+		it("Should start authed tournament, play games between 5 players, msg.sender joins", async function () {
 			const { chess, tournament, player0, player1, player2, player3, player4, token } = await loadFixture(deploy);
 
 			let numberOfPlayers = 5;
@@ -684,20 +662,19 @@ describe("evm_chess Tournament Unit Tests", function () {
 			await token.connect(player0).approve(tournament.address, wagerAmount);
 
 			let specificPlayers = [player0.address, player1.address, player2.address, player3.address, player4.address];
-			let shouldJoin = true;	
-
-			console.log(specificPlayers);
+			let shouldJoin = true;
 
 			let tx = await tournament
 				.connect(player0)
 				.createTournamentWithSpecificPlayers(
-					numberOfPlayers, 
-					specificPlayers, 
-					numberOfGames, 
-					wagerToken, 
-					wagerAmount, 
-					timeLimit, 
-					shouldJoin);
+					numberOfPlayers,
+					specificPlayers,
+					numberOfGames,
+					wagerToken,
+					wagerAmount,
+					timeLimit,
+					shouldJoin
+				);
 
 			await tx.wait();
 
@@ -837,8 +814,6 @@ describe("evm_chess Tournament Unit Tests", function () {
 			const player3wins = await tournament.tournamentWins(tournamentNonce - 1, player3.address);
 			const player4wins = await tournament.tournamentWins(tournamentNonce - 1, player4.address);
 
-			// console.log(player0wins, player1wins, player2wins, player3wins, player4wins);
-
 			expect(player0wins).to.equal(4);
 			expect(player1wins).to.equal(3);
 			expect(player2wins).to.equal(2);
@@ -856,8 +831,6 @@ describe("evm_chess Tournament Unit Tests", function () {
 			let isComplete = (await tournament.tournaments(tournamentNonce - 1)).isComplete;
 			expect(isComplete).to.equal(true);
 		});
-
-
 
 		it("Should exit tournament", async function () {
 			const { tournament, player0, player1, otherAccount, token } = await loadFixture(deploy);
