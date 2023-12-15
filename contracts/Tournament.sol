@@ -277,7 +277,6 @@ contract ChessFishTournament {
 					break;
 				}
 			}
-			console.log("SC", isCreatorIncluded);
 
 			if (!isCreatorIncluded) {
 				address[] memory authed_players = tournament.authed_players;
@@ -318,6 +317,7 @@ contract ChessFishTournament {
 		/// @dev add functionality to start tournament function to check if someone hasn't joined...
 		if (tournaments[tournamentID].isByInvite) {
 			require(isPlayerAuthenticatedInTournament(tournamentID, msg.sender), "not authorized");
+			require(!isPlayerInTournament(tournamentID, msg.sender), "already Joined");
 		} else {
 			require(
 				tournaments[tournamentID].numberOfPlayers >= tournaments[tournamentID].joined_players.length,
