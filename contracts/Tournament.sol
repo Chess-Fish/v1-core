@@ -16,8 +16,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./interfaces/interfaces.sol";
 
-import "hardhat/console.sol";
-
 /**
  * @title ChessFish Tournament Contract
  * @author ChessFish
@@ -246,7 +244,6 @@ contract ChessFishTournament {
 	/// @notice Creates a Tournament with specific players
 	/// @dev Creates a tournament, and increases the global tournament nonce
 	function createTournamentWithSpecificPlayers(
-		uint numberOfPlayers,
 		address[] calldata specificPlayers,
 		uint numberOfGames,
 		address token,
@@ -254,8 +251,6 @@ contract ChessFishTournament {
 		uint timeLimit,
 		bool shouldJoin
 	) external returns (uint) {
-		require(numberOfPlayers <= 25, "Too many players");
-		require(specificPlayers.length == numberOfPlayers, "Player count mismatch");
 		require(tokenAmount > 0, "Token amount must be positive");
 		require(numberOfGames > 0, "Number of games must be positive");
 
@@ -269,16 +264,20 @@ contract ChessFishTournament {
 		if (shouldJoin) {
 			IERC20(token).safeTransferFrom(msg.sender, address(this), tokenAmount);
 
-			// Add the creator to the joined players if not already in the list
 			bool isCreatorIncluded = false;
-			for (uint i = 0; i < numberOfPlayers; i++) {
+			for (uint i = 0; i < specificPlayers.length; i++) {
 				if (specificPlayers[i] == msg.sender) {
 					isCreatorIncluded = true;
 					break;
 				}
 			}
 
-			if (!isCreatorIncluded) {
+			if (isCreatorIncluded) {
+				address[] memory joined_players = new address[](1);
+				joined_players[0] = msg.sender;
+
+				tournament.joined_players = joined_players;
+			} else {
 				address[] memory authed_players = tournament.authed_players;
 				authed_players[tournament.authed_players.length] = msg.sender;
 				tournament.authed_players = authed_players;
@@ -287,15 +286,12 @@ contract ChessFishTournament {
 				joined_players[0] = msg.sender;
 
 				tournament.joined_players = joined_players;
-			} else {
-				address[] memory joined_players = new address[](1);
-				joined_players[0] = msg.sender;
-
-				tournament.joined_players = joined_players;
-			}
+			} 
 		}
 
-		tournament.numberOfPlayers = numberOfPlayers;
+		require(tournament.authed_players.length <= 25, "Too many players");
+
+		tournament.numberOfPlayers = tournament.authed_players.length;
 		tournament.token = token;
 		tournament.tokenAmount = tokenAmount;
 		tournament.numberOfGames = numberOfGames;
@@ -318,6 +314,7 @@ contract ChessFishTournament {
 		if (tournaments[tournamentID].isByInvite) {
 			require(isPlayerAuthenticatedInTournament(tournamentID, msg.sender), "not authorized");
 			require(!isPlayerInTournament(tournamentID, msg.sender), "already Joined");
+			require(tournaments[tournamentID].isInProgress == false, "tournament in progress");
 		} else {
 			require(
 				tournaments[tournamentID].numberOfPlayers >= tournaments[tournamentID].joined_players.length,

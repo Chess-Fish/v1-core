@@ -4,8 +4,7 @@ import { ethers } from "hardhat";
 
 import { coordinates_array, bitCoordinates_array } from "../scripts/constants";
 
-describe("evm_chess Tournament Unit Tests", function () {
-	// We define a fixture to reuse the same setup in every test.
+describe("ChessFish Unit Tests", function () {
 	async function deploy() {
 		const [player0, player1, player2, player3, player4, player5, otherAccount] = await ethers.getSigners();
 
@@ -56,7 +55,7 @@ describe("evm_chess Tournament Unit Tests", function () {
 		const initialWhite = "0x000704ff";
 		const initialBlack = "0x383f3cff";
 
-		return {
+				return {
 			chess,
 			chessFishToken,
 			paymentSplitter,
@@ -76,7 +75,7 @@ describe("evm_chess Tournament Unit Tests", function () {
 		};
 	}
 
-	describe("Wager Unit Tests", function () {
+	describe("Tournament Unit Tests", function () {
 		it("Should create tournament with custom parameters", async function () {
 			const { tournament, player0, token } = await loadFixture(deploy);
 
@@ -462,10 +461,8 @@ describe("evm_chess Tournament Unit Tests", function () {
 			expect(isComplete).to.equal(true);
 		});
 		it("Should start authed tournament, play games between 5 players, msg.sender doesn't join", async function () {
-			const { chess, tournament, player0, player1, player2, player3, player4, player5, otherAccount, token } =
-				await loadFixture(deploy);
+			const { chess, tournament, player0, player1, player2, player3, player4, player5, otherAccount, token } = await loadFixture(deploy);
 
-			let numberOfPlayers = 5;
 			let wagerToken = token.address;
 			let wagerAmount = ethers.utils.parseEther("10.0");
 			let numberOfGames = 1;
@@ -474,19 +471,17 @@ describe("evm_chess Tournament Unit Tests", function () {
 			await token.connect(player0).approve(tournament.address, wagerAmount);
 
 			let specificPlayers = [player1.address, player2.address, player3.address, player4.address, player5.address];
-			let shouldJoin = false;
+			let shouldJoin = false;	
 
 			let tx = await tournament
 				.connect(player0)
 				.createTournamentWithSpecificPlayers(
-					numberOfPlayers,
-					specificPlayers,
-					numberOfGames,
-					wagerToken,
-					wagerAmount,
-					timeLimit,
-					shouldJoin
-				);
+					specificPlayers, 
+					numberOfGames, 
+					wagerToken, 
+					wagerAmount, 
+					timeLimit, 
+					shouldJoin);
 
 			await tx.wait();
 
@@ -499,6 +494,8 @@ describe("evm_chess Tournament Unit Tests", function () {
 			await token.connect(player5).approve(tournament.address, wagerAmount);
 			await token.connect(otherAccount).approve(tournament.address, wagerAmount);
 
+
+
 			await tournament.connect(player1).joinTournament(tournamentNonce - 1);
 			await tournament.connect(player2).joinTournament(tournamentNonce - 1);
 			await tournament.connect(player3).joinTournament(tournamentNonce - 1);
@@ -506,8 +503,9 @@ describe("evm_chess Tournament Unit Tests", function () {
 			await tournament.connect(player5).joinTournament(tournamentNonce - 1);
 
 			let joinAttempt = token.connect(otherAccount).approve(tournament.address, wagerAmount);
-			expect(joinAttempt).to.be.revertedWith("not authorized");
-
+		    expect(joinAttempt).to.be.revertedWith("not authorized");
+			
+			
 			const balance0 = await token.balanceOf(tournament.address);
 			expect(balance0).to.equal(wagerAmount.mul(5));
 
@@ -648,9 +646,155 @@ describe("evm_chess Tournament Unit Tests", function () {
 
 			let isComplete = (await tournament.tournaments(tournamentNonce - 1)).isComplete;
 			expect(isComplete).to.equal(true);
+
 		});
 
-		it("Should start authed tournament, play games between 5 players, msg.sender joins", async function () {
+		it("Should start authed tournament and revert on unauthorized join", async function () {
+			const { tournament, player0, player1, player2, player3, player4, player5, otherAccount, token } = await loadFixture(deploy);
+
+			let numberOfPlayers = 4;
+			let wagerToken = token.address;
+			let wagerAmount = ethers.utils.parseEther("10.0");
+			let numberOfGames = 1;
+			let timeLimit = 172800;
+
+			await token.connect(player0).approve(tournament.address, wagerAmount);
+
+			let specificPlayers = [player1.address, player2.address, player3.address, player4.address];
+			let shouldCreatorJoin = false;	
+
+			let tx = await tournament
+				.connect(player0)
+				.createTournamentWithSpecificPlayers(
+					specificPlayers, 
+					numberOfGames, 
+					wagerToken, 
+					wagerAmount, 
+					timeLimit, 
+					shouldCreatorJoin);
+
+			await tx.wait();
+
+			const tournamentNonce = await tournament.tournamentNonce();
+
+			await token.connect(player1).approve(tournament.address, wagerAmount);
+			await token.connect(player2).approve(tournament.address, wagerAmount);
+			await token.connect(player3).approve(tournament.address, wagerAmount);
+			await token.connect(player4).approve(tournament.address, wagerAmount);
+			await token.connect(player5).approve(tournament.address, wagerAmount);
+			await token.connect(otherAccount).approve(tournament.address, wagerAmount);
+
+			await tournament.connect(player1).joinTournament(tournamentNonce - 1);
+			await tournament.connect(player2).joinTournament(tournamentNonce - 1);
+			await tournament.connect(player3).joinTournament(tournamentNonce - 1);
+			await tournament.connect(player4).joinTournament(tournamentNonce - 1);
+
+			let joinAttempt = token.connect(player4).approve(tournament.address, wagerAmount);
+		    expect(joinAttempt).to.be.revertedWith("not authorized");
+
+			let joinAttempt1 = token.connect(player5).approve(tournament.address, wagerAmount);
+		    expect(joinAttempt1).to.be.revertedWith("not authorized");
+
+			const players = await tournament.getTournamentPlayers(tournamentNonce - 1);
+			expect(players.length).to.equal(4);
+
+			await tournament.startTournament(tournamentNonce - 1);
+			
+		});
+		it("Should test start of tournament with not all players after 1 day", async function () {
+			const { tournament, player0, player1, player2, player3, player4, player5, otherAccount, token } = await loadFixture(deploy);
+
+			let wagerToken = token.address;
+			let wagerAmount = ethers.utils.parseEther("10.0");
+			let numberOfGames = 1;
+			let timeLimit = 172800;
+
+			await token.connect(player0).approve(tournament.address, wagerAmount);
+
+			let specificPlayers = [player1.address, player2.address, player3.address, player4.address, player5.address];
+			let shouldCreatorJoin = false;	
+
+			let tx = await tournament
+				.connect(player0)
+				.createTournamentWithSpecificPlayers(
+					specificPlayers, 
+					numberOfGames, 
+					wagerToken, 
+					wagerAmount, 
+					timeLimit, 
+					shouldCreatorJoin);
+
+			await tx.wait();
+
+			const tournamentNonce = await tournament.tournamentNonce();
+
+			await token.connect(player1).approve(tournament.address, wagerAmount);
+			await token.connect(player2).approve(tournament.address, wagerAmount);
+			await token.connect(player3).approve(tournament.address, wagerAmount);
+			await token.connect(player4).approve(tournament.address, wagerAmount);
+			await token.connect(player5).approve(tournament.address, wagerAmount);
+			await token.connect(otherAccount).approve(tournament.address, wagerAmount);
+
+			await tournament.connect(player1).joinTournament(tournamentNonce - 1);
+			await tournament.connect(player2).joinTournament(tournamentNonce - 1);
+			await tournament.connect(player3).joinTournament(tournamentNonce - 1);
+			await tournament.connect(player4).joinTournament(tournamentNonce - 1);
+
+			const players = await tournament.getTournamentPlayers(tournamentNonce - 1);
+			expect(players.length).to.equal(4);
+
+			await ethers.provider.send("evm_increaseTime", [86400]);
+			await ethers.provider.send("evm_mine");
+			
+			await tournament.startTournament(tournamentNonce - 1);
+		});
+		it("Should test revert of premature start", async function () {
+			const { tournament, player0, player1, player2, player3, player4, player5, otherAccount, token } = await loadFixture(deploy);
+
+			let wagerToken = token.address;
+			let wagerAmount = ethers.utils.parseEther("10.0");
+			let numberOfGames = 1;
+			let timeLimit = 172800;
+
+			await token.connect(player0).approve(tournament.address, wagerAmount);
+
+			let specificPlayers = [player1.address, player2.address, player3.address, player4.address, player5.address];
+			let shouldCreatorJoin = false;	
+
+			let tx = await tournament
+				.connect(player0)
+				.createTournamentWithSpecificPlayers(
+					specificPlayers, 
+					numberOfGames, 
+					wagerToken, 
+					wagerAmount, 
+					timeLimit, 
+					shouldCreatorJoin);
+
+			await tx.wait();
+
+			const tournamentNonce = await tournament.tournamentNonce();
+
+			await token.connect(player1).approve(tournament.address, wagerAmount);
+			await token.connect(player2).approve(tournament.address, wagerAmount);
+			await token.connect(player3).approve(tournament.address, wagerAmount);
+			await token.connect(player4).approve(tournament.address, wagerAmount);
+			await token.connect(player5).approve(tournament.address, wagerAmount);
+			await token.connect(otherAccount).approve(tournament.address, wagerAmount);
+
+			await tournament.connect(player1).joinTournament(tournamentNonce - 1);
+			await tournament.connect(player2).joinTournament(tournamentNonce - 1);
+			await tournament.connect(player3).joinTournament(tournamentNonce - 1);
+			await tournament.connect(player4).joinTournament(tournamentNonce - 1);
+
+			const players = await tournament.getTournamentPlayers(tournamentNonce - 1);
+			expect(players.length).to.equal(4);
+
+			let startAttempt = tournament.startTournament(tournamentNonce - 1);
+		    expect(startAttempt).to.be.revertedWith("must wait 1day before starting");
+			
+		});
+		it("Should start authed tournament, play games between 5 players, msg.sender join", async function () {
 			const { chess, tournament, player0, player1, player2, player3, player4, token } = await loadFixture(deploy);
 
 			let numberOfPlayers = 5;
@@ -662,19 +806,17 @@ describe("evm_chess Tournament Unit Tests", function () {
 			await token.connect(player0).approve(tournament.address, wagerAmount);
 
 			let specificPlayers = [player0.address, player1.address, player2.address, player3.address, player4.address];
-			let shouldJoin = true;
+			let shouldJoin = true;	
 
 			let tx = await tournament
 				.connect(player0)
 				.createTournamentWithSpecificPlayers(
-					numberOfPlayers,
-					specificPlayers,
-					numberOfGames,
-					wagerToken,
-					wagerAmount,
-					timeLimit,
-					shouldJoin
-				);
+					specificPlayers, 
+					numberOfGames, 
+					wagerToken, 
+					wagerAmount, 
+					timeLimit, 
+					shouldJoin);
 
 			await tx.wait();
 

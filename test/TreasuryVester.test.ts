@@ -8,6 +8,9 @@ describe("TreasuryVester tests", function () {
 	const SECONDS_IN_A_DAY = 86400;
 	const VESTING_AMOUNT = ethers.utils.parseEther("400000");
 
+	const VESTING_AMOUNT1 = ethers.utils.parseEther("100000");
+
+
 	before(async () => {
 		// Reset the Hardhat EVM before all tests
 		await network.provider.request({
@@ -85,5 +88,21 @@ describe("TreasuryVester tests", function () {
 
 		const diff = (await cfsh.balanceOf(recipient.address)).sub(initialRecipientBalance);
 		expect(diff).to.be.eq(VESTING_AMOUNT);
+	});
+
+	it("Should deposit more than initial amount", async function () {
+		const { cfsh, vester, recipient } = await loadFixture(deploy);
+		await cfsh.transfer(vester.address, VESTING_AMOUNT);
+
+		await cfsh.transfer(vester.address, VESTING_AMOUNT1);
+		// Simulate 1 year passing
+		await ethers.provider.send("evm_increaseTime", [SECONDS_IN_A_DAY * 365]);
+		await ethers.provider.send("evm_mine");
+
+		const initialRecipientBalance = await cfsh.balanceOf(recipient.address);
+		await vester.connect(recipient).claim();
+
+		const diff = (await cfsh.balanceOf(recipient.address)).sub(initialRecipientBalance);
+		expect(diff).to.be.eq(VESTING_AMOUNT.add(VESTING_AMOUNT1));
 	});
 });
