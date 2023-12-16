@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 
 import { coordinates_array, bitCoordinates_array } from "../scripts/constants";
 
-describe("evm_chess Wager Unit Tests", function () {
+describe("ChessFish Wager Unit Tests", function () {
 	// We define a fixture to reuse the same setup in every test.
 	async function deploy() {
 		const [deployer, otherAccount] = await ethers.getSigners();
@@ -98,7 +98,7 @@ describe("evm_chess Wager Unit Tests", function () {
 			let signatureArray: any[] = [];
 
 			const timeNow = Date.now();
-			const timeStamp = Math.floor(timeNow / 1000) + 86400 * 2; // plus two days
+			const timeStamp = Math.floor(timeNow / 1000) + 86400 * 3; // plus three days
 
 			//// #### First two moves of game on chain #### ////
 			for (let i = 0; i < 2; i++) {
@@ -112,10 +112,6 @@ describe("evm_chess Wager Unit Tests", function () {
 				let hex_move = await chess.moveToHex(moves[i]);
 				let tx = await chess.connect(player).playMove(gameAddr, hex_move);
 			}
-
-			/* 			const status = await chess.wagerStatus(gameAddr);
-			console.log(status);
-			console.log(gameAddr); */
 
 			//// #### last two moves of game gasless #### ////
 			for (let i = 2; i <= 3; i++) {

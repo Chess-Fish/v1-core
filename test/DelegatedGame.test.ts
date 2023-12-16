@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 
 import { generateRandomHash, coordinates_array, bitCoordinates_array } from "../scripts/constants";
 
-describe("Delegated Signed Gasless Game Unit Tests", function () {
+describe("ChessFish Delegated Signed Gasless Game Unit Tests", function () {
 	async function deploy() {
 		const [signer0, signer1] = await ethers.getSigners();
 

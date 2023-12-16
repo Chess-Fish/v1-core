@@ -2,7 +2,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-describe("Crowdsale tests", function () {
+describe("ChessFish Crowdsale Unit Tests", function () {
 	async function deploy() {
 		const [deployer, otherAccount] = await ethers.getSigners();
 

@@ -2,7 +2,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-describe("Payment Splitter Token Tests", function () {
+describe("ChessFish Payment Splitter Token Unit Tests", function () {
 	// We define a fixture to reuse the same setup in every test.
 	async function deploy() {
 		const [deployer, account0, account1] = await ethers.getSigners();

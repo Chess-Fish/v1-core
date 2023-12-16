@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 
 import { coordinates_array, bitCoordinates_array } from "../scripts/constants";
 
-describe("ChessFish Game Unit Tests", function () {
+describe("ChessFish Game Verification Unit Tests", function () {
 	// We define a fixture to reuse the same setup in every test.
 	async function deploy() {
 		const [owner, otherAccount] = await ethers.getSigners();
