@@ -259,7 +259,6 @@ contract GaslessGame {
 	}
 
 	/// @notice Decode Signed Delegation
-	/// @dev this can be internal unless it's somehow required on the frontend
 	function decodeSignedDelegation(
 		bytes memory signedDelegationBytes
 	) public pure returns (SignedDelegation memory signedDelegation) {

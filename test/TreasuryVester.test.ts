@@ -10,7 +10,6 @@ describe("TreasuryVester tests", function () {
 
 	const VESTING_AMOUNT1 = ethers.utils.parseEther("100000");
 
-
 	before(async () => {
 		// Reset the Hardhat EVM before all tests
 		await network.provider.request({

@@ -286,7 +286,7 @@ contract ChessFishTournament {
 				joined_players[0] = msg.sender;
 
 				tournament.joined_players = joined_players;
-			} 
+			}
 		}
 
 		require(tournament.authed_players.length <= 25, "Too many players");
