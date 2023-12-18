@@ -30,7 +30,7 @@ const chainIds = {
 	goerli: 5,
 	chiado: 10200,
 	"celo-testnet": 44787,
-	hardhat: 31337,
+	hardhat: 1,
 };
 
 function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
