@@ -71,6 +71,9 @@ contract GaslessGame is EIP712 {
 	/// @dev address deployer
 	address deployer;
 
+	/// @dev EIP-712
+	bytes32 public immutable DELEGATION_METHOD_HASH;
+
 	modifier onlyDeployer() {
 		_;
 		require(msg.sender == deployer);
@@ -79,6 +82,10 @@ contract GaslessGame is EIP712 {
 	constructor(address moveVerificationAddress) EIP712("ChessFish", "1") {
 		moveVerification = MoveVerification(moveVerificationAddress);
 		deployer = msg.sender;
+
+		DELEGATION_METHOD_HASH = keccak256(
+			"Delegation(address delegatorAddress,address delegatedAddress,address wagerAddress)"
+		);
 	}
 
 	/// @notice set ChessWager contract
@@ -251,6 +258,25 @@ contract GaslessGame is EIP712 {
 		verifyDelegation(signedDelegation1);
 	}
 
+	/// @dev typed signature verification
+	function verifyDelegationTest(SignedDelegation memory signedDelegation) public view {
+		bytes32 digest = _hashTypedDataV4(
+			keccak256(
+				abi.encode(
+					DELEGATION_METHOD_HASH,
+					signedDelegation.delegation.delegatorAddress,
+					signedDelegation.delegation.delegatedAddress,
+					signedDelegation.delegation.wagerAddress
+				)
+			)
+		);
+		require(
+			ECDSA.recover(
+				digest, 
+				signedDelegation.signature
+			) == signedDelegation.delegation.delegatorAddress, "Invalid signature");
+	}
+
 	/// @notice Verify delegation signature
 	function verifyDelegation(SignedDelegation memory signedDelegation) public pure {
 		bytes32 hashedDelegation = hashDelegation(signedDelegation.delegation);
@@ -335,52 +361,5 @@ contract GaslessGame is EIP712 {
 		return (wagerAddress, outcome, moves);
 	}
 
-	function encodeDelegationTest(
-		address delegatorAddress,
-		address delegatedAddress,
-		address wagerAddress
-	) public pure returns (bytes memory) {
-		return abi.encode(delegatorAddress, delegatedAddress, wagerAddress);
-	}
 
-	/// Metamask V4 typed signature verification
-	function verifySignatureTest(bytes memory signature, Delegation memory delegation) public pure {
-		// Step 1: Hash the Delegation struct
-		bytes32 delegationHash = keccak256(abi.encode(delegation));
-
-		// Step 2: Create an Ethereum-Signed Message Hash
-		bytes32 ethSignedMessageHash = getEthSignedMessageHash(delegationHash);
-
-		console.log(delegation.delegatorAddress);
-		console.log(delegation.delegatedAddress);
-		console.log(delegation.wagerAddress);
-		console.log(ECDSA.recover(ethSignedMessageHash, signature));
-
-		// Step 3: Recover the signer and verify
-		require(ECDSA.recover(ethSignedMessageHash, signature) == delegation.delegatorAddress, "Invalid signature");
-	}
-
-	string public constant DELEGATION_METHOD_SIG =
-		"Delegation(address delegatorAddress,address delegatedAddress,address wagerAddress)";
-
-	function verifyTest(bytes memory signature, Delegation memory delegation) public view {
-		bytes32 digest = _hashTypedDataV4(
-			keccak256(
-				abi.encode(
-					keccak256("Delegation(address delegatorAddress,address delegatedAddress,address wagerAddress)"),
-					delegation.delegatorAddress,
-					delegation.delegatedAddress,
-					delegation.wagerAddress
-				)
-			)
-		);
-
-		console.log(delegation.delegatorAddress);
-		console.log(delegation.delegatedAddress);
-		console.log(delegation.wagerAddress);
-		console.log(ECDSA.recover(digest, signature));
-		console.log(block.chainid);
-
-		// address signer = ECDSA.recover(digest, signature);
-	}
 }
