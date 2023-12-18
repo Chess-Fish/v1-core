@@ -360,19 +360,20 @@ contract GaslessGame is EIP712 {
 		require(ECDSA.recover(ethSignedMessageHash, signature) == delegation.delegatorAddress, "Invalid signature");
 	}
 
-	string public constant DELEGATION_METHOD_SIG = "Delegation(address delegatorAddress,address delegatedAddress,address wagerAddress)";
+	string public constant DELEGATION_METHOD_SIG =
+		"Delegation(address delegatorAddress,address delegatedAddress,address wagerAddress)";
 
-	function verifyTest(
-		bytes memory signature,
-		Delegation memory delegation
-	) public view {
-	
-	bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
-     	keccak256("Delegation(address delegatorAddress,address delegatedAddress,address wagerAddress)"),
-    	delegation.delegatorAddress,
-		delegation.delegatedAddress,
-		delegation.wagerAddress
-    )));
+	function verifyTest(bytes memory signature, Delegation memory delegation) public view {
+		bytes32 digest = _hashTypedDataV4(
+			keccak256(
+				abi.encode(
+					keccak256("Delegation(address delegatorAddress,address delegatedAddress,address wagerAddress)"),
+					delegation.delegatorAddress,
+					delegation.delegatedAddress,
+					delegation.wagerAddress
+				)
+			)
+		);
 
 		console.log(delegation.delegatorAddress);
 		console.log(delegation.delegatedAddress);
@@ -380,7 +381,6 @@ contract GaslessGame is EIP712 {
 		console.log(ECDSA.recover(digest, signature));
 		console.log(block.chainid);
 
-    // address signer = ECDSA.recover(digest, signature);
+		// address signer = ECDSA.recover(digest, signature);
 	}
-
 }

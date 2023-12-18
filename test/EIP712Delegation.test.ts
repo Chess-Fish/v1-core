@@ -101,22 +101,22 @@ describe("ChessFish Delegated Signed Gasless Game Unit Tests", function () {
 				name: "ChessFish",
 				verifyingContract: gaslessGame.address, // for testing
 				version: "1",
-			  };
-			  
-			  const types = {
+			};
+
+			const types = {
 				Delegation: [
-				  { name: "delegatorAddress", type: "address" },
-				  { name: "delegatedAddress", type: "address" },
-				  { name: "wagerAddress", type: "address" },
+					{ name: "delegatorAddress", type: "address" },
+					{ name: "delegatedAddress", type: "address" },
+					{ name: "wagerAddress", type: "address" },
 				],
-			  };
-			  
-			  const message = {
+			};
+
+			const message = {
 				delegatorAddress: delegationData[0],
 				delegatedAddress: delegationData[1],
 				wagerAddress: delegationData[2],
-			  };
-			  
+			};
+
 			// Sign the data
 			const signature = await signer0._signTypedData(domain, types, message);
 			console.log(signature);
@@ -124,7 +124,6 @@ describe("ChessFish Delegated Signed Gasless Game Unit Tests", function () {
 			// const signature = '0xcf83445b48c2aec2ef5f0ad9f39b7d5770e27a8772f4a6952867ad13b52e2d5965ca775fc80bccdb1056aec8327d1501f8b13c6ef5a5c86900b3c2ffaa893b061c';
 
 			await gaslessGame.verifyTest(signature, delegationData);
-
 		});
 	});
 });
