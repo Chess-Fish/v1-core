@@ -77,7 +77,7 @@ describe("ChessFish Delegated Signed Gasless Game Unit Tests", function () {
 			const entropy0 = generateRandomHash();
 			const delegatedSigner0 = ethers.Wallet.createRandom(entropy0);
 
-			// 2) create deletation
+			// 2) create delegation
 			const delegationData = [signer0.address, delegatedSigner0.address, wagerAddress];
 
 			// 3 Sign Typed Data V4

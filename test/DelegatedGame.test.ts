@@ -91,21 +91,33 @@ describe("ChessFish Delegated Signed Gasless Game Unit Tests", function () {
 			const delegatedSigner0 = ethers.Wallet.createRandom(entropy0);
 
 			// 2) create deletation and hash it
-			const delegationData0 = await gaslessGame.createDelegation(
-				signer0.address,
-				delegatedSigner0.address,
-				wagerAddress
-			);
-			const hashedDelegationData0 = await gaslessGame.hashDelegation(delegationData0);
+			const delegationData0 = [signer0.address, delegatedSigner0.address, wagerAddress];
 
-			// 3 sign hashed delegation
-			const signedDelegationHash0 = await signer0.signMessage(ethers.utils.arrayify(hashedDelegationData0));
+			// 3 Sign Typed Data V4
+			const domain = {
+				chainId: 1, // replace with the chain ID on frontend
+				name: "ChessFish", // Contract Name
+				verifyingContract: gaslessGame.address, // for testing
+				version: "1", // version
+			};
 
-			// 4) create signed delegation abstraction
-			const signedDelegationData0 = await gaslessGame.encodeSignedDelegation(delegationData0, signedDelegationHash0);
+			const types = {
+				Delegation: [
+					{ name: "delegatorAddress", type: "address" },
+					{ name: "delegatedAddress", type: "address" },
+					{ name: "wagerAddress", type: "address" },
+				],
+			};
 
-			const signedDelegation = await gaslessGame.decodeSignedDelegation(signedDelegationData0);
-			await gaslessGame.verifyDelegation(signedDelegation);
+			const message0 = {
+				delegatorAddress: delegationData0[0],
+				delegatedAddress: delegationData0[1],
+				wagerAddress: delegationData0[2],
+			};
+
+			// Sign the data
+			const signature0 = await signer0._signTypedData(domain, types, message0);
+			const signedDelegationData0 = await gaslessGame.encodeSignedDelegation(message0, signature0);
 
 			// ON THE FRONT END user 1
 			// 1) Generate random public private key pair
@@ -113,18 +125,19 @@ describe("ChessFish Delegated Signed Gasless Game Unit Tests", function () {
 			const delegatedSigner1 = ethers.Wallet.createRandom(entropy1);
 
 			// 2) create deletation and hash it
-			const delegationData1 = await gaslessGame.createDelegation(
-				signer1.address,
-				delegatedSigner1.address,
-				wagerAddress
-			);
-			const hashedDelegationData1 = await gaslessGame.hashDelegation(delegationData1);
+			const delegationData1 = [signer1.address, delegatedSigner1.address, wagerAddress];
 
-			// 3 sign hashed delegation
-			const signedDelegationHash1 = await signer1.signMessage(ethers.utils.arrayify(hashedDelegationData1));
+			// 3 Sign Typed Data V4
+			const message1 = {
+				delegatorAddress: delegationData1[0],
+				delegatedAddress: delegationData1[1],
+				wagerAddress: delegationData1[2],
+			};
 
-			// 4) create signed delegation abstraction
-			const signedDelegationData1 = await gaslessGame.encodeSignedDelegation(delegationData1, signedDelegationHash1);
+			// Sign the data
+			const signature1 = await signer1._signTypedData(domain, types, message1);
+			const signedDelegationData1 = await gaslessGame.encodeSignedDelegation(message1, signature1);
+
 			// const moves = ["f2f3", "e7e5", "g2g4", "d8h4"]; // fool's mate
 			const moves = ["e2e4", "f7f6", "d2d4", "g7g5", "d1h5"]; // reversed fool's mate
 

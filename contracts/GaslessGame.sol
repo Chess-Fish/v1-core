@@ -248,14 +248,14 @@ contract GaslessGame is EIP712 {
 	function checkDelegations(
 		SignedDelegation memory signedDelegation0,
 		SignedDelegation memory signedDelegation1
-	) internal pure {
+	) internal view {
 		require(
 			signedDelegation0.delegation.wagerAddress == signedDelegation1.delegation.wagerAddress,
 			"non matching addresses"
 		);
 
-		verifyDelegation(signedDelegation0);
-		verifyDelegation(signedDelegation1);
+		verifyDelegationTest(signedDelegation0);
+		verifyDelegationTest(signedDelegation1);
 	}
 
 	/// @dev typed signature verification
@@ -271,19 +271,8 @@ contract GaslessGame is EIP712 {
 			)
 		);
 		require(
-			ECDSA.recover(
-				digest, 
-				signedDelegation.signature
-			) == signedDelegation.delegation.delegatorAddress, "Invalid signature");
-	}
-
-	/// @notice Verify delegation signature
-	function verifyDelegation(SignedDelegation memory signedDelegation) public pure {
-		bytes32 hashedDelegation = hashDelegation(signedDelegation.delegation);
-		verifyDelegatedAddress(
-			hashedDelegation,
-			signedDelegation.signature,
-			signedDelegation.delegation.delegatorAddress
+			ECDSA.recover(digest, signedDelegation.signature) == signedDelegation.delegation.delegatorAddress,
+			"Invalid signature"
 		);
 	}
 
@@ -292,11 +281,6 @@ contract GaslessGame is EIP712 {
 		bytes memory signedDelegationBytes
 	) public pure returns (SignedDelegation memory signedDelegation) {
 		return abi.decode(signedDelegationBytes, (SignedDelegation));
-	}
-
-	/// @notice Hash Delegation data type
-	function hashDelegation(Delegation memory delegationData) public pure returns (bytes32) {
-		return keccak256(abi.encode(delegationData));
 	}
 
 	/// @notice Verify delegator signature
@@ -360,6 +344,4 @@ contract GaslessGame is EIP712 {
 
 		return (wagerAddress, outcome, moves);
 	}
-
-
 }
