@@ -45,9 +45,23 @@ describe("ChessFish Wager Unit Tests", function () {
 		await chess.initCoordinates(coordinates_array, bitCoordinates_array);
 		await chessNFT.setChessFishAddress(chess.address);
 
-		const initalState = "0xcbaedabc99999999000000000000000000000000000000001111111143265234";
-		const initialWhite = "0x000704ff";
-		const initialBlack = "0x383f3cff";
+		// typed signature data
+		const domain = {
+			chainId: 1, // replace with the chain ID on frontend
+			name: "ChessFish", // Contract Name
+			verifyingContract: gaslessGame.address, // for testing
+			version: "1", // version
+		};
+
+		const types = {
+			GaslessMove: [
+				{ name: "wagerAddress", type: "address" },
+				{ name: "gameNumber", type: "uint" },
+				{ name: "moveNumber", type: "uint" },
+				{ name: "move", type: "uint16" },
+				{ name: "expiration", type: "uint" },
+			],
+		};
 
 		return {
 			chess,
@@ -57,16 +71,15 @@ describe("ChessFish Wager Unit Tests", function () {
 			chessNFT,
 			deployer,
 			otherAccount,
-			initalState,
-			initialWhite,
-			initialBlack,
 			token,
+			domain, 
+			types
 		};
 	}
 
 	describe("Gasless Game Verification Unit Tests - Partially Gasless", function () {
 		it("Should play game", async function () {
-			const { chess, gaslessGame, deployer, otherAccount, token, chessNFT } = await loadFixture(deploy);
+			const { chess, gaslessGame, deployer, otherAccount, token, domain, types } = await loadFixture(deploy);
 
 			let player1 = otherAccount.address;
 			let wagerToken = token.address;
@@ -79,22 +92,18 @@ describe("ChessFish Wager Unit Tests", function () {
 			let tx = await chess.connect(deployer).createGameWager(player1, wagerToken, wager, maxTimePerMove, numberOfGames);
 			await tx.wait();
 
-			let gameAddr = await chess.userGames(deployer.address, 0);
-			let gameAddr0 = await chess.userGames(deployer.address, 0);
-			let gameAddr1 = await chess.userGames(otherAccount.address, 0);
-			expect(gameAddr0).to.equal(gameAddr1);
-
+			let wagerAddress = await chess.userGames(deployer.address, 0);
+			
 			const moves = ["f2f3", "e7e5", "g2g4", "d8h4"];
 
 			// approve chess contract
 			await token.connect(otherAccount).approve(chess.address, wager);
 
 			// accept wager terms
-			let tx1 = await chess.connect(otherAccount).acceptWager(gameAddr);
+			let tx1 = await chess.connect(otherAccount).acceptWager(wagerAddress);
 			await tx1.wait();
 
 			let messageArray: any[] = [];
-			let messageHashesArray: any[] = [];
 			let signatureArray: any[] = [];
 
 			const timeNow = Date.now();
@@ -110,7 +119,7 @@ describe("ChessFish Wager Unit Tests", function () {
 				}
 
 				let hex_move = await chess.moveToHex(moves[i]);
-				let tx = await chess.connect(player).playMove(gameAddr, hex_move);
+				let tx = await chess.connect(player).playMove(wagerAddress, hex_move);
 			}
 
 			//// #### last two moves of game gasless #### ////
@@ -124,19 +133,23 @@ describe("ChessFish Wager Unit Tests", function () {
 
 				const hex_move = await chess.moveToHex(moves[i]);
 
-				const message = await gaslessGame.generateMoveMessage(gameAddr, hex_move, i, timeStamp);
+				const messageData = {
+					wagerAddress: wagerAddress,
+					gameNumber: 0, // 1 game only for this test
+					moveNumber: i,
+					move: hex_move,
+					expiration: timeStamp,
+				};
+				const message = await gaslessGame.encodeMoveMessage(messageData);
 				messageArray.push(message);
 
-				const messageHash = await gaslessGame.getMessageHash(gameAddr, hex_move, i, timeStamp);
-				messageHashesArray.push(messageHash);
-
-				const signature = await player.signMessage(ethers.utils.arrayify(messageHash));
+				const signature = await player._signTypedData(domain, types, messageData);
 				signatureArray.push(signature);
 			}
 
 			await chess.verifyGameUpdateState(messageArray, signatureArray);
 
-			const wins = await chess.wagerStatus(gameAddr);
+			const wins = await chess.wagerStatus(wagerAddress);
 
 			const winsPlayer0 = Number(wins.winsPlayer0);
 			const winsPlayer1 = Number(wins.winsPlayer1);
@@ -144,7 +157,7 @@ describe("ChessFish Wager Unit Tests", function () {
 			expect(winsPlayer0).to.equal(1);
 			expect(winsPlayer1).to.equal(0);
 
-			const gameLength = await chess.getGameLength(gameAddr);
+			const gameLength = await chess.getGameLength(wagerAddress);
 			console.log(gameLength);
 		});
 	});

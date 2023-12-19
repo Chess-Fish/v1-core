@@ -45,10 +45,6 @@ describe("ChessFish Wager Unit Tests", function () {
 		await chess.initCoordinates(coordinates_array, bitCoordinates_array);
 		await chessNFT.setChessFishAddress(chess.address);
 
-		const initalState = "0xcbaedabc99999999000000000000000000000000000000001111111143265234";
-		const initialWhite = "0x000704ff";
-		const initialBlack = "0x383f3cff";
-
 		// typed signature data
 		const domain = {
 			chainId: 1, // replace with the chain ID on frontend
@@ -75,9 +71,6 @@ describe("ChessFish Wager Unit Tests", function () {
 			chessNFT,
 			deployer,
 			otherAccount,
-			initalState,
-			initialWhite,
-			initialBlack,
 			token,
 			domain,
 			types,

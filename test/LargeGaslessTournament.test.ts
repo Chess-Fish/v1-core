@@ -103,6 +103,24 @@ describe("ChessFish Large Gasless Tournament Unit Tests", function () {
 			player10,
 		];
 
+		// typed signature data
+		const domain = {
+			chainId: 1, // replace with the chain ID on frontend
+			name: "ChessFish", // Contract Name
+			verifyingContract: gaslessGame.address, // for testing
+			version: "1", // version
+		};
+
+		const types = {
+			GaslessMove: [
+				{ name: "wagerAddress", type: "address" },
+				{ name: "gameNumber", type: "uint" },
+				{ name: "moveNumber", type: "uint" },
+				{ name: "move", type: "uint16" },
+				{ name: "expiration", type: "uint" },
+			],
+		};
+
 		return {
 			chess,
 			gaslessGame,
@@ -113,6 +131,8 @@ describe("ChessFish Large Gasless Tournament Unit Tests", function () {
 			players,
 			otherAccount,
 			token,
+			domain,
+			types
 		};
 	}
 
@@ -120,7 +140,7 @@ describe("ChessFish Large Gasless Tournament Unit Tests", function () {
 		it("Should start gasless tournament and play games 11 players", async function () {
 			this.timeout(100000); // sets the timeout to 100 seconds
 
-			const { chess, gaslessGame, tournament, players, token } = await loadFixture(deploy);
+			const { chess, gaslessGame, tournament, players, token, domain, types } = await loadFixture(deploy);
 
 			let numberOfPlayers = 25;
 			let wagerToken = token.address;
@@ -165,7 +185,6 @@ describe("ChessFish Large Gasless Tournament Unit Tests", function () {
 			for (let i = 0; i < wagerAddresses.length; i++) {
 				for (let j = 0; j < numberOfGames; j++) {
 					let messageArray: any[] = [];
-					let messageHashesArray: any[] = [];
 					let signatureArray: any[] = [];
 
 					let data = await chess.gameWagers(wagerAddresses[i]);
@@ -174,7 +193,7 @@ describe("ChessFish Large Gasless Tournament Unit Tests", function () {
 					let player1 = await ethers.getSigner(data.player1);
 
 					let playerAddress = await chess.getPlayerMove(wagerAddresses[i]);
-					let startingPlayer = playerAddress === player0.address ? player0 : player1; // Determine starting player based on address
+					let startingPlayer = playerAddress === player1.address ? player1 : player0; // Determine starting player based on address
 
 					const timeNow = Date.now();
 					const timeStamp = Math.floor(timeNow / 1000) + 86400 * 2; // plus two days
@@ -188,20 +207,26 @@ describe("ChessFish Large Gasless Tournament Unit Tests", function () {
 						}
 						console.log(`Playing game ${i} of ${wagerAddresses.length}`);
 
-						let hex_move = await chess.moveToHex(moves[k]);
+						const hex_move = await chess.moveToHex(moves[k]);
 
-						const message = await gaslessGame.generateMoveMessage(wagerAddresses[i], hex_move, k, timeStamp);
+						const messageData = {
+							wagerAddress: wagerAddresses[i],
+							gameNumber: j,
+							moveNumber: k,
+							move: hex_move,
+							expiration: timeStamp,
+						};
+						const message = await gaslessGame.encodeMoveMessage(messageData);
 						messageArray.push(message);
-
-						const messageHash = await gaslessGame.getMessageHash(wagerAddresses[i], hex_move, k, timeStamp);
-						messageHashesArray.push(messageHash);
-
-						const signature = await player.signMessage(ethers.utils.arrayify(messageHash));
+	
+						const signature = await player._signTypedData(domain, types, messageData);
 						signatureArray.push(signature);
 					}
 					await chess.verifyGameUpdateState(messageArray, signatureArray);
 				}
 			}
+
+		
 			await ethers.provider.send("evm_increaseTime", [86400]);
 			await ethers.provider.send("evm_mine");
 
