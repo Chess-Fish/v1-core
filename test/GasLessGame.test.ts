@@ -49,6 +49,24 @@ describe("ChessFish Wager Unit Tests", function () {
 		const initialWhite = "0x000704ff";
 		const initialBlack = "0x383f3cff";
 
+		// typed signature data
+		const domain = {
+			chainId: 1, // replace with the chain ID on frontend
+			name: "ChessFish", // Contract Name
+			verifyingContract: gaslessGame.address, // for testing
+			version: "1", // version
+		};
+
+		const types = {
+			GaslessMove: [
+				{ name: "wagerAddress", type: "address" },
+				{ name: "gameNumber", type: "uint" },
+				{ name: "moveNumber", type: "uint" },
+				{ name: "move", type: "uint16" },
+				{ name: "expiration", type: "uint" },
+			],
+		};
+
 		return {
 			chess,
 			gaslessGame,
@@ -61,12 +79,14 @@ describe("ChessFish Wager Unit Tests", function () {
 			initialWhite,
 			initialBlack,
 			token,
+			domain,
+			types,
 		};
 	}
 
 	describe("Gasless Game Verification Unit Tests", function () {
 		it("Should play game", async function () {
-			const { chess, gaslessGame, deployer, otherAccount, token } = await loadFixture(deploy);
+			const { chess, gaslessGame, deployer, otherAccount, token, domain, types } = await loadFixture(deploy);
 
 			let player1 = otherAccount.address;
 			let wagerToken = token.address;
@@ -117,13 +137,19 @@ describe("ChessFish Wager Unit Tests", function () {
 
 					const hex_move = await chess.moveToHex(moves[i]);
 
-					const message = await gaslessGame.generateMoveMessage(gameAddr, hex_move, i, timeStamp);
+					// const message = await gaslessGame.generateMoveMessage(gameAddr, hex_move, i, timeStamp);
+					const messageData = {
+						wagerAddress: gameAddr,
+						gameNumber: game,
+						moveNumber: i,
+						move: hex_move,
+						expiration: timeStamp,
+					};
+					const message = await gaslessGame.encodeMoveMessage(messageData);
 					messageArray.push(message);
 
-					const messageHash = await gaslessGame.getMessageHash(gameAddr, hex_move, i, timeStamp);
-					messageHashesArray.push(messageHash);
-
-					const signature = await player.signMessage(ethers.utils.arrayify(messageHash));
+					// const signature = await player.signMessage(ethers.utils.arrayify(messageHash));
+					const signature = await player._signTypedData(domain, types, messageData);
 					signatureArray.push(signature);
 				}
 				await chess.verifyGameUpdateState(messageArray, signatureArray);

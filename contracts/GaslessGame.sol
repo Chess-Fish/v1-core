@@ -41,7 +41,6 @@ import "./ChessWager.sol";
  */
 
 contract GaslessGame is EIP712 {
-
 	struct GaslessMove {
 		address wagerAddress;
 		uint gameNumber;
@@ -78,7 +77,10 @@ contract GaslessGame is EIP712 {
 	/// @dev address deployer
 	address deployer;
 
-	/// @dev EIP-712
+	/// @dev EIP-712 typed move signature
+	bytes32 public immutable MOVE_METHOD_HASH;
+
+	/// @dev EIP-712 typed delegation signature
 	bytes32 public immutable DELEGATION_METHOD_HASH;
 
 	modifier onlyDeployer() {
@@ -89,6 +91,10 @@ contract GaslessGame is EIP712 {
 	constructor(address moveVerificationAddress) EIP712("ChessFish", "1") {
 		moveVerification = MoveVerification(moveVerificationAddress);
 		deployer = msg.sender;
+
+		MOVE_METHOD_HASH = keccak256(
+			"GaslessMove(address wagerAddress,uint gameNumber,uint moveNumber,uint16 move,uint expiration)"
+		);
 
 		DELEGATION_METHOD_HASH = keccak256(
 			"Delegation(address delegatorAddress,address delegatedAddress,address wagerAddress)"
@@ -101,27 +107,12 @@ contract GaslessGame is EIP712 {
 	}
 
 	/// @notice Generates gasless move message
-	function generateMoveMessage(
-		address wager,
-		uint16 move,
-		uint moveNumber,
-		uint expiration
-	) public pure returns (bytes memory) {
-		return abi.encode(wager, move, moveNumber, expiration);
-	}
-
-	/// @notice Generates gasless move hash
-	function getMessageHash(
-		address wager,
-		uint16 move,
-		uint moveNumber,
-		uint expiration
-	) public pure returns (bytes32) {
-		return keccak256(abi.encodePacked(generateMoveMessage(wager, move, moveNumber, expiration)));
+	function encodeMoveMessage(GaslessMove memory move) external pure returns (bytes memory) {
+		return abi.encode(move);
 	}
 
 	/// @notice Decodes gasless move message
-	function decodeMoveMessage(bytes memory message) public pure returns (GaslessMove memory move) {
+	function decodeMoveMessage(bytes memory message) internal pure returns (GaslessMove memory move) {
 		move = abi.decode(message, (GaslessMove));
 		return move;
 	}
@@ -132,15 +123,21 @@ contract GaslessGame is EIP712 {
 		return move.wagerAddress;
 	}
 
-	/// @notice Gets signed message from gasless move hash
-	function getEthSignedMessageHash(bytes32 _messageHash) internal pure returns (bytes32) {
-		return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _messageHash));
-	}
-
-	/// @notice Validates that the signed hash was signed by the player
-	function validate(bytes32 messageHash, bytes memory signature, address signer) internal pure {
-		bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-		require(ECDSA.recover(ethSignedMessageHash, signature) == signer, "invalid sig");
+	/// @dev typed signature verification
+	function verifyMoveSigner(GaslessMoveData memory moveData, bytes memory signature) internal view {
+		bytes32 digest = _hashTypedDataV4(
+			keccak256(
+				abi.encode(
+					MOVE_METHOD_HASH,
+					moveData.move.wagerAddress,
+					moveData.move.gameNumber,
+					moveData.move.moveNumber,
+					moveData.move.move,
+					moveData.move.expiration
+				)
+			)
+		);
+		require(ECDSA.recover(digest, signature) == moveData.signer, "invalid signature");
 	}
 
 	/// @notice Verifies signed messages and signatures in for loop
@@ -149,7 +146,7 @@ contract GaslessGame is EIP712 {
 		address playerToMove,
 		GaslessMoveData memory moveData,
 		bytes[] memory messages,
-		bytes[] memory signatures	
+		bytes[] memory signatures
 	) internal view returns (uint16[] memory moves) {
 		moves = new uint16[](messages.length);
 		uint[] memory moveNumbers = new uint[](messages.length);
@@ -161,13 +158,13 @@ contract GaslessGame is EIP712 {
 			address wagerAddress = moveData.move.wagerAddress;
 			moveData.move = decodeMoveMessage(messages[i]);
 
-			require(wagerAddress == moveData.move.wagerAddress, "not matching");
+			require(wagerAddress == moveData.move.wagerAddress, "non matching wagers");
 			require(moveData.move.expiration >= block.timestamp, "move expired");
 
 			verifyMoveSigner(moveData, signatures[i]);
 
 			if (i != 0) {
-				require(moveNumbers[i - 1] < moveData.move.moveNumber, "moves must be sequential");
+				require(moveNumbers[i - 1] < moveData.move.moveNumber, "must be sequential");
 			}
 			moveNumbers[i] = moveData.move.moveNumber;
 			moves[i] = moveData.move.move;
@@ -176,28 +173,7 @@ contract GaslessGame is EIP712 {
 				i++;
 			}
 		}
-
 		return moves;
-	}
-
-	/// @dev typed signature verification
-	function verifyMoveSigner(GaslessMoveData memory moveData, bytes memory signature) public view {
-		bytes32 digest = _hashTypedDataV4(
-			keccak256(
-				abi.encode(
-					DELEGATION_METHOD_HASH,
-					moveData.move.wagerAddress,
-					moveData.move.gameNumber,
-					moveData.move.moveNumber,
-					moveData.move.move,
-					moveData.move.expiration
-				)
-			)
-		);
-		require(
-			ECDSA.recover(digest, signature) == moveData.signer,
-			"Invalid signature"
-		);
 	}
 
 	/// @notice Verifies all signed messages and signatures
@@ -265,6 +241,19 @@ contract GaslessGame is EIP712 {
 		return abi.encode(signedDelegation);
 	}
 
+	/// @notice Decode Signed Delegation
+	function decodeSignedDelegation(
+		bytes memory signedDelegationBytes
+	) public pure returns (SignedDelegation memory signedDelegation) {
+		return abi.decode(signedDelegationBytes, (SignedDelegation));
+	}
+
+	/// @notice Check if delegators match players in wagerAddress
+	function checkIfAddressesArePlayers(address delegator0, address delegator1, address wagerAddress) internal view {
+		(address player0, address player1) = chessWager.getWagerPlayers(wagerAddress);
+		require(delegator0 == player0 && delegator1 == player1, "players don't match");
+	}
+
 	/// @notice Check delegations
 	function checkDelegations(
 		SignedDelegation memory signedDelegation0,
@@ -280,7 +269,7 @@ contract GaslessGame is EIP712 {
 	}
 
 	/// @dev typed signature verification
-	function verifyDelegation(SignedDelegation memory signedDelegation) public view {
+	function verifyDelegation(SignedDelegation memory signedDelegation) internal view {
 		bytes32 digest = _hashTypedDataV4(
 			keccak256(
 				abi.encode(
@@ -295,29 +284,6 @@ contract GaslessGame is EIP712 {
 			ECDSA.recover(digest, signedDelegation.signature) == signedDelegation.delegation.delegatorAddress,
 			"Invalid signature"
 		);
-	}
-
-	/// @notice Decode Signed Delegation
-	function decodeSignedDelegation(
-		bytes memory signedDelegationBytes
-	) public pure returns (SignedDelegation memory signedDelegation) {
-		return abi.decode(signedDelegationBytes, (SignedDelegation));
-	}
-
-	/// @notice Verify delegator signature
-	function verifyDelegatedAddress(
-		bytes32 hashedDelegation,
-		bytes memory signature,
-		address delegatorAddress
-	) internal pure {
-		bytes32 ethSignedMessageHash = getEthSignedMessageHash(hashedDelegation);
-		require(ECDSA.recover(ethSignedMessageHash, signature) == delegatorAddress, "invalid signature");
-	}
-
-	/// @notice Check if delegators match players in wagerAddress
-	function checkIfAddressesArePlayers(address delegator0, address delegator1, address wagerAddress) internal view {
-		(address player0, address player1) = chessWager.getWagerPlayers(wagerAddress);
-		require(delegator0 == player0 && delegator1 == player1, "players don't match");
 	}
 
 	/// @notice Verify game moves via delegated signature
