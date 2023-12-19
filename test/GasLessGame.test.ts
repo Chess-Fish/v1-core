@@ -99,10 +99,9 @@ describe("ChessFish Wager Unit Tests", function () {
 			let tx = await chess.connect(deployer).createGameWager(player1, wagerToken, wager, maxTimePerMove, numberOfGames);
 			await tx.wait();
 
-			let gameAddr = await chess.userGames(deployer.address, 0);
-			let gameAddr0 = await chess.userGames(deployer.address, 0);
-			let gameAddr1 = await chess.userGames(otherAccount.address, 0);
-			expect(gameAddr0).to.equal(gameAddr1);
+			let wagerAddress = await chess.userGames(deployer.address, 0);
+			let wagerAddress1 = await chess.userGames(otherAccount.address, 0);
+			expect(wagerAddress).to.equal(wagerAddress1);
 
 			// const moves = ["f2f3", "e7e5", "g2g4", "d8h4"]; // fool's mate
 			const moves = ["e2e4", "f7f6", "d2d4", "g7g5", "d1h5"]; // reversed fool's mate
@@ -111,7 +110,7 @@ describe("ChessFish Wager Unit Tests", function () {
 			await token.connect(otherAccount).approve(chess.address, wager);
 
 			// accept wager terms
-			let tx1 = await chess.connect(otherAccount).acceptWager(gameAddr);
+			let tx1 = await chess.connect(otherAccount).acceptWager(wagerAddress);
 			await tx1.wait();
 
 			const timeNow = Date.now();
@@ -121,10 +120,9 @@ describe("ChessFish Wager Unit Tests", function () {
 			for (let game = 0; game < numberOfGames; game++) {
 				// reseting gasless data after each game
 				let messageArray: any[] = [];
-				let messageHashesArray: any[] = [];
 				let signatureArray: any[] = [];
 
-				let playerAddress = await chess.getPlayerMove(gameAddr);
+				let playerAddress = await chess.getPlayerMove(wagerAddress);
 				let startingPlayer = playerAddress === otherAccount.address ? otherAccount : deployer;
 
 				for (let i = 0; i < moves.length; i++) {
@@ -137,9 +135,8 @@ describe("ChessFish Wager Unit Tests", function () {
 
 					const hex_move = await chess.moveToHex(moves[i]);
 
-					// const message = await gaslessGame.generateMoveMessage(gameAddr, hex_move, i, timeStamp);
 					const messageData = {
-						wagerAddress: gameAddr,
+						wagerAddress: wagerAddress,
 						gameNumber: game,
 						moveNumber: i,
 						move: hex_move,
@@ -148,14 +145,13 @@ describe("ChessFish Wager Unit Tests", function () {
 					const message = await gaslessGame.encodeMoveMessage(messageData);
 					messageArray.push(message);
 
-					// const signature = await player.signMessage(ethers.utils.arrayify(messageHash));
 					const signature = await player._signTypedData(domain, types, messageData);
 					signatureArray.push(signature);
 				}
 				await chess.verifyGameUpdateState(messageArray, signatureArray);
 			}
 
-			const wins = await chess.wagerStatus(gameAddr);
+			const wins = await chess.wagerStatus(wagerAddress);
 
 			const winsPlayer0 = Number(wins.winsPlayer0);
 			const winsPlayer1 = Number(wins.winsPlayer1);

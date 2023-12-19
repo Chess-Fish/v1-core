@@ -137,7 +137,7 @@ contract GaslessGame is EIP712 {
 				)
 			)
 		);
-		require(ECDSA.recover(digest, signature) == moveData.signer, "invalid signature");
+		require(ECDSA.recover(digest, signature) == moveData.signer, "140 invalid signature");
 	}
 
 	/// @notice Verifies signed messages and signatures in for loop
@@ -299,10 +299,12 @@ contract GaslessGame is EIP712 {
 
 		checkDelegations(signedDelegation0, signedDelegation1);
 
+		wagerAddress = signedDelegation0.delegation.wagerAddress;
+
 		GaslessMoveData memory moveData;
 		moveData.player0 = signedDelegation0.delegation.delegatedAddress;
 		moveData.player1 = signedDelegation1.delegation.delegatedAddress;
-		moveData.move.wagerAddress = signedDelegation0.delegation.wagerAddress;
+		moveData.move.wagerAddress = wagerAddress;
 
 		checkIfAddressesArePlayers(
 			signedDelegation0.delegation.delegatorAddress,

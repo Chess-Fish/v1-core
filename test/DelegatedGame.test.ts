@@ -48,6 +48,32 @@ describe("ChessFish Delegated Signed Gasless Game Unit Tests", function () {
 		const initialWhite = "0x000704ff";
 		const initialBlack = "0x383f3cff";
 
+		// typed signature data
+		const domain = {
+			chainId: 1, // replace with the chain ID on frontend
+			name: "ChessFish", // Contract Name
+			verifyingContract: gaslessGame.address, // for testing
+			version: "1", // version
+		};
+
+		const delegationTypes = {
+			Delegation: [
+				{ name: "delegatorAddress", type: "address" },
+				{ name: "delegatedAddress", type: "address" },
+				{ name: "wagerAddress", type: "address" },
+			],
+		};
+
+		const gaslessMoveTypes = {
+			GaslessMove: [
+				{ name: "wagerAddress", type: "address" },
+				{ name: "gameNumber", type: "uint" },
+				{ name: "moveNumber", type: "uint" },
+				{ name: "move", type: "uint16" },
+				{ name: "expiration", type: "uint" },
+			],
+		};
+
 		return {
 			chess,
 			gaslessGame,
@@ -60,12 +86,16 @@ describe("ChessFish Delegated Signed Gasless Game Unit Tests", function () {
 			initialWhite,
 			initialBlack,
 			token,
+			domain,
+			delegationTypes,
+			gaslessMoveTypes,
 		};
 	}
 
 	describe("Gasless Delegated Game Verification Unit Tests", function () {
-		it("Should play game", async function () {
-			const { chess, gaslessGame, signer0, signer1, token } = await loadFixture(deploy);
+		it("Should play delegated gasless game", async function () {
+			const { chess, gaslessGame, signer0, signer1, token, domain, delegationTypes, gaslessMoveTypes } =
+				await loadFixture(deploy);
 
 			let player1 = signer1.address;
 			let wagerToken = token.address;
@@ -79,9 +109,8 @@ describe("ChessFish Delegated Signed Gasless Game Unit Tests", function () {
 			await tx.wait();
 
 			let wagerAddress = await chess.userGames(signer0.address, 0);
-			let gameAddr0 = await chess.userGames(signer0.address, 0);
-			let gameAddr1 = await chess.userGames(signer1.address, 0);
-			expect(gameAddr0).to.equal(gameAddr1);
+			let wagerAddress1 = await chess.userGames(signer1.address, 0);
+			expect(wagerAddress).to.equal(wagerAddress1);
 
 			// DELEGATED SIGNING OF GAME
 
@@ -94,21 +123,6 @@ describe("ChessFish Delegated Signed Gasless Game Unit Tests", function () {
 			const delegationData0 = [signer0.address, delegatedSigner0.address, wagerAddress];
 
 			// 3 Sign Typed Data V4
-			const domain = {
-				chainId: 1, // replace with the chain ID on frontend
-				name: "ChessFish", // Contract Name
-				verifyingContract: gaslessGame.address, // for testing
-				version: "1", // version
-			};
-
-			const types = {
-				Delegation: [
-					{ name: "delegatorAddress", type: "address" },
-					{ name: "delegatedAddress", type: "address" },
-					{ name: "wagerAddress", type: "address" },
-				],
-			};
-
 			const message0 = {
 				delegatorAddress: delegationData0[0],
 				delegatedAddress: delegationData0[1],
@@ -116,7 +130,7 @@ describe("ChessFish Delegated Signed Gasless Game Unit Tests", function () {
 			};
 
 			// Sign the data
-			const signature0 = await signer0._signTypedData(domain, types, message0);
+			const signature0 = await signer0._signTypedData(domain, delegationTypes, message0);
 			const signedDelegationData0 = await gaslessGame.encodeSignedDelegation(message0, signature0);
 
 			// ON THE FRONT END user 1
@@ -135,7 +149,7 @@ describe("ChessFish Delegated Signed Gasless Game Unit Tests", function () {
 			};
 
 			// Sign the data
-			const signature1 = await signer1._signTypedData(domain, types, message1);
+			const signature1 = await signer1._signTypedData(domain, delegationTypes, message1);
 			const signedDelegationData1 = await gaslessGame.encodeSignedDelegation(message1, signature1);
 
 			// const moves = ["f2f3", "e7e5", "g2g4", "d8h4"]; // fool's mate
@@ -151,11 +165,9 @@ describe("ChessFish Delegated Signed Gasless Game Unit Tests", function () {
 			const timeNow = Date.now();
 			const timeStamp = Math.floor(timeNow / 1000) + 86400 * 2; // plus two days
 
-			//// #### FIRST GAME #### ////
 			for (let game = 0; game < numberOfGames; game++) {
 				// reseting gasless data after each game
 				let messageArray: any[] = [];
-				let messageHashesArray: any[] = [];
 				let signatureArray: any[] = [];
 
 				let playerAddress = await chess.getPlayerMove(wagerAddress);
@@ -166,23 +178,25 @@ describe("ChessFish Delegated Signed Gasless Game Unit Tests", function () {
 					if (i % 2 == 0) {
 						player = startingPlayer;
 					} else {
-						player = startingPlayer.address === delegatedSigner1.address ? delegatedSigner0 : delegatedSigner1;
+						player = startingPlayer.address === delegatedSigner0.address ? delegatedSigner1 : delegatedSigner0;
 					}
 
 					const hex_move = await chess.moveToHex(moves[i]);
 
-					const message = await gaslessGame.generateMoveMessage(wagerAddress, hex_move, i, timeStamp);
+					const messageData = {
+						wagerAddress: wagerAddress,
+						gameNumber: game,
+						moveNumber: i,
+						move: hex_move,
+						expiration: timeStamp,
+					};
+					const message = await gaslessGame.encodeMoveMessage(messageData);
 					messageArray.push(message);
 
-					const messageHash = await gaslessGame.getMessageHash(wagerAddress, hex_move, i, timeStamp);
-					messageHashesArray.push(messageHash);
-
-					const signature = await player.signMessage(ethers.utils.arrayify(messageHash));
+					const signature = await player._signTypedData(domain, gaslessMoveTypes, messageData);
 					signatureArray.push(signature);
 				}
 				const delegations = [signedDelegationData0, signedDelegationData1];
-
-				// await gaslessGame.verifyGameViewDelegated(delegations, messageArray, signatureArray);
 				await chess.verifyGameUpdateStateDelegated(delegations, messageArray, signatureArray);
 			}
 
