@@ -132,7 +132,7 @@ describe("ChessFish Large Gasless Tournament Unit Tests", function () {
 			otherAccount,
 			token,
 			domain,
-			types
+			types,
 		};
 	}
 
@@ -218,7 +218,7 @@ describe("ChessFish Large Gasless Tournament Unit Tests", function () {
 						};
 						const message = await gaslessGame.encodeMoveMessage(messageData);
 						messageArray.push(message);
-	
+
 						const signature = await player._signTypedData(domain, types, messageData);
 						signatureArray.push(signature);
 					}
@@ -226,7 +226,6 @@ describe("ChessFish Large Gasless Tournament Unit Tests", function () {
 				}
 			}
 
-		
 			await ethers.provider.send("evm_increaseTime", [86400]);
 			await ethers.provider.send("evm_mine");
 

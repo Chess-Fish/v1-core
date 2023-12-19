@@ -72,8 +72,8 @@ describe("ChessFish Wager Unit Tests", function () {
 			deployer,
 			otherAccount,
 			token,
-			domain, 
-			types
+			domain,
+			types,
 		};
 	}
 
@@ -93,7 +93,7 @@ describe("ChessFish Wager Unit Tests", function () {
 			await tx.wait();
 
 			let wagerAddress = await chess.userGames(deployer.address, 0);
-			
+
 			const moves = ["f2f3", "e7e5", "g2g4", "d8h4"];
 
 			// approve chess contract
