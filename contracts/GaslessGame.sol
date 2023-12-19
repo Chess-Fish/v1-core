@@ -20,7 +20,7 @@ import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "./MoveVerification.sol";
 import "./ChessWager.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 /**
  * @title ChessFish GaslessGame Contract
@@ -41,14 +41,21 @@ import "hardhat/console.sol";
  */
 
 contract GaslessGame is EIP712 {
+
+	struct GaslessMove {
+		address wagerAddress;
+		uint gameNumber;
+		uint moveNumber;
+		uint16 move;
+		uint expiration;
+	}
+
 	struct GaslessMoveData {
 		address signer;
 		address player0;
 		address player1;
-		uint16 move;
-		uint moveNumber;
-		uint expiration;
-		bytes32 messageHash;
+		GaslessMove move;
+		bytes signature;
 	}
 
 	struct Delegation {
@@ -114,18 +121,15 @@ contract GaslessGame is EIP712 {
 	}
 
 	/// @notice Decodes gasless move message
-	function decodeMoveMessage(bytes memory message) public pure returns (address, uint16, uint, uint) {
-		(address wager, uint16 move, uint moveNumber, uint expiration) = abi.decode(
-			message,
-			(address, uint16, uint, uint)
-		);
-		return (wager, move, moveNumber, expiration);
+	function decodeMoveMessage(bytes memory message) public pure returns (GaslessMove memory move) {
+		move = abi.decode(message, (GaslessMove));
+		return move;
 	}
 
 	/// @notice Decodes gasless move message and returns wager address
 	function decodeWagerAddress(bytes memory message) internal pure returns (address) {
-		(address wager, , , ) = abi.decode(message, (address, uint16, uint, uint));
-		return wager;
+		GaslessMove memory move = abi.decode(message, (GaslessMove));
+		return move.wagerAddress;
 	}
 
 	/// @notice Gets signed message from gasless move hash
@@ -143,38 +147,30 @@ contract GaslessGame is EIP712 {
 	/// @dev returns array of the gasless moves
 	function verifyMoves(
 		address playerToMove,
-		address player0,
-		address player1,
+		GaslessMoveData memory moveData,
 		bytes[] memory messages,
-		bytes[] memory signatures
+		bytes[] memory signatures	
 	) internal view returns (uint16[] memory moves) {
 		moves = new uint16[](messages.length);
 		uint[] memory moveNumbers = new uint[](messages.length);
-
-		GaslessMoveData memory moveData;
-		moveData.player0 = player0;
-		moveData.player1 = player1;
 
 		for (uint i = 0; i < messages.length; ) {
 			/// @dev determine signer based on the move index
 			moveData.signer = (i % 2 == 0) == (playerToMove == moveData.player0) ? moveData.player0 : moveData.player1;
 
-			(, moveData.move, moveData.moveNumber, moveData.expiration) = decodeMoveMessage(messages[i]);
-			require(moveData.expiration >= block.timestamp, "move expired");
+			address wagerAddress = moveData.move.wagerAddress;
+			moveData.move = decodeMoveMessage(messages[i]);
 
-			moveData.messageHash = getMessageHash(
-				decodeWagerAddress(messages[i]),
-				moveData.move,
-				moveData.moveNumber,
-				moveData.expiration
-			);
-			validate(moveData.messageHash, signatures[i], moveData.signer);
+			require(wagerAddress == moveData.move.wagerAddress, "not matching");
+			require(moveData.move.expiration >= block.timestamp, "move expired");
+
+			verifyMoveSigner(moveData, signatures[i]);
 
 			if (i != 0) {
-				require(moveNumbers[i - 1] < moveData.moveNumber, "moves must be sequential");
+				require(moveNumbers[i - 1] < moveData.move.moveNumber, "moves must be sequential");
 			}
-			moveNumbers[i] = moveData.moveNumber;
-			moves[i] = moveData.move;
+			moveNumbers[i] = moveData.move.moveNumber;
+			moves[i] = moveData.move.move;
 
 			unchecked {
 				i++;
@@ -182,6 +178,26 @@ contract GaslessGame is EIP712 {
 		}
 
 		return moves;
+	}
+
+	/// @dev typed signature verification
+	function verifyMoveSigner(GaslessMoveData memory moveData, bytes memory signature) public view {
+		bytes32 digest = _hashTypedDataV4(
+			keccak256(
+				abi.encode(
+					DELEGATION_METHOD_HASH,
+					moveData.move.wagerAddress,
+					moveData.move.gameNumber,
+					moveData.move.moveNumber,
+					moveData.move.move,
+					moveData.move.expiration
+				)
+			)
+		);
+		require(
+			ECDSA.recover(digest, signature) == moveData.signer,
+			"Invalid signature"
+		);
 	}
 
 	/// @notice Verifies all signed messages and signatures
@@ -200,7 +216,12 @@ contract GaslessGame is EIP712 {
 
 		(address player0, address player1) = chessWager.getWagerPlayers(wagerAddress);
 
-		moves = verifyMoves(playerToMove, player0, player1, messages, signatures);
+		GaslessMoveData memory moveData;
+		moveData.player0 = player0;
+		moveData.player1 = player1;
+		moveData.move.wagerAddress = wagerAddress;
+
+		moves = verifyMoves(playerToMove, moveData, messages, signatures);
 
 		// appending moves to onChainMoves if they exist
 		uint16[] memory onChainMoves = chessWager.getLatestGameMoves(wagerAddress);
@@ -254,12 +275,12 @@ contract GaslessGame is EIP712 {
 			"non matching addresses"
 		);
 
-		verifyDelegationTest(signedDelegation0);
-		verifyDelegationTest(signedDelegation1);
+		verifyDelegation(signedDelegation0);
+		verifyDelegation(signedDelegation1);
 	}
 
 	/// @dev typed signature verification
-	function verifyDelegationTest(SignedDelegation memory signedDelegation) public view {
+	function verifyDelegation(SignedDelegation memory signedDelegation) public view {
 		bytes32 digest = _hashTypedDataV4(
 			keccak256(
 				abi.encode(
@@ -312,9 +333,10 @@ contract GaslessGame is EIP712 {
 
 		checkDelegations(signedDelegation0, signedDelegation1);
 
-		address player0 = signedDelegation0.delegation.delegatedAddress;
-		address player1 = signedDelegation1.delegation.delegatedAddress;
-		wagerAddress = signedDelegation0.delegation.wagerAddress;
+		GaslessMoveData memory moveData;
+		moveData.player0 = signedDelegation0.delegation.delegatedAddress;
+		moveData.player1 = signedDelegation1.delegation.delegatedAddress;
+		moveData.move.wagerAddress = signedDelegation0.delegation.wagerAddress;
 
 		checkIfAddressesArePlayers(
 			signedDelegation0.delegation.delegatorAddress,
@@ -323,10 +345,10 @@ contract GaslessGame is EIP712 {
 		);
 
 		address playerToMove = chessWager.getPlayerMove(wagerAddress) == signedDelegation0.delegation.delegatorAddress
-			? player0
-			: player1;
+			? moveData.player0
+			: moveData.player1;
 
-		moves = verifyMoves(playerToMove, player0, player1, messages, signatures);
+		moves = verifyMoves(playerToMove, moveData, messages, signatures);
 
 		uint16[] memory onChainMoves = chessWager.getLatestGameMoves(wagerAddress);
 		if (onChainMoves.length > 0) {

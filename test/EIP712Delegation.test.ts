@@ -109,7 +109,7 @@ describe("ChessFish Delegated Signed Gasless Game Unit Tests", function () {
 
 			const signedDelegation = [delegationData, signature];
 
-			await gaslessGame.verifyDelegationTest(signedDelegation);
+			await gaslessGame.verifyDelegation(signedDelegation);
 		});
 	});
 });
