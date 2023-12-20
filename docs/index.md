@@ -566,6 +566,18 @@ This smart contract is designed to handle gasless game moves. Key features inclu
    providing a smoother and more uninterrupted gameplay experience. It ensures
    that players can focus on strategy rather than managing transaction confirmations.
 
+### GaslessMove
+
+```solidity
+struct GaslessMove {
+  address wagerAddress;
+  uint256 gameNumber;
+  uint256 moveNumber;
+  uint16 move;
+  uint256 expiration;
+}
+```
+
 ### GaslessMoveData
 
 ```solidity
@@ -573,10 +585,8 @@ struct GaslessMoveData {
   address signer;
   address player0;
   address player1;
-  uint16 move;
-  uint256 moveNumber;
-  uint256 expiration;
-  bytes32 messageHash;
+  struct GaslessGame.GaslessMove move;
+  bytes signature;
 }
 ```
 
@@ -621,6 +631,22 @@ address deployer
 
 _address deployer_
 
+### MOVE_METHOD_HASH
+
+```solidity
+bytes32 MOVE_METHOD_HASH
+```
+
+_EIP-712 typed move signature_
+
+### DELEGATION_METHOD_HASH
+
+```solidity
+bytes32 DELEGATION_METHOD_HASH
+```
+
+_EIP-712 typed delegation signature_
+
 ### onlyDeployer
 
 ```solidity
@@ -641,26 +667,18 @@ function setChessWager(address _chessWager) external
 
 set ChessWager contract
 
-### generateMoveMessage
+### encodeMoveMessage
 
 ```solidity
-function generateMoveMessage(address wager, uint16 move, uint256 moveNumber, uint256 expiration) public pure returns (bytes)
+function encodeMoveMessage(struct GaslessGame.GaslessMove move) external pure returns (bytes)
 ```
 
 Generates gasless move message
 
-### getMessageHash
-
-```solidity
-function getMessageHash(address wager, uint16 move, uint256 moveNumber, uint256 expiration) public pure returns (bytes32)
-```
-
-Generates gasless move hash
-
 ### decodeMoveMessage
 
 ```solidity
-function decodeMoveMessage(bytes message) public pure returns (address, uint16, uint256, uint256)
+function decodeMoveMessage(bytes message) internal pure returns (struct GaslessGame.GaslessMove move)
 ```
 
 Decodes gasless move message
@@ -673,26 +691,18 @@ function decodeWagerAddress(bytes message) internal pure returns (address)
 
 Decodes gasless move message and returns wager address
 
-### getEthSignedMessageHash
+### verifyMoveSigner
 
 ```solidity
-function getEthSignedMessageHash(bytes32 _messageHash) internal pure returns (bytes32)
+function verifyMoveSigner(struct GaslessGame.GaslessMoveData moveData, bytes signature) internal view
 ```
 
-Gets signed message from gasless move hash
-
-### validate
-
-```solidity
-function validate(bytes32 messageHash, bytes signature, address signer) internal pure
-```
-
-Validates that the signed hash was signed by the player
+_typed signature verification_
 
 ### verifyMoves
 
 ```solidity
-function verifyMoves(address playerToMove, address player0, address player1, bytes[] messages, bytes[] signatures) internal view returns (uint16[] moves)
+function verifyMoves(address playerToMove, struct GaslessGame.GaslessMoveData moveData, bytes[] messages, bytes[] signatures) internal view returns (uint16[] moves)
 ```
 
 Verifies signed messages and signatures in for loop
@@ -726,22 +736,6 @@ function encodeSignedDelegation(struct GaslessGame.Delegation delegation, bytes 
 
 Encode signed delegation helper function
 
-### checkDelegations
-
-```solidity
-function checkDelegations(struct GaslessGame.SignedDelegation signedDelegation0, struct GaslessGame.SignedDelegation signedDelegation1) internal pure
-```
-
-Check delegations
-
-### verifyDelegation
-
-```solidity
-function verifyDelegation(struct GaslessGame.SignedDelegation signedDelegation) public pure
-```
-
-Verify delegation signature
-
 ### decodeSignedDelegation
 
 ```solidity
@@ -750,24 +744,6 @@ function decodeSignedDelegation(bytes signedDelegationBytes) public pure returns
 
 Decode Signed Delegation
 
-_this can be internal unless it's somehow required on the frontend_
-
-### hashDelegation
-
-```solidity
-function hashDelegation(struct GaslessGame.Delegation delegationData) public pure returns (bytes32)
-```
-
-Hash Delegation data type
-
-### verifyDelegatedAddress
-
-```solidity
-function verifyDelegatedAddress(bytes32 hashedDelegation, bytes signature, address delegatorAddress) internal pure
-```
-
-Verify delegator signature
-
 ### checkIfAddressesArePlayers
 
 ```solidity
@@ -775,6 +751,22 @@ function checkIfAddressesArePlayers(address delegator0, address delegator1, addr
 ```
 
 Check if delegators match players in wagerAddress
+
+### checkDelegations
+
+```solidity
+function checkDelegations(struct GaslessGame.SignedDelegation signedDelegation0, struct GaslessGame.SignedDelegation signedDelegation1) internal view
+```
+
+Check delegations
+
+### verifyDelegation
+
+```solidity
+function verifyDelegation(struct GaslessGame.SignedDelegation signedDelegation) internal view
+```
+
+_typed signature verification_
 
 ### verifyGameViewDelegated
 
@@ -863,9 +855,19 @@ This function significantly increases the size of the compiled bytecode..._
 function getLetter(uint8 piece) public view returns (string)
 ```
 
-_Convert the number of a piece to the string character
-        @param piece is the number of the piece
-        @return string is the letter of the piece_
+_Convert the number of a piece to the string character_
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| piece | uint8 | is the number of the piece |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | string | string is the letter of the piece |
 
 ### convertFromMove
 
@@ -873,9 +875,20 @@ _Convert the number of a piece to the string character
 function convertFromMove(uint16 move) public pure returns (uint8, uint8)
 ```
 
-_Converts a move from a 16-bit integer to a 2 8-bit integers.
-        @param move is the move to convert
-        @return fromPos and toPos_
+_Converts a move from a 16-bit integer to a 2 8-bit integers._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| move | uint16 | is the move to convert |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint8 | fromPos and toPos |
+| [1] | uint8 |  |
 
 ### convertToMove
 
@@ -883,10 +896,20 @@ _Converts a move from a 16-bit integer to a 2 8-bit integers.
 function convertToMove(uint8 fromPos, uint8 toPos) public pure returns (uint16)
 ```
 
-_Converts two 8-bit integers to a 16-bit integer
-        @param fromPos is the position to move a piece from.
-        @param toPos is the position to move a piece to.
-        @return move_
+_Converts two 8-bit integers to a 16-bit integer_
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| fromPos | uint8 | is the position to move a piece from. |
+| toPos | uint8 | is the position to move a piece to. |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint16 | move |
 
 ### moveToHex
 
@@ -894,9 +917,19 @@ _Converts two 8-bit integers to a 16-bit integer
 function moveToHex(string move) external view returns (uint16 hexMove)
 ```
 
-_Converts an algebraic chess notation string move to uint16 format
-        @param move is the move to convert i.e. e2e4 to hex move
-        @return hexMove is the resulting uint16 value_
+_Converts an algebraic chess notation string move to uint16 format_
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| move | string | is the move to convert i.e. e2e4 to hex move |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| hexMove | uint16 | is the resulting uint16 value |
 
 ### hexToMove
 
@@ -904,9 +937,19 @@ _Converts an algebraic chess notation string move to uint16 format
 function hexToMove(uint16 hexMove) public view returns (string move)
 ```
 
-_Converts a uint16 hex value to move in algebraic chess notation
-        @param hexMove is the move to convert to string 
-        @return move is the resulting string value_
+_Converts a uint16 hex value to move in algebraic chess notation_
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| hexMove | uint16 | is the move to convert to string |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| move | string | is the resulting string value |
 
 ### getBoard
 
@@ -915,9 +958,19 @@ function getBoard(uint256 gameState) external view returns (string[64])
 ```
 
 _returns string of letters representing the board
-        @dev only to be called by user or ui
-        @param gameState is the uint256 game state of the board 
-        @return string[64] is the resulting array_
+only to be called by user or ui_
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| gameState | uint256 | is the uint256 game state of the board |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | string[64] | string[64] is the resulting array |
 
 ## MoveVerification
 
@@ -1523,7 +1576,9 @@ This contract creates wagers in the ChessWager smart contract and then reads the
 ```solidity
 struct Tournament {
   uint256 numberOfPlayers;
-  address[] players;
+  address[] authed_players;
+  address[] joined_players;
+  bool isByInvite;
   uint256 numberOfGames;
   address token;
   uint256 tokenAmount;
@@ -1606,7 +1661,7 @@ _uint tournament nonce => address[] wagerIDs_
 mapping(uint256 => mapping(address => uint256)) tournamentWins
 ```
 
-_uint tournamentID = > address player => wins_
+_uint tournamentID => address player => wins_
 
 ### ChessWagerAddress
 
@@ -1670,6 +1725,12 @@ function isPlayerInTournament(uint256 tournamentID, address player) internal vie
 
 Checks if address is in tournament
 
+### isPlayerAuthenticatedInTournament
+
+```solidity
+function isPlayerAuthenticatedInTournament(uint256 tournamentID, address player) internal view returns (bool)
+```
+
 ### createTournament
 
 ```solidity
@@ -1679,6 +1740,16 @@ function createTournament(uint256 numberOfPlayers, uint256 numberOfGames, addres
 Creates a Tournament
 
 _creates a tournament, and increases the global tournament nonce_
+
+### createTournamentWithSpecificPlayers
+
+```solidity
+function createTournamentWithSpecificPlayers(address[] specificPlayers, uint256 numberOfGames, address token, uint256 tokenAmount, uint256 timeLimit, bool shouldJoin) external returns (uint256)
+```
+
+Creates a Tournament with specific players
+
+_Creates a tournament, and increases the global tournament nonce_
 
 ### joinTournament
 

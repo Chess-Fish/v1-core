@@ -26,7 +26,6 @@ const chainIds = {
 	"polygon-mumbai": 80001,
 	sepolia: 11155111,
 	arb_sepolia: 421614,
-	arb_goerli: 421613,
 	goerli: 5,
 	chiado: 10200,
 	"celo-testnet": 44787,
@@ -141,3 +140,7 @@ const config: HardhatUserConfig = {
 };
 
 export default config;
+
+
+
+

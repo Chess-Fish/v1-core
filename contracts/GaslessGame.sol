@@ -199,7 +199,7 @@ contract GaslessGame is EIP712 {
 
 		moves = verifyMoves(playerToMove, moveData, messages, signatures);
 
-		// appending moves to onChainMoves if they exist
+		/// @dev appending moves to onChainMoves if they exist
 		uint16[] memory onChainMoves = chessWager.getLatestGameMoves(wagerAddress);
 
 		if (onChainMoves.length > 0) {
