@@ -3,9 +3,8 @@ import { config as dotenvConfig } from "dotenv";
 import type { HardhatUserConfig } from "hardhat/config";
 import type { NetworkUserConfig } from "hardhat/types";
 import { resolve } from "path";
-// import "hardhat-gas-reporter";
-// import "solidity-coverage";
 import "solidity-docgen";
+
 
 const dotenvConfigPath: string = process.env.DOTENV_CONFIG_PATH || "./.env";
 dotenvConfig({ path: resolve(__dirname, dotenvConfigPath) });
@@ -100,7 +99,6 @@ const config: HardhatUserConfig = {
 		goerli: getChainConfig("goerli"),
 		sepolia: getChainConfig("sepolia"),
 		arb_sepolia: getChainConfig("arb_sepolia"),
-		arb_goerli: getChainConfig("arb_goerli"),
 		chiado: getChainConfig("chiado"),
 		"celo-testnet": getChainConfig("celo-testnet"),
 	},
@@ -112,7 +110,22 @@ const config: HardhatUserConfig = {
 	},
 	etherscan: {
 		apiKey: process.env.ARBITRUM_API_KEY,
+		customChains: [
+			{
+			  network: "arb_sepolia",
+			  chainId: 421614,
+			  urls: {
+				apiURL: "https://sepolia.arbiscan.io/api",
+				browserURL: "https://sepolia.arbiscan.io"
+			  }
+			}
+		  ]
 	},
+	sourcify: {
+		// Disabled by default
+		// Doesn't need an API key
+		enabled: true
+	  },
 	solidity: {
 		version: "0.8.23",
 		settings: {
