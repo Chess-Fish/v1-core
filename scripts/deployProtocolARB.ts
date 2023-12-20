@@ -12,6 +12,7 @@ interface ContractAddresses {
 	dividendSplitter: string;
 	chessNFT: string;
 	moveVerification: string;
+	gaslessGame: string;
 	chessWager: string;
 	crowdSale: string;
 	tournament: string;
@@ -57,10 +58,18 @@ async function deploy(): Promise<void> {
 	await moveVerification.deployed();
 	console.log("Move verification contract deployed");
 
+	const GaslessGame = await ethers.getContractFactory("GaslessGame");
+	const gaslessGame = await GaslessGame.deploy(moveVerification.address);
+
 	const ChessWager = await ethers.getContractFactory("ChessWager");
-	const chess = await ChessWager.deploy(moveVerification.address, CFSH, splitter.address, chessNFT.address);
-	await chess.deployed();
-	console.log("Chess Wager contract deployed");
+	const chess = await ChessWager.deploy(
+		moveVerification.address,
+		gaslessGame.address,
+		splitter.address,
+		chessNFT.address
+	);
+
+	
 
 	const ChessTournament = await ethers.getContractFactory("ChessFishTournament");
 	const tournament = await ChessTournament.deploy(chess.address, splitter.address);
@@ -78,6 +87,7 @@ async function deploy(): Promise<void> {
 		dividendSplitter: splitter.address,
 		chessNFT: chessNFT.address,
 		moveVerification: moveVerification.address,
+		gaslessGame: gaslessGame.address,
 		chessWager: chess.address,
 		crowdSale: crowdsale.address,
 		tournament: tournament.address,
@@ -107,9 +117,10 @@ async function deploy(): Promise<void> {
 	console.log("Network: ", contractAddresses.network);
 	console.log("Deployer: ", contractAddresses.deployer);
 	console.log("Chess Fish Token", contractAddresses.chessFishToken);
-	console.log("dividend Splittern", contractAddresses.dividendSplitter);
+	console.log("Dividend Splitter", contractAddresses.dividendSplitter);
 	console.log("ChessNFT address", contractAddresses.chessNFT);
 	console.log("Move Verification address", contractAddresses.moveVerification);
+	console.log("GaslessGame address", contractAddresses.gaslessGame);
 	console.log("Chess Contract address", contractAddresses.chessWager);
 	console.log("CrowdSale contract", contractAddresses.crowdSale);
 	console.log("Tournament contract", contractAddresses.tournament);
@@ -125,6 +136,13 @@ async function deploy(): Promise<void> {
 		const tx2 = await chessNFT.setChessFishAddress(chess.address);
 		await tx2.wait();
 		console.log("Chess Wager address set in ChessNFT contract");
+	} catch (error) {
+		console.log(error);
+	}
+	try {
+		const tx3 = await gaslessGame.setChessWager(chess.address);
+		await tx3.wait();
+		console.log("Chess Wager address set in gasless game contract");
 	} catch (error) {
 		console.log(error);
 	}
@@ -149,7 +167,15 @@ async function deploy(): Promise<void> {
 
 	console.log("___________");
 
-	console.log(`npx hardhat verify --network arbitrum ${contractAddresses.chessFishToken} "${owner.address}"`);
+	console.log(
+		`npx hardhat verify --network arbitrum ${contractAddresses.gaslessGame} "${moveVerification.address}"`
+	);
+
+	console.log("___________");
+
+	console.log(
+		`npx hardhat verify --network arbitrum ${contractAddresses.moveVerification}`
+	);
 }
 
 async function main(): Promise<void> {

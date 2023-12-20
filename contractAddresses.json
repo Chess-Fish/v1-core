@@ -18,5 +18,19 @@
     "crowdSale": "0x5E9ceD7eE86883033Baa7CddCe99960ef0a1FBf3",
     "tournament": "0x3Aa52ab6e06dE557f1B62314dB3e73f585f55Aa2",
     "treasuryVesting": "0xF7e919431c68C379557Cc7812c4f506eCBB8CD33"
+  },
+  {
+    "network": "homestead",
+    "chainID": 1,
+    "deployer": "0x2Ff6C88b03Ed6926Cc83C05E2c7689f1e1299B13",
+    "chessFishToken": "0xE9e136a8fd4D06CA36bbE47734Fb4D13D3e48C59",
+    "dividendSplitter": "0x93575CC45Af22147Df948f658d54c903B38ce638",
+    "chessNFT": "0xB699172970A638c65E6D46745AE1811f02E3eeA7",
+    "moveVerification": "0xa0Ad84c0F8586b2ccBFE0F1Aa71458447BB2286a",
+    "gaslessGame": "0xA0fb6Ecd2Fdaf4485C4eebC18ef1C2a52373D90D",
+    "chessWager": "0x3Aa52ab6e06dE557f1B62314dB3e73f585f55Aa2",
+    "crowdSale": "0x5E9ceD7eE86883033Baa7CddCe99960ef0a1FBf3",
+    "tournament": "0xDbb447fDaDf53135B2f3809E0577BF54098F382E",
+    "treasuryVesting": "0xF7e919431c68C379557Cc7812c4f506eCBB8CD33"
   }
 ]
