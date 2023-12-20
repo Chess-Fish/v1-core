@@ -60,6 +60,8 @@ async function deploy(): Promise<void> {
 
 	const GaslessGame = await ethers.getContractFactory("GaslessGame");
 	const gaslessGame = await GaslessGame.deploy(moveVerification.address);
+	console.log("Gasless game contract deployed");
+
 
 	const ChessWager = await ethers.getContractFactory("ChessWager");
 	const chess = await ChessWager.deploy(
@@ -68,8 +70,7 @@ async function deploy(): Promise<void> {
 		splitter.address,
 		chessNFT.address
 	);
-
-	
+	console.log("ChessWager contract deployed");
 
 	const ChessTournament = await ethers.getContractFactory("ChessFishTournament");
 	const tournament = await ChessTournament.deploy(chess.address, splitter.address);
