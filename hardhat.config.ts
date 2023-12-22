@@ -5,7 +5,6 @@ import type { NetworkUserConfig } from "hardhat/types";
 import { resolve } from "path";
 import "solidity-docgen";
 
-
 const dotenvConfigPath: string = process.env.DOTENV_CONFIG_PATH || "./.env";
 dotenvConfig({ path: resolve(__dirname, dotenvConfigPath) });
 
@@ -109,20 +108,20 @@ const config: HardhatUserConfig = {
 		apiKey: process.env.ARBITRUM_API_KEY,
 		customChains: [
 			{
-			  network: "arb_sepolia",
-			  chainId: 421614,
-			  urls: {
-				apiURL: "https://sepolia.arbiscan.io/api",
-				browserURL: "https://sepolia.arbiscan.io"
-			  }
-			}
-		  ]
+				network: "arb_sepolia",
+				chainId: 421614,
+				urls: {
+					apiURL: "https://sepolia.arbiscan.io/api",
+					browserURL: "https://sepolia.arbiscan.io",
+				},
+			},
+		],
 	},
 	sourcify: {
 		// Disabled by default
 		// Doesn't need an API key
-		enabled: true
-	  },
+		enabled: true,
+	},
 	solidity: {
 		version: "0.8.23",
 		settings: {
@@ -150,7 +149,3 @@ const config: HardhatUserConfig = {
 };
 
 export default config;
-
-
-
-

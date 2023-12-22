@@ -141,12 +141,7 @@ describe("ChessFish Wager Unit Tests", function () {
 					const signature = await player._signTypedData(domain, types, messageData);
 					signatureArray.push(signature);
 
-					const recoveredAddress = ethers.utils.verifyTypedData(
-						domain,
-						types,
-						messageData,
-						signature
-					  );
+					const recoveredAddress = ethers.utils.verifyTypedData(domain, types, messageData, signature);
 
 					expect(recoveredAddress.toLowerCase()).to.equal(player.address.toLowerCase());
 				}

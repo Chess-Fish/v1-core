@@ -62,7 +62,6 @@ async function deploy(): Promise<void> {
 	const gaslessGame = await GaslessGame.deploy(moveVerification.address);
 	console.log("Gasless game contract deployed");
 
-
 	const ChessWager = await ethers.getContractFactory("ChessWager");
 	const chess = await ChessWager.deploy(
 		moveVerification.address,
@@ -168,15 +167,11 @@ async function deploy(): Promise<void> {
 
 	console.log("___________");
 
-	console.log(
-		`npx hardhat verify --network arbitrum ${contractAddresses.gaslessGame} "${moveVerification.address}"`
-	);
+	console.log(`npx hardhat verify --network arbitrum ${contractAddresses.gaslessGame} "${moveVerification.address}"`);
 
 	console.log("___________");
 
-	console.log(
-		`npx hardhat verify --network arbitrum ${contractAddresses.moveVerification}`
-	);
+	console.log(`npx hardhat verify --network arbitrum ${contractAddresses.moveVerification}`);
 }
 
 async function main(): Promise<void> {
