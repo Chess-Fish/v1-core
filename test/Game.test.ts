@@ -2,7 +2,8 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-import { coordinates_array, bitCoordinates_array } from "../scripts/constants";
+import { coordinates_array, bitCoordinates_array, moves_stalemate } from "../scripts/constants";
+import { moveToHex } from "../scripts/utils";
 
 describe("ChessFish Game Verification Unit Tests", function () {
 	// We define a fixture to reuse the same setup in every test.
@@ -439,6 +440,16 @@ describe("ChessFish Game Verification Unit Tests", function () {
 			let outcome = await moveVerification.checkGameFromStart(hex_moves);
 
 			expect(outcome[0]).to.equal(0);
+		});
+
+		it("Should check move moveToHex functions", async function () {
+			const { chess } = await loadFixture(deploy);
+
+			for (let i = 0; i < moves_stalemate.length; i++) {
+				let hex_moveSC = await chess.moveToHex(moves_stalemate[i]);
+				let hex_moveTS = moveToHex(moves_stalemate[i]);
+				expect(hex_moveSC).to.equal(hex_moveTS);
+			}
 		});
 	});
 });
