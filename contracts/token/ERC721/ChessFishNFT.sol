@@ -39,7 +39,7 @@ contract ChessFishNFT is ERC721 {
 		_;
 	}
 
-	constructor() ERC721("ChessFishNFT", "CFNFT") {
+	constructor() ERC721("ChessFishNFT", "WIN") {
 		deployer = msg.sender;
 	}
 

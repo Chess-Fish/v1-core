@@ -20,8 +20,6 @@ import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "./MoveVerification.sol";
 import "./ChessWager.sol";
 
-// import "hardhat/console.sol";
-
 /**
  * @title ChessFish GaslessGame Contract
  * @author ChessFish

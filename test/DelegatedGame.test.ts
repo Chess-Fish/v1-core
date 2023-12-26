@@ -197,6 +197,7 @@ describe("ChessFish Delegated Signed Gasless Game Unit Tests", function () {
 					signatureArray.push(signature);
 				}
 				const delegations = [signedDelegationData0, signedDelegationData1];
+
 				await chess.verifyGameUpdateStateDelegated(delegations, messageArray, signatureArray);
 			}
 
