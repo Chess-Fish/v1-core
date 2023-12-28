@@ -555,8 +555,6 @@ describe("evm_chess Wager Unit Tests", function () {
 			let nftBal = await chessNFT.balanceOf(deployer.address);
 			expect(nftBal).to.equal(1);
 
-			expect(nftBal).to.be.equal(1);
-
 			let ownerOf = await chessNFT.ownerOf(1);
 			expect(ownerOf).to.equal(deployer.address);
 
@@ -564,34 +562,90 @@ describe("evm_chess Wager Unit Tests", function () {
 			expect(numberOfWagers).to.equal(1);
 		});
 
-		it("Should test cancel wager", async function () {
-			const { chess, deployer, otherAccount, token } = await loadFixture(deploy);
+		it("Should test updateWagerStateTime", async function () {
+			const { chess, deployer, otherAccount, token, chessNFT } = await loadFixture(deploy);
 
 			let player1 = otherAccount.address;
 			let wagerToken = token.address;
-			let wager = ethers.utils.parseEther("0");
+			let wager = ethers.utils.parseEther("1.0");
 			let maxTimePerMove = 86400;
 			let numberOfGames = 3;
 
-			await token.approve(chess.address, wager);
+			let wagerPrize = ethers.utils.parseEther("10.0");
+
+			await token.approve(chess.address, wager + wagerPrize);
 
 			let tx = await chess.connect(deployer).createGameWager(player1, wagerToken, wager, maxTimePerMove, numberOfGames);
 			await tx.wait();
 
 			let gameAddr = await chess.userGames(deployer.address, 0);
 
+			// deposit extra prize
+			await chess.depositToWager(gameAddr, wagerPrize);
+
+			let gameAddr0 = await chess.userGames(deployer.address, 0);
+			let gameAddr1 = await chess.userGames(otherAccount.address, 0);
+			expect(gameAddr0).to.equal(gameAddr1);
+
+			const moves = ["f2f3", "e7e5", "g2g4", "d8h4"];
+
 			// approve chess contract
 			await token.connect(otherAccount).approve(chess.address, wager);
 
-			const [_deployer, _otherAccount, account3] = await ethers.getSigners();
+			// accept wager terms
+			let tx1 = await chess.connect(otherAccount).acceptWager(gameAddr);
+			await tx1.wait();
 
-			let promise1 = chess.connect(account3).cancelWager(gameAddr);
-			await expect(promise1).to.be.revertedWith("not listed");
+			const isPlayer0White = await chess.isPlayerWhite(gameAddr, otherAccount.address);
+			const isPlayer1White = await chess.isPlayerWhite(gameAddr, deployer.address);
 
-			await chess.connect(_otherAccount).acceptWager(gameAddr);
+			expect(isPlayer0White).to.equal(true);
+			expect(isPlayer1White).to.equal(false);
 
-			let promise0 = chess.connect(_deployer).cancelWager(gameAddr);
-			await expect(promise0).to.be.revertedWith("in progress");
+			//// #### FIRST GAME #### ////
+			for (let i = 0; i < moves.length; i++) {
+				let player0 = null;
+				let player1 = null;
+				if (i % 2 != 1) {
+					player0 = otherAccount;
+					player1 = deployer;
+				} else {
+					player0 = deployer;
+					player1 = otherAccount;
+				}
+
+				let hex_move = await chess.moveToHex(moves[i]);
+				await chess.connect(player0).playMove(gameAddr, hex_move);
+
+				let gameStatus: Number[] = [];
+				if (i < moves.length - 1) {
+					// not endgame
+					gameStatus = await chess.getGameStatus(gameAddr);
+					expect(gameStatus[0]).to.equal(0);
+				} else {
+					// is endgame
+					gameStatus = await chess.getGameStatus(gameAddr);
+					expect(gameStatus[0]).to.equal(3);
+				}
+			}
+
+			let promise = chess.payoutWager(gameAddr);
+			await expect(promise).to.be.revertedWith("wager not finished");
+
+			await ethers.provider.send("evm_increaseTime", [86400 * 3]);
+			await ethers.provider.send("evm_mine");
+
+			await chess.updateWagerStateTime(gameAddr);
+
+			const status = await chess.wagerStatus(gameAddr);
+
+			expect(status.winsPlayer0).to.equal(1);
+			expect(status.winsPlayer1).to.equal(2);
+
+			await chess.payoutWager(gameAddr);
+
+			let nftBal = await chessNFT.balanceOf(otherAccount.address);
+			expect(nftBal).to.equal(1);
 		});
 	});
 });

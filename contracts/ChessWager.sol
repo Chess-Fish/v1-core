@@ -21,6 +21,8 @@ import "./MoveHelper.sol";
 
 import "./GaslessGame.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @title ChessFish ChessWager Contract
  * @author ChessFish
@@ -567,6 +569,7 @@ contract ChessWager is MoveHelper {
 		/// @dev add another game to play, and return payout successful as false
 		if (wagerStatus[wagerAddress].winsPlayer0 == wagerStatus[wagerAddress].winsPlayer1) {
 			gameWagers[wagerAddress].numberOfGames++;
+			console.log("HER");
 			return false;
 		}
 
@@ -591,6 +594,8 @@ contract ChessWager is MoveHelper {
 		IERC20(token).safeTransfer(winner, wagerPayout);
 
 		/// @dev Mint NFT for Winner
+
+		console.log("WINNER", winner);
 		IChessFishNFT(ChessFishNFT).awardWinner(winner, wagerAddress);
 
 		emit payoutWagerEvent(wagerAddress, winner, token, wagerPayout, protocolFee);
@@ -645,16 +650,16 @@ contract ChessWager is MoveHelper {
 
 		(int timePlayer0, int timePlayer1) = checkTimeRemaining(wagerAddress);
 
+		uint addedWins = gameWagers[wagerAddress].numberOfGames - getNumberOfGamesPlayed(wagerAddress) + 1;
+
 		if (timePlayer0 < 0) {
-			wagerStatus[wagerAddress].winsPlayer1 += 1;
-			wagerStatus[wagerAddress].isPlayer0White = !wagerStatus[wagerAddress].isPlayer0White;
-			gameIDs[wagerAddress].push(gameIDs[wagerAddress].length);
+			wagerStatus[wagerAddress].winsPlayer1 += addedWins;
+			gameWagers[wagerAddress].isComplete = true;
 			return true;
 		}
 		if (timePlayer1 < 0) {
-			wagerStatus[wagerAddress].winsPlayer0 += 1;
-			wagerStatus[wagerAddress].isPlayer0White = !wagerStatus[wagerAddress].isPlayer0White;
-			gameIDs[wagerAddress].push(gameIDs[wagerAddress].length);
+			wagerStatus[wagerAddress].winsPlayer0 += addedWins;
+			gameWagers[wagerAddress].isComplete = true;
 			return true;
 		}
 		return false;
