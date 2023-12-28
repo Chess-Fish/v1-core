@@ -49,7 +49,7 @@ contract ChessFishTournament {
 	}
 
 	/// @dev 7% protocol fee
-	uint protocolFee = 700;
+	uint protocolFee = 70;
 
 	/// @dev 56% 37%
 	uint[3] public payoutProfile3 = [560, 370];
@@ -438,7 +438,6 @@ contract ChessFishTournament {
 			tournaments[tournamentID].prizePool;
 		uint poolRemaining = poolSize;
 
-		/// @dev is this needed?
 		assert(poolSize >= IERC20(payoutToken).balanceOf(address(this)));
 
 		for (uint16 i = 0; i < payoutProfile.length; ) {
