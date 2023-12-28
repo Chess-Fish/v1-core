@@ -21,8 +21,6 @@ import "./MoveHelper.sol";
 
 import "./GaslessGame.sol";
 
-import "hardhat/console.sol";
-
 /**
  * @title ChessFish ChessWager Contract
  * @author ChessFish
@@ -569,7 +567,6 @@ contract ChessWager is MoveHelper {
 		/// @dev add another game to play, and return payout successful as false
 		if (wagerStatus[wagerAddress].winsPlayer0 == wagerStatus[wagerAddress].winsPlayer1) {
 			gameWagers[wagerAddress].numberOfGames++;
-			console.log("HER");
 			return false;
 		}
 
@@ -594,8 +591,6 @@ contract ChessWager is MoveHelper {
 		IERC20(token).safeTransfer(winner, wagerPayout);
 
 		/// @dev Mint NFT for Winner
-
-		console.log("WINNER", winner);
 		IChessFishNFT(ChessFishNFT).awardWinner(winner, wagerAddress);
 
 		emit payoutWagerEvent(wagerAddress, winner, token, wagerPayout, protocolFee);
