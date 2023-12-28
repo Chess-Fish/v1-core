@@ -54,10 +54,10 @@ contract ChessFishTournament {
 	/// @dev 56% 37%
 	uint[3] public payoutProfile3 = [560, 370];
 
-	/// @dev 40% 25% 20% 15%
+	/// @dev 33% 29% 18% 13%
 	uint[4] public payoutProfile4_9 = [330, 290, 180, 130];
 
-	/// @dev 40% 25% 13.5% 10% 5% 2.5% 2.5%
+	/// @dev 36.5% 23% 13.5% 10% 5% 2.5% 2.5%
 	uint[7] public payoutProfile10_25 = [365, 230, 135, 100, 50, 25, 25];
 
 	/// @dev increments for each new tournament
