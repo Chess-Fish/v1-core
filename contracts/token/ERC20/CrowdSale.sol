@@ -18,8 +18,9 @@ pragma solidity ^0.8.23;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract CrowdSale {
+contract CrowdSale is Ownable {
 	using SafeERC20 for IERC20;
 
 	address public deployer;
@@ -30,20 +31,22 @@ contract CrowdSale {
 
 	event TokensPurchased(address indexed buyer, uint256 amountIn, uint256 amountOut);
 
-	modifier OnlyDeployer() {
-		require(msg.sender == deployer, "not deployer");
-		_;
-	}
 
-	constructor(address _chessFishToken, address _USDC, uint _value) {
-		deployer = msg.sender;
+
+	constructor(address _owner, address _chessFishToken, address _USDC, uint _value) {
 		ChessFishToken = _chessFishToken;
 		USDC = _USDC;
 		value = _value;
+
+		transferOwnership(_owner);
 	}
 
 	function deposit(uint amount) external {
 		IERC20(ChessFishToken).safeTransferFrom(msg.sender, address(this), amount);
+	}
+
+	function updateUSDCAddress(address _USDC) external onlyOwner {
+		USDC = _USDC;
 	}
 
 	function getChessFishTokens(uint amountIn) external {
@@ -57,7 +60,7 @@ contract CrowdSale {
 		emit TokensPurchased(msg.sender, amountIn, amountOut);
 	}
 
-	function endCrowdSale() external OnlyDeployer {
+	function endCrowdSale() external onlyOwner {
 		uint balanceCFSH = IERC20(ChessFishToken).balanceOf(address(this));
 		IERC20(ChessFishToken).safeTransfer(msg.sender, balanceCFSH);
 		uint balanceUSDC = IERC20(USDC).balanceOf(address(this));
@@ -66,12 +69,12 @@ contract CrowdSale {
 		payable(deployer).transfer(balance);
 	}
 
-	function withdraw() external OnlyDeployer {
+	function withdraw() external onlyOwner {
 		uint256 balance = address(this).balance;
 		payable(deployer).transfer(balance);
 	}
 
-	function withdrawERC20(address token) external OnlyDeployer {
+	function withdrawERC20(address token) external onlyOwner {
 		uint256 balance = IERC20(token).balanceOf(address(this));
 		IERC20(token).transfer(msg.sender, balance);
 	}

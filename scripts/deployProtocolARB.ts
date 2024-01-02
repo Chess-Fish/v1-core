@@ -28,7 +28,7 @@ async function deploy(): Promise<void> {
 	const VALUE = ethers.utils.parseUnits("2", 18); // 2 USDC => 1 CFSH
 
 	const CROWDSALE = await ethers.getContractFactory("CrowdSale");
-	const crowdsale = await CROWDSALE.deploy(CFSH, USDC, VALUE);
+	const crowdsale = await CROWDSALE.deploy(owner.address, CFSH, USDC, VALUE);
 	console.log("Crowdsale contract deployed");
 
 	const vestingAmount = ethers.utils.parseEther("300000");
