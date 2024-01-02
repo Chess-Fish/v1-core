@@ -260,17 +260,17 @@ contract ChessFishTournament {
 		tournament.authed_players = specificPlayers;
 		tournament.isByInvite = true;
 
+		bool isCreatorIncluded = false;
+		for (uint i = 0; i < specificPlayers.length; i++) {
+			if (specificPlayers[i] == msg.sender) {
+				isCreatorIncluded = true;
+				break;
+			}
+		}
+
 		// If the creator wants to join
 		if (shouldJoin) {
 			IERC20(token).safeTransferFrom(msg.sender, address(this), tokenAmount);
-
-			bool isCreatorIncluded = false;
-			for (uint i = 0; i < specificPlayers.length; i++) {
-				if (specificPlayers[i] == msg.sender) {
-					isCreatorIncluded = true;
-					break;
-				}
-			}
 
 			if (isCreatorIncluded) {
 				address[] memory joined_players = new address[](1);
@@ -398,7 +398,6 @@ contract ChessFishTournament {
 
 		tallyWins(tournamentID);
 
-		/// @dev optimisticaly set to true
 		tournaments[tournamentID].isComplete = true;
 		uint numberOfPlayers = tournaments[tournamentID].joined_players.length;
 		uint[] memory payoutProfile;
