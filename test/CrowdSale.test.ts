@@ -12,9 +12,9 @@ describe("ChessFish Crowdsale Unit Tests", function () {
 		const USDC = await ethers.getContractFactory("USDC");
 		const usdc = await USDC.deploy();
 
-		await usdc.transfer(user.address, ethers.utils.parseUnits("150000", 6));
+		await usdc.transfer(user.address, ethers.utils.parseUnits("1000000", 6));
 
-		const value = ethers.utils.parseUnits("0.31459", 18);
+		const value = ethers.utils.parseUnits("0.36789051578250315", 18);
 
 		const CROWDSALE = await ethers.getContractFactory("CrowdSale");
 		const crowdsale = await CROWDSALE.deploy(owner.address, chessToken.address, usdc.address, value);
@@ -62,7 +62,7 @@ describe("ChessFish Crowdsale Unit Tests", function () {
 		await crowdsale.connect(user).getChessFishTokens(usdcIn);
 		const recievedTokens = await chessToken.balanceOf(user.address);
 
-		expect(recievedTokens).to.equal(ethers.utils.parseUnits("31.459", 18));
+		expect(recievedTokens).to.equal(ethers.utils.parseUnits("36.789051578250315000", 18));
 	});
 
 	it("Should withdraw", async function () {
@@ -84,7 +84,7 @@ describe("ChessFish Crowdsale Unit Tests", function () {
 		await crowdsale.connect(user).getChessFishTokens(usdcIn);
 		const recievedTokens = await chessToken.balanceOf(user.address);
 
-		expect(recievedTokens).to.equal(ethers.utils.parseUnits("31.459", 18));
+		expect(recievedTokens).to.equal(ethers.utils.parseUnits("36.789051578250315000", 18));
 
 		const bal0 = await usdc.balanceOf(owner.address);
 		await crowdsale.connect(owner).withdrawERC20(usdc.address);
@@ -114,7 +114,7 @@ describe("ChessFish Crowdsale Unit Tests", function () {
 		await crowdsale.connect(user).getChessFishTokens(usdcIn);
 		const recievedTokens = await chessToken.balanceOf(user.address);
 
-		expect(recievedTokens).to.equal(ethers.utils.parseUnits("47188.5", 18));
+		expect(recievedTokens).to.equal(ethers.utils.parseUnits("55183.577367375472500", 18));
 
 		const bal0 = await usdc.balanceOf(owner.address);
 		await crowdsale.connect(owner).withdrawERC20(usdc.address);
@@ -144,7 +144,7 @@ describe("ChessFish Crowdsale Unit Tests", function () {
 		await crowdsale.connect(user).getChessFishTokens(usdcIn);
 		const recievedTokens = await chessToken.balanceOf(user.address);
 
-		expect(recievedTokens).to.equal(ethers.utils.parseUnits("47188.5", 18));
+		expect(recievedTokens).to.equal(ethers.utils.parseUnits("55183.5773673754725000", 18));
 
 		await expect(crowdsale.connect(user).withdrawERC20(usdc.address)).to.be.revertedWith(
 			"Ownable: caller is not the owner"
