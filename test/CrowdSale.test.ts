@@ -125,7 +125,6 @@ describe("ChessFish Crowdsale Unit Tests", function () {
 		expect(payout).to.equal(ethers.utils.parseUnits("150000", 6));
 	});
 
-
 	it("Should test unauthorized", async function () {
 		const { chessToken, crowdsale, usdc, owner, user } = await loadFixture(deploy);
 
@@ -147,9 +146,8 @@ describe("ChessFish Crowdsale Unit Tests", function () {
 
 		expect(recievedTokens).to.equal(ethers.utils.parseUnits("47188.5", 18));
 
-		await expect(crowdsale.connect(user).withdrawERC20(usdc.address))
-		.to.be.revertedWith('Ownable: caller is not the owner');
-	  
-		
+		await expect(crowdsale.connect(user).withdrawERC20(usdc.address)).to.be.revertedWith(
+			"Ownable: caller is not the owner"
+		);
 	});
 });

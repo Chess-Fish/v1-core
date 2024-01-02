@@ -31,8 +31,6 @@ contract CrowdSale is Ownable {
 
 	event TokensPurchased(address indexed buyer, uint256 amountIn, uint256 amountOut);
 
-
-
 	constructor(address _owner, address _chessFishToken, address _USDC, uint _value) {
 		ChessFishToken = _chessFishToken;
 		USDC = _USDC;
