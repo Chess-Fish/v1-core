@@ -49,16 +49,16 @@ contract ChessFishTournament {
 	}
 
 	/// @dev 7% protocol fee
-	uint protocolFee = 70;
+	uint protocolFee = 700;
 
 	/// @dev 56% 37%
-	uint[3] public payoutProfile3 = [560, 370];
+	uint[3] public payoutProfile3 = [5600, 3700];
 
 	/// @dev 33% 29% 18% 13%
-	uint[4] public payoutProfile4_9 = [330, 290, 180, 130];
+	uint[4] public payoutProfile4_9 = [3300, 2900, 1800, 1300];
 
 	/// @dev 36.5% 23% 13.5% 10% 5% 2.5% 2.5%
-	uint[7] public payoutProfile10_25 = [365, 230, 135, 100, 50, 25, 25];
+	uint[7] public payoutProfile10_25 = [3650, 2300, 1350, 1000, 500, 250, 250];
 
 	/// @dev increments for each new tournament
 	uint public tournamentNonce;
@@ -451,7 +451,7 @@ contract ChessFishTournament {
 		assert(poolSize >= IERC20(payoutToken).balanceOf(address(this)));
 
 		for (uint16 i = 0; i < payoutProfile.length; ) {
-			uint payout = (poolSize * payoutProfile[i]) / 1000;
+			uint payout = (poolSize * payoutProfile[i]) / 10000;
 
 			if (payout > 0) {
 				IERC20(payoutToken).safeTransfer(playersSorted[i], payout);

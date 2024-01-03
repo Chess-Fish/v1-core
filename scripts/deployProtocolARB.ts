@@ -23,8 +23,8 @@ async function deploy(): Promise<void> {
 	const [deployer, owner] = await ethers.getSigners();
 
 	// const USDC = ""
-	const USDC = "0x30C61D8248E3B6C743183c594880231D9D13683b"; // USDC.e on Arbitrum
-	const CFSH = "0x618157159056222d501209951a3AB60a6F8Ee1de"; // CFSH.e on Arbitrum
+	const USDC = "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8"; // USDC.e on Arbitrum
+	const CFSH = "0xc218A06a17FeB66B1a730889fB9624326Fabff4b"; // CFSH.e on Arbitrum
 	const VALUE = ethers.utils.parseUnits("0.36789051578250315", 18); // 1 USDC = 2.718 CFSH
 
 	const CROWDSALE = await ethers.getContractFactory("CrowdSale");
