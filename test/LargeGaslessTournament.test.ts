@@ -226,7 +226,7 @@ describe("ChessFish Large Gasless Tournament Unit Tests", function () {
 				}
 			}
 
-			await ethers.provider.send("evm_increaseTime", [86400]);
+			await ethers.provider.send("evm_increaseTime", [86400 * 2]);
 			await ethers.provider.send("evm_mine");
 
 			const player0bal0 = await token.balanceOf(players[0].address);

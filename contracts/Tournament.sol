@@ -89,6 +89,11 @@ contract ChessFishTournament {
 		return (tournaments[tournamentID].joined_players);
 	}
 
+	/// @notice Returns authorized players in tournament
+	function getAuthorizedPlayers(uint tournamentID) external view returns (address[] memory) {
+		return (tournaments[tournamentID].authed_players);
+	}
+
 	/// @notice Returns wager addresses in tournament
 	function getTournamentWagerAddresses(uint tournamentID) external view returns (address[] memory) {
 		return (tournamentWagerAddresses[tournamentID]);

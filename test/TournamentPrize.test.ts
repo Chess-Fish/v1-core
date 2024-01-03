@@ -199,7 +199,7 @@ describe("ChessFish Tournament Unit Tests", function () {
 				await chess.connect(player).playMove(wagerAddresses[9], hex_move);
 			}
 
-			await ethers.provider.send("evm_increaseTime", [86400]);
+			await ethers.provider.send("evm_increaseTime", [86400 * 2]);
 			await ethers.provider.send("evm_mine");
 
 			const player0bal0 = await token.balanceOf(player0.address);
