@@ -583,15 +583,15 @@ contract ChessWager is MoveHelper {
 		gameWagers[wagerAddress].wager = 0;
 		wagerPrizes[wagerAddress] = 0;
 
+		/// @dev Mint NFT for Winner
+		IChessFishNFT(ChessFishNFT).awardWinner(winner, wagerAddress);
+
 		/// @dev 5% shareholder fee
 		uint shareHolderFee = ((wagerAmount + prize) * protocolFee) / 10000;
 		uint wagerPayout = (wagerAmount + prize) - shareHolderFee;
 
 		IERC20(token).safeTransfer(DividendSplitter, shareHolderFee);
 		IERC20(token).safeTransfer(winner, wagerPayout);
-
-		/// @dev Mint NFT for Winner
-		IChessFishNFT(ChessFishNFT).awardWinner(winner, wagerAddress);
 
 		emit payoutWagerEvent(wagerAddress, winner, token, wagerPayout, protocolFee);
 
