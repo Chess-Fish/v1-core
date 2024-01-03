@@ -36,6 +36,9 @@ function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
 		case "mainnet":
 			jsonRpcUrl = "https://eth.llamarpc.com";
 			break;
+		case "arbitrum":
+			jsonRpcUrl = "https://arb1.arbitrum.io/rpc";
+			break;
 		case "polygon":
 			jsonRpcUrl = "https://polygon.llamarpc.com";
 			break;
