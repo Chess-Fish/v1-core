@@ -144,7 +144,7 @@ const config: HardhatUserConfig = {
 		outputFile: "gas-report.txt", // optional
 		noColors: true, //optional
 		coinmarketcap: process.env.COINMARKETCAP_API_KEY, //to fetch gas data
-		gasPrice: 1
+		gasPrice: 1,
 	},
 };
 

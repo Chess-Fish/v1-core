@@ -237,7 +237,7 @@ describe("ChessFish Unit Tests", function () {
 				await chess.connect(player).playMove(wagerAddresses[2], hex_move);
 			}
 
-			await ethers.provider.send("evm_increaseTime", [86400]);
+			await ethers.provider.send("evm_increaseTime", [86400 * 2]);
 			await ethers.provider.send("evm_mine");
 
 			const player0bal0 = BigInt(await token.balanceOf(player0.address));
@@ -407,7 +407,7 @@ describe("ChessFish Unit Tests", function () {
 				await chess.connect(player).playMove(wagerAddresses[9], hex_move);
 			}
 
-			await ethers.provider.send("evm_increaseTime", [86400]);
+			await ethers.provider.send("evm_increaseTime", [86400 * 2]);
 			await ethers.provider.send("evm_mine");
 
 			const player0bal0 = await token.balanceOf(player0.address);
@@ -593,7 +593,7 @@ describe("ChessFish Unit Tests", function () {
 				await chess.connect(player).playMove(wagerAddresses[9], hex_move);
 			}
 
-			await ethers.provider.send("evm_increaseTime", [86400]);
+			await ethers.provider.send("evm_increaseTime", [86400 * 2]);
 			await ethers.provider.send("evm_mine");
 
 			const player0bal0 = await token.balanceOf(player1.address);
@@ -923,7 +923,7 @@ describe("ChessFish Unit Tests", function () {
 				await chess.connect(player).playMove(wagerAddresses[9], hex_move);
 			}
 
-			await ethers.provider.send("evm_increaseTime", [86400]);
+			await ethers.provider.send("evm_increaseTime", [86400 * 2]);
 			await ethers.provider.send("evm_mine");
 
 			const player0bal0 = await token.balanceOf(player0.address);
@@ -1017,6 +1017,120 @@ describe("ChessFish Unit Tests", function () {
 
 			const balance1 = await token.balanceOf(tournament.address);
 			expect(balance1).to.equal(wagerAmount);
+		});
+
+		it("Should test time out of all games tournament", async function () {
+			const { chess, tournament, player0, player1, player2, player3, player4, token } = await loadFixture(deploy);
+
+			let numberOfPlayers = 5;
+			let wagerToken = token.address;
+			let wagerAmount = ethers.utils.parseEther("10.0");
+			let numberOfGames = 1;
+			let timeLimit = 172800;
+
+			await token.connect(player0).approve(tournament.address, wagerAmount);
+
+			let specificPlayers = [player0.address, player1.address, player2.address, player3.address, player4.address];
+			let shouldJoin = true;
+
+			let tx = await tournament
+				.connect(player0)
+				.createTournamentWithSpecificPlayers(
+					specificPlayers,
+					numberOfGames,
+					wagerToken,
+					wagerAmount,
+					timeLimit,
+					shouldJoin
+				);
+
+			await tx.wait();
+
+			const tournamentNonce = await tournament.tournamentNonce();
+
+			await token.connect(player1).approve(tournament.address, wagerAmount);
+			await token.connect(player2).approve(tournament.address, wagerAmount);
+			await token.connect(player3).approve(tournament.address, wagerAmount);
+			await token.connect(player4).approve(tournament.address, wagerAmount);
+
+			await tournament.connect(player1).joinTournament(tournamentNonce - 1);
+			await tournament.connect(player2).joinTournament(tournamentNonce - 1);
+			await tournament.connect(player3).joinTournament(tournamentNonce - 1);
+			await tournament.connect(player4).joinTournament(tournamentNonce - 1);
+
+			const balance0 = await token.balanceOf(tournament.address);
+			expect(balance0).to.equal(wagerAmount.mul(5));
+
+			const players = await tournament.getTournamentPlayers(tournamentNonce - 1);
+			expect(players.length).to.equal(5);
+
+			await ethers.provider.send("evm_increaseTime", [86400]);
+			await ethers.provider.send("evm_mine");
+
+			await tournament.startTournament(tournamentNonce - 1);
+
+			await ethers.provider.send("evm_increaseTime", [86400]);
+			await ethers.provider.send("evm_mine");
+
+			const wagerAddresses = tournament.getTournamentWagerAddresses(tournamentNonce - 1);
+
+			for (let i = 0; i < wagerAddresses.length; i++) {
+				await chess.updateWagerStateTime(wagerAddresses[i]);
+			}
+
+			// 1 day to resolve all update possible state time & insufficient material
+			await ethers.provider.send("evm_increaseTime", [86400]);
+			await ethers.provider.send("evm_mine");
+
+			const player0bal0 = await token.balanceOf(player0.address);
+			const player1bal0 = await token.balanceOf(player1.address);
+			const player2bal0 = await token.balanceOf(player2.address);
+			const player3bal0 = await token.balanceOf(player3.address);
+			const player4bal0 = await token.balanceOf(player4.address);
+
+			await tournament.payoutTournament(tournamentNonce - 1);
+
+			const player0bal1 = await token.balanceOf(player0.address);
+			const player1bal1 = await token.balanceOf(player1.address);
+			const player2bal1 = await token.balanceOf(player2.address);
+			const player3bal1 = await token.balanceOf(player3.address);
+			const player4bal1 = await token.balanceOf(player4.address);
+
+			const pool = wagerAmount * 5;
+			const expectedPayoutPlayer0 = pool * 0.33;
+			const expectedPayoutPlayer1 = pool * 0.29;
+			const expectedPayoutPlayer2 = pool * 0.18;
+			const expectedPayoutPlayer3 = pool * 0.13;
+			const expectedPayoutPlayer4 = pool * 0.0;
+
+			expect(player0bal1.sub(player0bal0).toString()).to.equal(expectedPayoutPlayer0.toString());
+			expect(player1bal1.sub(player1bal0).toString()).to.equal(expectedPayoutPlayer1.toString());
+			expect(player2bal1.sub(player2bal0).toString()).to.equal(expectedPayoutPlayer2.toString());
+			expect(player3bal1.sub(player3bal0).toString()).to.equal(expectedPayoutPlayer3.toString());
+			expect(player4bal1.sub(player4bal0).toString()).to.equal(expectedPayoutPlayer4.toString());
+
+			const player0wins = await tournament.tournamentWins(tournamentNonce - 1, player0.address);
+			const player1wins = await tournament.tournamentWins(tournamentNonce - 1, player1.address);
+			const player2wins = await tournament.tournamentWins(tournamentNonce - 1, player2.address);
+			const player3wins = await tournament.tournamentWins(tournamentNonce - 1, player3.address);
+			const player4wins = await tournament.tournamentWins(tournamentNonce - 1, player4.address);
+
+			expect(player0wins).to.equal(0);
+			expect(player1wins).to.equal(0);
+			expect(player2wins).to.equal(0);
+			expect(player3wins).to.equal(0);
+			expect(player4wins).to.equal(0);
+
+			const data = await tournament.viewTournamentScore(tournamentNonce - 1);
+
+			expect(data[1][0]).to.equal(player0wins);
+			expect(data[1][1]).to.equal(player1wins);
+			expect(data[1][2]).to.equal(player2wins);
+			expect(data[1][3]).to.equal(player3wins);
+			expect(data[1][4]).to.equal(player4wins);
+
+			let isComplete = (await tournament.tournaments(tournamentNonce - 1)).isComplete;
+			expect(isComplete).to.equal(true);
 		});
 	});
 });

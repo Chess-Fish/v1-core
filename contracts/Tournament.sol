@@ -264,6 +264,7 @@ contract ChessFishTournament {
 		for (uint i = 0; i < specificPlayers.length; i++) {
 			if (specificPlayers[i] == msg.sender) {
 				isCreatorIncluded = true;
+				shouldJoin = true;
 				break;
 			}
 		}
@@ -389,9 +390,10 @@ contract ChessFishTournament {
 
 	/// @notice Handle payout of tournament
 	/// @dev tallies, gets payout profile, sorts players by wins, handles payout
+	/// @dev one day must pass after end time for all games in GameWager contract
 	function payoutTournament(uint tournamentID) external {
 		require(
-			tournaments[tournamentID].timeLimit < block.timestamp - tournaments[tournamentID].startTime,
+			tournaments[tournamentID].timeLimit + 86400 < block.timestamp - tournaments[tournamentID].startTime,
 			"Tournament not finished yet"
 		);
 		require(tournaments[tournamentID].isComplete == false, "Tournament completed");
