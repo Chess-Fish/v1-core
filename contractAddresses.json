@@ -1,13 +1,27 @@
 [
   {
-    "network": "unknown",
-    "chainID": 11155111,
-    "owner": "0xb870f7d1CE738Ed54bF168A4d9929e05D673e34e",
-    "chessFishToken": "0x36C4580CBBc723BA4df397bcC86d738f52b50E13",
-    "treasuryVesting": "0x66C0332ac7108518979f2552493f9AfDF257d79c"
+    "network": "Ethereum",
+    "chainID": 1,
+    "owner": "0xC61bDCC3A088323D39Dbe364C10281982836506c",
+    "chessFishToken": "0xE2976A66E8CEF3932CDAEb935E114dCd5ce20F20",
+    "treasuryVesting": "0x150bFDb78820542d370ceD245A4e7a5F5C131281"
   },
   {
-    "network": "unknown",
+    "network": "arbitrum",
+    "chainID": 42161,
+    "deployer": "0xC61bDCC3A088323D39Dbe364C10281982836506c",
+    "chessFishToken": "0xc218A06a17FeB66B1a730889fB9624326Fabff4b",
+    "dividendSplitter": "0x973C170C3BC2E7E1B3867B3B29D57865efDDa59a",
+    "chessNFT": "0xbD1DFf018449AD4CBa7d3c0E982Cb9677b758f57",
+    "moveVerification": "0x9ea6881ac1b5C4949E42Ae83D799622e2371A6c2",
+    "gaslessGame": "0xeAbb5E5aF52Bf200c11F39e441B79746218Fe9d5",
+    "chessWager": "0x3a228f23Df0e3c7E28FC6A39b463Cd7EED0CB25c",
+    "crowdSale": "0xE2976A66E8CEF3932CDAEb935E114dCd5ce20F20",
+    "tournament": "0x00522De31D348b7dBe2c0cB3609851176678E6d7",
+    "treasuryVesting": "0x150bFDb78820542d370ceD245A4e7a5F5C131281"
+  },
+  {
+    "network": "arb_sepolia",
     "chainID": 421614,
     "deployer": "0x2Ff6C88b03Ed6926Cc83C05E2c7689f1e1299B13",
     "chessFishToken": "0x618157159056222d501209951a3AB60a6F8Ee1de",
