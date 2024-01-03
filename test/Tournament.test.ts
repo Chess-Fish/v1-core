@@ -1132,5 +1132,32 @@ describe("ChessFish Unit Tests", function () {
 			let isComplete = (await tournament.tournaments(tournamentNonce - 1)).isComplete;
 			expect(isComplete).to.equal(true);
 		});
+
+		it("Should test creator join not in auth list", async function () {
+			const { chess, tournament, player0, player1, player2, player3, player4, token } = await loadFixture(deploy);
+
+			let wagerToken = token.address;
+			let wagerAmount = ethers.utils.parseEther("10.0");
+			let numberOfGames = 1;
+			let timeLimit = 86400;
+
+			await token.connect(player0).approve(tournament.address, wagerAmount);
+
+			let specificPlayers = [player1.address, player2.address, player3.address, player4.address];
+			let shouldJoin = true;
+
+			let tx = await tournament
+				.connect(player0)
+				.createTournamentWithSpecificPlayers(
+					specificPlayers,
+					numberOfGames,
+					wagerToken,
+					wagerAmount,
+					timeLimit,
+					shouldJoin
+				);
+
+			await tx.wait();
+		});
 	});
 });

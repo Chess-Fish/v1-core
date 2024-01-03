@@ -279,13 +279,17 @@ contract ChessFishTournament {
 
 				tournament.joined_players = joined_players;
 			} else {
-				address[] memory authed_players = tournament.authed_players;
+				address[] memory authed_players = new address[](tournament.authed_players.length + 1);
+
+				for (uint i = 0; i < tournament.authed_players.length; i++) {
+					authed_players[i] = tournament.authed_players[i];
+				}
+
 				authed_players[tournament.authed_players.length] = msg.sender;
 				tournament.authed_players = authed_players;
 
 				address[] memory joined_players = new address[](1);
 				joined_players[0] = msg.sender;
-
 				tournament.joined_players = joined_players;
 			}
 		}
