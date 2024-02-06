@@ -1621,7 +1621,7 @@ _56% 37%_
 uint256[4] payoutProfile4_9
 ```
 
-_40% 25% 20% 15%_
+_33% 29% 18% 13%_
 
 ### payoutProfile10_25
 
@@ -1629,7 +1629,7 @@ _40% 25% 20% 15%_
 uint256[7] payoutProfile10_25
 ```
 
-_40% 25% 13.5% 10% 5% 2.5% 2.5%_
+_36.5% 23% 13.5% 10% 5% 2.5% 2.5%_
 
 ### tournamentNonce
 
@@ -1688,6 +1688,14 @@ function getTournamentPlayers(uint256 tournamentID) external view returns (addre
 ```
 
 Returns players in tournament
+
+### getAuthorizedPlayers
+
+```solidity
+function getAuthorizedPlayers(uint256 tournamentID) external view returns (address[])
+```
+
+Returns authorized players in tournament
 
 ### getTournamentWagerAddresses
 
@@ -1795,7 +1803,8 @@ function payoutTournament(uint256 tournamentID) external
 
 Handle payout of tournament
 
-_tallies, gets payout profile, sorts players by wins, handles payout_
+_tallies, gets payout profile, sorts players by wins, handles payout
+one day must pass after end time for all games in GameWager contract_
 
 ### depositToTournament
 
@@ -1888,8 +1897,8 @@ For example, if `decimals` equals `2`, a balance of `505` tokens should
 be displayed to a user as `5.05` (`505 / 10 ** 2`).
 
 Tokens usually opt for a value of 18, imitating the relationship between
-Ether and Wei. This is the value {ERC20} uses, unless this function is
-overridden;
+Ether and Wei. This is the default value returned by this function, unless
+it's overridden.
 
 NOTE: This information is only used for _display_ purposes: it in
 no way affects any of the arithmetic of the contract, including
@@ -1953,22 +1962,22 @@ uint256 value
 event TokensPurchased(address buyer, uint256 amountIn, uint256 amountOut)
 ```
 
-### OnlyDeployer
-
-```solidity
-modifier OnlyDeployer()
-```
-
 ### constructor
 
 ```solidity
-constructor(address _chessFishToken, address _USDC, uint256 _value) public
+constructor(address _owner, address _chessFishToken, address _USDC, uint256 _value) public
 ```
 
 ### deposit
 
 ```solidity
 function deposit(uint256 amount) external
+```
+
+### updateUSDCAddress
+
+```solidity
+function updateUSDCAddress(address _USDC) external
 ```
 
 ### getChessFishTokens

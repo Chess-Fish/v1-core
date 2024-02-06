@@ -36,6 +36,7 @@ contract CrowdSale is Ownable {
 		USDC = _USDC;
 		value = _value;
 
+		deployer = msg.sender;
 		transferOwnership(_owner);
 	}
 

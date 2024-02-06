@@ -462,8 +462,6 @@ contract ChessWager is MoveHelper {
 			false // hasBeenPaid
 		);
 
-		IERC20(wagerToken).safeTransferFrom(msg.sender, address(this), wager);
-
 		wagerAddress = getWagerAddress(gameWager);
 
 		require(gameWagers[wagerAddress].player0 == address(0), "failed to create wager");
@@ -478,6 +476,8 @@ contract ChessWager is MoveHelper {
 
 		// update global state
 		allWagers.push(wagerAddress);
+
+		IERC20(wagerToken).safeTransferFrom(msg.sender, address(this), wager);
 
 		emit createGameWagerEvent(wagerAddress, wagerToken, wager, timeLimit, numberOfGames);
 
@@ -689,8 +689,8 @@ contract ChessWager is MoveHelper {
 	/// @dev used to deposit prizes to wager
 	function depositToWager(address wagerAddress, uint amount) external {
 		require(!gameWagers[wagerAddress].isComplete, "wager completed");
+		wagerPrizes[wagerAddress] += amount;c
 		IERC20(gameWagers[wagerAddress].wagerToken).safeTransferFrom(msg.sender, address(this), amount);
-		wagerPrizes[wagerAddress] += amount;
 	}
 
 	/// @notice Checks the moves of the wager and updates state if neccessary

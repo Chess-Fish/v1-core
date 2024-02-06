@@ -1,10 +1,17 @@
 [
   {
-    "network": "Ethereum",
+    "network": "homestead",
     "chainID": 1,
-    "owner": "0xC61bDCC3A088323D39Dbe364C10281982836506c",
-    "chessFishToken": "0xE2976A66E8CEF3932CDAEb935E114dCd5ce20F20",
-    "treasuryVesting": "0x150bFDb78820542d370ceD245A4e7a5F5C131281"
+    "deployer": "0x2Ff6C88b03Ed6926Cc83C05E2c7689f1e1299B13",
+    "chessFishToken": "0xc218A06a17FeB66B1a730889fB9624326Fabff4b",
+    "dividendSplitter": "0x93575CC45Af22147Df948f658d54c903B38ce638",
+    "chessNFT": "0xB699172970A638c65E6D46745AE1811f02E3eeA7",
+    "moveVerification": "0xa0Ad84c0F8586b2ccBFE0F1Aa71458447BB2286a",
+    "gaslessGame": "0xA0fb6Ecd2Fdaf4485C4eebC18ef1C2a52373D90D",
+    "chessWager": "0x3Aa52ab6e06dE557f1B62314dB3e73f585f55Aa2",
+    "crowdSale": "0x5E9ceD7eE86883033Baa7CddCe99960ef0a1FBf3",
+    "tournament": "0xDbb447fDaDf53135B2f3809E0577BF54098F382E",
+    "treasuryVesting": "0xF7e919431c68C379557Cc7812c4f506eCBB8CD33"
   },
   {
     "network": "arbitrum",
@@ -23,15 +30,15 @@
   {
     "network": "arb_sepolia",
     "chainID": 421614,
-    "deployer": "0x2Ff6C88b03Ed6926Cc83C05E2c7689f1e1299B13",
-    "chessFishToken": "0x618157159056222d501209951a3AB60a6F8Ee1de",
-    "dividendSplitter": "0x01684edBeA7B9f38F35e09c7448C3f9b00820d30",
-    "chessNFT": "0x50Db2c57e6887AB7DaF918BAC7658e591B19B1bE",
-    "moveVerification": "0x0c2A60dB1F25922Bd9B55a04Aba21EDA5376b23b",
-    "gaslessGame": "0x4BE2A665504C320877D042deC8A739C3CBFAC991",
-    "chessWager": "0xBC818D871cd8f30b33c3aDF933C93E5Bc06e5df9",
-    "crowdSale": "0xC7e0b7d78DEd75317dfC766f578EBe3794f1C8B6",
-    "tournament": "0xCe1023a0Cd33f67f3007a5466F733cfCC4411522",
-    "treasuryVesting": "0x5F3206495bFfF7B7b05a38C008c458B3BFECEA06"
+    "deployer": "0xC61bDCC3A088323D39Dbe364C10281982836506c",
+    "chessFishToken": "0xc218A06a17FeB66B1a730889fB9624326Fabff4b",
+    "dividendSplitter": "0x973C170C3BC2E7E1B3867B3B29D57865efDDa59a",
+    "chessNFT": "0xbD1DFf018449AD4CBa7d3c0E982Cb9677b758f57",
+    "moveVerification": "0x9ea6881ac1b5C4949E42Ae83D799622e2371A6c2",
+    "gaslessGame": "0xeAbb5E5aF52Bf200c11F39e441B79746218Fe9d5",
+    "chessWager": "0x3a228f23Df0e3c7E28FC6A39b463Cd7EED0CB25c",
+    "crowdSale": "0xE2976A66E8CEF3932CDAEb935E114dCd5ce20F20",
+    "tournament": "0x00522De31D348b7dBe2c0cB3609851176678E6d7",
+    "treasuryVesting": "0x150bFDb78820542d370ceD245A4e7a5F5C131281"
   }
 ]

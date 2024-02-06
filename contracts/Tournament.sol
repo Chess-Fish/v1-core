@@ -518,8 +518,8 @@ contract ChessFishTournament {
 	/// @notice Used to deposit prizes to tournament
 	function depositToTournament(uint tournamentID, uint amount) external {
 		require(!tournaments[tournamentID].isComplete, "tournament completed");
+		tournaments[tournamentID].prizePool += amount;
 
 		IERC20(tournaments[tournamentID].token).safeTransferFrom(msg.sender, address(this), amount);
-		tournaments[tournamentID].prizePool += amount;
 	}
 }
