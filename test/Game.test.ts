@@ -191,16 +191,58 @@ describe("ChessFish Game Verification Unit Tests", function () {
 			// official game moves: https://www.chessgames.com/perl/chessgame?gid=1008419
 			// moves to checkmate: https://lichess.org/study/WSdWU9JC/HKJztW6i
 
-			
-
-            const moves = 
-            ['d2d4', 'g8f6', 'c2c4', 'g7g6', 'g2g3', 'c7c6', 'f1g2', 'd7d5', 'c4d5', 'c6d5', 'b1c3', 'f8g7',
-            'e2e3', 'e8g8', 'g1e2', 'b8c6', 'e1g1', 'b7b6', 'b2b3', 'c8a6', 'c1a3', 'f8e8', 'd1d2', 'e7e5',
-            'd4e5', 'c6e5', 'f1d1', 'e5d3', 'd2c2', 'd3f2', 'g1f2', 'f6g4', 'f2g1', 'g4e3', 'c2d2', 'e3g2',
-            'g1g2', 'd5d4', 'e2d4', 'a6b7', 'g2f1', 'd8d7', 'd2f2', 'd7h3', 'f1g1', 'e8e1', 'd1e1', 'g7d4',
-            'f2d4', 'h3g2'];
-            
-            
+			const moves = [
+				"d2d4",
+				"g8f6",
+				"c2c4",
+				"g7g6",
+				"g2g3",
+				"c7c6",
+				"f1g2",
+				"d7d5",
+				"c4d5",
+				"c6d5",
+				"b1c3",
+				"f8g7",
+				"e2e3",
+				"e8g8",
+				"g1e2",
+				"b8c6",
+				"e1g1",
+				"b7b6",
+				"b2b3",
+				"c8a6",
+				"c1a3",
+				"f8e8",
+				"d1d2",
+				"e7e5",
+				"d4e5",
+				"c6e5",
+				"f1d1",
+				"e5d3",
+				"d2c2",
+				"d3f2",
+				"g1f2",
+				"f6g4",
+				"f2g1",
+				"g4e3",
+				"c2d2",
+				"e3g2",
+				"g1g2",
+				"d5d4",
+				"e2d4",
+				"a6b7",
+				"g2f1",
+				"d8d7",
+				"d2f2",
+				"d7h3",
+				"f1g1",
+				"e8e1",
+				"d1e1",
+				"g7d4",
+				"f2d4",
+				"h3g2",
+			];
 
 			// const moves = [ 'f2f3', 'e7e5', 'g2g4', 'd8h4' ];
 			// const moves = ["d2d4", "f7f5", "b2b3", "f5f4", "e2e4", "f4e3"];

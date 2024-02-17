@@ -31,7 +31,7 @@ async function deploy(): Promise<void> {
 	const crowdsale = await CROWDSALE.deploy(owner.address, CFSH, USDC, VALUE);
 	console.log("Crowdsale contract deployed");
 
-	console.log("OWNER", owner.address)
+	console.log("OWNER", owner.address);
 
 	const vestingAmount = ethers.utils.parseEther("300000");
 	const timeNow = Date.now();

@@ -17,10 +17,10 @@ if (!mnemonic) {
 const chainIds = {
 	mainnet: 1,
 	polygon: 137,
-	"arbitrum": 42161,
+	arbitrum: 42161,
 	avalanche: 43114,
 	bsc: 56,
-	"optimism": 10,
+	optimism: 10,
 	"polygon-mumbai": 80001,
 	sepolia: 11155111,
 	arb_sepolia: 421614,
