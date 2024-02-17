@@ -689,7 +689,7 @@ contract ChessWager is MoveHelper {
 	/// @dev used to deposit prizes to wager
 	function depositToWager(address wagerAddress, uint amount) external {
 		require(!gameWagers[wagerAddress].isComplete, "wager completed");
-		wagerPrizes[wagerAddress] += amount;c
+		wagerPrizes[wagerAddress] += amount;
 		IERC20(gameWagers[wagerAddress].wagerToken).safeTransferFrom(msg.sender, address(this), amount);
 	}
 
